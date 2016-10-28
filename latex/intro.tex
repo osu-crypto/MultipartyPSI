@@ -1,0 +1,45 @@
+%%% Local Variables:
+%%% TeX-master: "main"
+%%% End:
+% !TEX root = main.tex
+
+\section{Introduction}
+\label{sect:intro}
+
+This work involves Oblivious Transfer, Bark-OPRF, and PSI for two parties.  We start by reviewing the three primitives.
+
+\paragraph{Oblivious Transfer}
+\todo{need to paraphrase}
+Oblivious Transfer (OT) has been a central primitive in the area of secure computation.  Indeed, the original protocols of Yao~\cite{FOCS:Yao86} and GMW~\cite{GoldreichBook2,STOC:GolMicWig87} both use OT in a critical manner.  In fact, OT is both necessary and sufficient for secure computation~\cite{STOC:Kilian88}.  Until early 2000's, the area of generic secure computation was often seen mainly as a feasibility exercise, and improving  OT performance was not a priority research direction.  This changed when Yao's Garbled Circuit (GC) was first implemented~\cite{Fairplay} and a surprisingly fast OT protocol (which we will call IKNP) was devised by Ishai et al.~\cite{C:IKNP03}.
+
+The IKNP OT extension protocol~\cite{C:IKNP03} is truly a gem; it allows 1-out-of-2 OT execution at the cost of computing and sending only a few hash values (but a security parameter of public key primitives evaluations were needed to bootstrap the system).  IKNP was immediately noticed and since then universally used in implementations of the Yao and GMW protocols. It took a few years to realize that OT extension's use goes far beyond these fundamental applications.  Many aspects of secure computation were strengthened  and sped up by using OT extension.  For example, Nielsen et al.~\cite{C:NNOB12} propose  an approach to malicious  two-party secure computation, which relates outputs and inputs of OTs in a larger construction.  They critically rely on the low cost of batched OTs.
+Another example is the application of information-theoretic Gate Evaluation Secret Sharing (GESS)~\cite{AC:Kolesnikov05} to the computational setting~\cite{SCN:KolKum12}.  The idea of~\cite{SCN:KolKum12} is to stem the high cost in secret sizes of the GESS scheme by evaluating the circuit by shallow slices, and using OT extension to efficiently ``glue'' them together. Particularly relevant for our work, efficient OTs were recognized by Pinkas et al.~\cite{DBLP:conf/uss/Pinkas0Z14} as an effective building block for private set intersection, which we discuss in more detail later.
+
+The IKNP OT extension, despite its wide and heavy use, received very few updates.  In the semi-honest model it is still state-of-the-art.  Robustness was added by Nielsen~\cite{Nielsen07ot}, and in the malicious setting it was improved  only very recently~\cite{EC:ALSZ15,C:KelOrsSch15}.  Improvement for short secret sizes, motivated by the GMW use case, was proposed by Kolesnikov and Kumaresan~\cite{C:KolKum13}.   We use ideas from their protocol, and refer to it as the KK protocol.  Under the hood, KK~\cite{C:KolKum13} noticed that one core aspect of IKNP data representation can be abstractly seen as a repetition error-correcting code, and their improvement stems from using a better code.   As a result, instead of $1$-out of-$2$ OT, a $1$-out of-$n$  OT became possible at nearly the same cost,  for $n$ up to approximately $256$.
+
+\todo{describe $1$-out of-$\infty$}
+
+\paragraph{BaRK-Oblivious PRFs}
+
+An batched related-key oblivious pseudorandom function (BaRK-OPRF) \cite{CCS:KKRT16} is a protocol in which a sender \todo{..............}
+%learns (or chooses) a random PRF seed $s$ while the receiver learns $F(s,r)$, the result of the PRF on a single input $r$ chosen by the receiver. While the general definition of an OPRF allows the receiver to evaluate the PRF on several inputs, in this paper we consider only the case where the receiver can evaluate the PRF {\em on a single input.}
+
+
+%The central primitive of this work, an efficient OPRF protocol, can be viewed as a variant of Oblivious Transfer (OT) of random values.  We  build it by modifying the core of OT extension protocols~\cite{C:IKNP03,C:KolKum13}, and its internals are much closer to OT than to prior works on OPRF.  Therefore, our presentation is OT-centric, with the results stated in OPRF terminology.
+       
+
+%OT of random messages shares many properties with OPRF. In OT of random messages, the sender learns random $m_0, m_1$ while the receiver learns $m_r$ for a choice bit $r \in \{0,1\}$. One can think of the function $F( (m_0, m_1), r ) = m_r$ as a pseudorandom function with input domain $\{0,1\}$. Similarly, one can interpret 1-out-of-$n$ OT of random messages as an OPRF with input domain $\{1,\ldots,n\}$.
+
+%In this work, we propose a novel extension to the IKNP and KK protocols.  At almost the same cost as {1-out-of-2} IKNP and KK OTs, we are able to achieve an 1-out-of-$n$ OT of random messages for arbitrarily large $n$.  This can be viewed as an OPRF with {\em unbounded} input domain $\{0,1\}^*$. That is, the receiver has an input $r \in \{0,1\}^*$ and learns the value $R(r)$, while the sender obtains the ability to evaluate $R(r')$ for any string $r'$, where $R$ is a pseudorandom function. 
+
+%We call our main protocol {\bf batched, related-key OPRF (\batchOPRF)} since it achieves a large number of OPRF instances, with keys that are related (in a way we describe  later). This is a new primitive, which nevertheless suffices for the application to private set intersection that we consider.
+
+\paragraph{Private Set Intersection (PSI) for Two Parties}
+Private set intersection (PSI) refers to the setting where two parties each hold sets of items and wish to learn nothing more than the intersection of these sets.
+Today, PSI is a truly practical primitive, with extremely fast cryptographically secure implementations~\cite{DBLP:conf/uss/Pinkas0SZ15}. Incredibly, these implementations are only a relatively small factor slower than than the na\"{\i}ve and insecure method of exchanging hashed values.  Among the problems of secure computation, PSI is probably the one most strongly motivated by practice.  Indeed, already today companies such as Facebook  routinely share and mine shared information~\cite{effArticleFacebook,MotisCCStalk2015}.  In 2012, (at least some of) this  sharing was performed with insecure naive hashing.  Today, companies are able and willing to tolerate a reasonable performance penalty, with the goal of achieving stronger security~\cite{MotisCCStalk2015}.  We believe that the ubiquity and the scale of private data sharing, and PSI in particular, will continue to grow as big data becomes bigger and privacy becomes a more recognized issue.  We refer reader to~\cite{DBLP:conf/uss/Pinkas0SZ15,DBLP:conf/uss/Pinkas0Z14} for additional discussion and motivation of PSI.
+
+\cite{CCS:KKRT16} significantly improves the PSI protocol of~\cite{DBLP:conf/uss/Pinkas0SZ15} by replacing one of its components with \batchOPRF. This change results in a factor 2.3--3.6$\times$ performance improvement for PSI of moderate-length strings (64 or 128 bits) and reasonably large sets \todo{......} 
+
+
+
+

@@ -1,0 +1,145 @@
+
+\newif\iffullversion
+\fullversionfalse
+\fullversiontrue
+
+\iffullversion
+    \documentclass{article}
+    \pagestyle{plain}
+    \usepackage[letterpaper,margin=1in]{geometry}
+\else
+    \documentclass{sig-alternate}
+\fi
+
+
+\input{headers}
+
+\iffullversion
+\let\oldparagraph\paragraph
+\renewcommand\paragraph[1]{\oldparagraph{#1.}}
+\else
+\fi
+
+
+
+\begin{document}
+
+
+\iffullversion
+
+    \title{Multi-Party Private Set Intersection}
+
+    \author{
+        Vladimir Kolesnikov\thanks{Bell Labs, \textsf{kolesnikov@research.bell-labs.com}} \and
+        Mike Rosulek\thanks{Oregon State University, \textsf{$\{$rosulekm,trieun$\}$@eecs.oregonstate.edu}} \and
+        Ni Trieu\footnotemark[3]
+    }
+
+\else
+
+\title{Multi-party Private Set Intersection}
+    \numberofauthors{3}
+    \author{
+    \alignauthor Vladimir Kolesnikov\\
+           \affaddr{Bell Labs}\\
+           \affaddr{Murray Hill, New Jersey}\\
+           \email{kolesnikov@research.bell-labs.com}
+    \alignauthor Mike Rosulek\\
+           \affaddr{Oregon State University}\\
+           \affaddr{Corvallis, Oregon}\\
+           \email{rosulekm@eecs.\\oregonstate.edu}
+    \alignauthor  Ni Trieu\\
+           \affaddr{Oregon State University}\\
+           \affaddr{Corvallis, Oregon}\\
+           \email{trieun@eecs.\\oregonstate.edu}
+    }
+
+
+
+   \global\copyrightetc{Copyright is held by the owner/author(s). Publication rights licensed to ACM. 
+    ACM 978-1-xxxxxxxxxxx  \\
+    DOI: http://dx.doi.org/xxxxxxxxxxxxxxx
+    }
+\fi
+
+\input{macros}
+
+\maketitle
+
+\begin{abstract}
+We propose a PSI protocol for multi parties.... 
+
+\end{abstract}
+
+
+
+%%%%%%%%%%%%%%%
+%%%ACM classifiers
+% \iffullversion
+% \else
+% \begin{CCSXML}
+% <ccs2012>
+% <concept>
+% <concept_id>10003752.10003777.10003788</concept_id>
+% <concept_desc>Theory of computation~Cryptographic primitives</concept_desc>
+% <concept_significance>500</concept_significance>
+% </concept>
+% <concept>
+% <concept_id>10003752.10003777.10003789</concept_id>
+% <concept_desc>Theory of computation~Cryptographic protocols</concept_desc>
+% <concept_significance>500</concept_significance>
+% </concept>
+% </ccs2012>
+% \end{CCSXML}
+
+% \ccsdesc[500]{Theory of computation~Cryptographic primitives}
+% \ccsdesc[500]{Theory of computation~Cryptographic protocols}
+
+% \fi
+
+
+
+% \begin{abstract}
+% We introduce a new primitive that we call {\bf 1-out-of-Any Oblivious Transfer}. It allows a sender to query a random mapping $r : \{0,1\}^* \to \{0,1\}^\ell$ on any number of inputs while allowing a receiver to learn $r(x)$ for only a {\em single}, chosen string $x$. We first show how to efficiently construct this primitive by modifying existing (1-out-of-2) OT-extension protocols. The cost of the new primitive is only 3-6 times that of a random 1-out-of-2 (extended) OT, depending on whether semi-honest or malicious security is desired. 
+
+% Next, we show an application of 1-out-of-any OT to private set intersection (PSI). The fastest state-of-the-art PSI protocol (Pinkas et al., Usenix 2015) is based on efficient OT extension. Our new primitive removes the protocol's dependence on the bit-length of the parties' items. We implemented the protocols and found ours to be \todo{2-10$\times$} faster.
+% \end{abstract}
+
+
+\input{intro}
+\input{overview}
+\input{prelims}
+\input{oprf}
+\input{3psi}
+\input{npsi}
+\input{implementation}
+
+
+
+\section*{Acknowledgments}
+%We thank Peter Rindal for contributing libraries and helpful suggestions to our protocol implementation. We also thank Michael Zohner for answering our many questions about the implementation of \cite{DBLP:conf/uss/Pinkas0SZ15}. Finally, we thank the anonymous CCS reviewers for their helpful feedback.
+
+%The first author is supported by the Office of Naval Research (ONR)
+contract number N00014-14-C-0113.  The second author is supported by
+NSF Grants CNS-1350619 and CNS-1414119, in part by the Defense
+Advanced Research Projects Agency (DARPA) and the U.S. Army Research
+Office under contracts W911NF-15-C-0226, and an MIT Translational
+Fellowship. The third and fourth authors are supported by NSF award
+1149647 and a Google research award.  This work was initiated while
+the first three authors were visiting the Simons Institute for the
+Theory of Computing, supported by the Simons Foundation and by the
+DIMACS/Simons Collaboration in Cryptography through NSF grant
+\#CNS-1523467.
+
+
+\iffullversion
+    \bibliographystyle{alpha}
+    \bibliography{bib,abbrev2,crypto_crossref}
+\else
+
+    {\small
+    \bibliographystyle{acm}
+    \bibliography{bib,abbrev2,crypto_crossref}
+    }
+\fi
+\end{document}

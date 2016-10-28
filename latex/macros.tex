@@ -1,0 +1,322 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% macros.tex
+%
+
+
+
+
+%--
+% Theorems are environments with numbering schemes. Based on Goldreich's defs.
+%--
+
+% \iffullversion
+% \renewcommand\paragraph[1]{\bf{#1.}}
+% \else
+% \fi
+
+
+
+\ifdefined \qed
+\relax
+\else
+\newcommand{\qed}{\hspace*{\fill}\rule{7pt}{7pt}}
+\fi
+
+\ifdefined \theorem
+\relax
+\else
+\newtheorem{theorem}{Theorem}
+%\newtheorem{fact}{Fact}
+\newtheorem{definition}{Definition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{example}{Example}
+\newtheorem{lemma}[theorem]{Lemma}  % A counter for Lemmas etc
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{claim}[theorem]{Claim}
+
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newenvironment{proof_sketch}{\quad\par\noindent{\bf Sketch of proof:~~}}{\qed\quad}
+%\newenvironment{proof}{\noindent{\bf Proof:~~}}{\qed\quad}
+
+\fi
+
+
+\newtheorem{observation}[theorem]{Observation}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{construction}{Construction}
+
+\renewcommand\land{\ensuremath{\cdot}}
+\renewcommand\odot{\ensuremath{\land}}
+
+\newcommand\RF{\ensuremath{R}}   % ideal random function
+
+
+\renewcommand\to{\ensuremath{\rightarrow}}
+\newcommand\from{\ensuremath{\leftarrow}}
+\newcommand\xor{\oplus}         %+ mod 2
+\newcommand\Xor{{\bigoplus}}
+\newcommand\poly{\mathop{\rm{poly}}\nolimits}
+\newcommand\polylog{\mathop{\rm{polylog}}\nolimits}
+%\newcommand\size{{\mathrm{size}}}
+\newcommand\size[1]{\ensuremath{|#1|}}
+\newcommand\sign{{\mathrm{sign}}}
+\newcommand\bra{{\langle}}        %
+\newcommand\ket{{\rangle}}        %
+\newcommand\eps{{\epsilon}}        %
+\newcommand\E{\mathop{\mathbb{E}}\displaylimits}   %expected value
+\newcommand\Var{\mathop{\mathrm{Var}}\displaylimits}   %variance
+\newcommand{\ceil}[1]{{\lceil{#1}\rceil}}
+\newcommand{\floor}[1]{{\lfloor{#1}\rfloor}}
+\newcommand{\set}[1]{\ensuremath{\{#1\}}}
+\newcommand{\setsub}[2]{\ensuremath{\set{#1}_{#2}}}
+\def\bool{\set{0,1}}
+\newcommand{\angles}[1]{\langle #1 \rangle}
+\newcommand{\pair}[2]{\langle #1,#2 \rangle}
+\newcommand{\abs}[1]{\lvert#1\rvert}
+\newcommand{\Abs}[1]{\left\lvert#1\right\rvert}
+\newcommand{\nibf}[1]{\noindent \textbf{#1}}
+\newcommand{\mednibf}[1]{\medskip\noindent{\bf #1}}
+
+
+\newlength{\protowidth}
+\newcommand{\pprotocol}[5]{
+{\begin{figure*}[#4]
+\begin{center}
+\setlength{\protowidth}{.9\textwidth}
+\fbox{
+        \small
+        \hbox{\quad
+        \begin{minipage}{\protowidth}
+    \begin{center}
+    {\bf #1}
+    \end{center}
+        #5
+        \end{minipage}
+        \quad}
+        }
+        \caption{\label{#3} #2}
+\end{center}
+\vspace{-4ex}
+\end{figure*}
+} }
+
+
+\newenvironment{CompactEnumerate}[1][enumi]{
+  \begin{list}{\arabic{#1}.}{%
+      \usecounter{#1} %
+      \setlength{\topsep}{3pt}
+      \setlength{\itemsep}{1pt}
+      }}
+  {\end{list}}
+\newenvironment{CompactItemize}[1][enumi]{
+  \begin{list}{--}{%
+      \usecounter{#1}
+      \setlength{\topsep}{3pt}
+      \setlength{\itemsep}{1pt}
+      }}
+  {\end{list}}
+
+
+\newlength{\saveparindent}
+\setlength{\saveparindent}{\parindent}
+\newlength{\saveparskip}
+\setlength{\saveparskip}{\parskip}
+
+
+\newcounter{ctr}
+\newcounter{savectr}
+\newcounter{ectr}
+
+\newenvironment{tiret}{%
+\begin{list}{\hspace{1pt}\rule[0.5ex]{6pt}{1pt}\hfill}{\labelwidth=15pt%
+\labelsep=3pt \leftmargin=18pt \topsep=1pt%
+\setlength{\listparindent}{\saveparindent}%
+\setlength{\parsep}{\saveparskip}%
+\setlength{\itemsep}{1pt}}}{\end{list}}
+
+\newenvironment{eenum}{%
+\begin{list}{{\rm (\arabic{ctr}.\arabic{ectr})}\hfill}{\usecounter{ectr}%
+\labelwidth=28pt\labelsep=6pt \leftmargin=34pt \topsep=0pt%
+\setlength{\listparindent}{\saveparindent}%
+\setlength{\parsep}{\saveparskip}%
+\setlength{\itemsep}{2pt} }}{\end{list}}
+
+\newenvironment{newenum}{%
+\begin{list}{{\rm \arabic{ctr}.}\hfill}{\usecounter{ctr}\labelwidth=17pt%
+\labelsep=6pt \leftmargin=23pt \topsep=.5pt%
+\setlength{\listparindent}{\saveparindent}%
+\setlength{\parsep}{\saveparskip}%
+\setlength{\itemsep}{5pt} }}{\end{list}}
+
+\newenvironment{neweenum}{%
+\begin{list}{{\rm \arabic{ctr}.\arabic{ectr}}\hfill}{\usecounter{ectr}%
+\labelwidth=28pt\labelsep=4pt \leftmargin=34pt \topsep=0pt%
+\setlength{\listparindent}{\saveparindent}%
+\setlength{\parsep}{\saveparskip}%
+\setlength{\itemsep}{2pt} }}{\end{list}}
+
+\newenvironment{parenum}{%
+\begin{list}{{\rm (\arabic{ctr})}\hfill}{\usecounter{ctr}\labelwidth=17pt%
+\labelsep=6pt \leftmargin=23pt \topsep=.5pt%
+\setlength{\listparindent}{\saveparindent}%
+\setlength{\parsep}{\saveparskip}%
+\setlength{\itemsep}{5pt} }}{\end{list}}
+
+% general
+\def\csp{\ensuremath{k}}
+% OT Extension
+\def\SS{\ensuremath{\mathcal{S}}}
+\def\SSS{\ensuremath{\mathcal{S}^*}}
+\def\RR{\ensuremath{\mathcal{R}}}
+\def\ilen{\ensuremath{\ell}}
+\def\numinst{\ensuremath{m}}
+\def\sec{\ensuremath{s}}
+\newcommand{\otpar}[2]{\ensuremath{\mathrm{OT}_{#2}^{#1}}}
+\def\ot{\otpar{}{}}
+\def\otkk{\otpar{\csp}{\csp}}
+\def\otmk{\otpar{\numinst}{\csp}}
+\def\otkm{\otpar{\csp}{\numinst}}
+\def\otnm{\otpar{n}{\numinst}}
+\def\otnk{\otpar{n}{\csp}}
+\def\otml{\otpar{\numinst}{\ilen}}
+\newcommand{\lotpar}[2]{\ensuremath{\mathrm{OTN}_{#2}^{#1}}}
+\def\lot{\lotpar{}{}}
+\def\lotml{\lotpar{\numinst}{\ilen}}
+% iknp
+\def\Q{\ensuremath{Q}}
+\def\bq{\ensuremath{\boldsymbol{q}}}
+\def\br{\ensuremath{\boldsymbol{r}}}
+\def\qi{\ensuremath{\bq^i}}
+\def\qj{\ensuremath{\bq_j}}
+\def\Tz{\ensuremath{T_0}}
+\def\To{\ensuremath{T_1}}
+\def\bt{\ensuremath{\boldsymbol{t}}}
+\def\tjz{\ensuremath{\bt_{0,j}}}
+\def\tjo{\ensuremath{\bt_{1,j}}}
+\def\tiz{\ensuremath{\bt^i_0}}
+\def\tio{\ensuremath{\bt^i_1}}
+\def\concat{\ensuremath{\|}}
+\def\bs{\ensuremath{\boldsymbol{s}}}
+\def\bss{\ensuremath{\bs^*}}
+\def\sec{\ensuremath{\bs}}
+\def\seci{\ensuremath{{s_i}}}
+\def\ri{\ensuremath{r_i}}
+\def\rj{\ensuremath{{r_j}}}
+\def\ro{\ensuremath{r_1}}
+\def\rm{\ensuremath{r_\numinst}}
+% gen iknp
+%\def\Del{\ensuremath{\Delta}}
+\def\Del{\ensuremath{\mathcal{C}}}
+%\newcommand{\delpar}[1]{\ensuremath{\mathbf{\delta}_{#1}}}
+\newcommand{\delpar}[1]{\ensuremath{\boldsymbol{c}_{#1}}}
+\def\delz{\delpar{0}}
+\def\delo{\delpar{1}}
+\def\xiz{\ensuremath{x_{i,0}}}
+\def\xjz{\ensuremath{x_{j,0}}}
+\def\xib{\ensuremath{x_{i,b}}}
+\def\xij{\ensuremath{x_{i,j}}}
+\def\yib{\ensuremath{y_{i,b}}}
+\def\sib{\ensuremath{u_{i,b}}}
+\def\zi{\ensuremath{z_i}}
+\def\yiri{\ensuremath{y_{i,\ri}}}
+\def\siz{\ensuremath{u_{i,0}}}
+\def\sio{\ensuremath{u_{i,1}}}
+\def\yiz{\ensuremath{y_{i,0}}}
+\def\yio{\ensuremath{y_{i,1}}}
+\def\siri{\ensuremath{u_{i,\ri}}}
+\def\yjz{\ensuremath{y_{j,0}}}
+\def\yjr{\ensuremath{y_{j,r}}}
+\def\yji{\ensuremath{y_{j,i}}}
+\def\yjn{\ensuremath{y_{j,{\L-1}}}}
+\def\xjn{\ensuremath{x_{j,{\L-1}}}}
+\def\xin{\ensuremath{x_{i,{\L-1}}}}
+\def\xjr{\ensuremath{x_{j,r}}}
+\def\xji{\ensuremath{x_{j,i}}}
+\def\xio{\ensuremath{x_{i,1}}}
+\def\xjo{\ensuremath{x_{j,1}}}
+\def\yjo{\ensuremath{y_{j,1}}}
+\def\yjrj{\ensuremath{y_{j,\rj}}}
+\def\xjrj{\ensuremath{x_{j,\rj}}}
+\def\xiri{\ensuremath{x_{i,\ri}}}
+\def\xj{\ensuremath{x_j}}
+\def\zj{\ensuremath{z_j}}
+\newcommand{\bwand}[2]{\ensuremath{#1 \odot #2}}
+%1-out-of-L
+\def\L{\ensuremath{N}}
+\def\logL{\ensuremath{n}}
+\def\delL{\delpar{\L-1}}
+\def\delz{\delpar{0}}
+
+\def\delr{\delpar{r}}
+\def\delrj{\delpar{\rj}}
+
+% for our paper, we use code C instead of codewords, so redefine delr. 
+\newcommand\Code{\ensuremath{C}}
+\renewcommand\delr{\ensuremath{\Code(r)}}
+\renewcommand\delrj{\ensuremath{\Code(r_j)}}
+\def\delrr{\Code(r')}
+\def\delwji{\Code(w_{j,i})}
+
+
+
+\def\delij{\delpar{i,j}}
+\def\deli{\delpar{i}}
+\def\delj{\delpar{j}}
+
+%%%%%%%%%%%%%
+% Coding theory stuff
+
+\def\bc{\ensuremath{\boldsymbol{c}}}
+\def\codesize{\ensuremath{q}}
+\def\wordlen{\ensuremath{p}}
+\def\seppar{\ensuremath{d}}
+\newcommand{\bcind}[1]{\ensuremath{\bc_{#1}}}
+\def\bcaa{\bcind{\aa}}
+\def\bcbb{\bcind{\bbb}}
+\def\bcz{\bcind{0}}
+\def\bcn{\bcind{\codesize}}
+\def\bci{\bcind{i}}
+\def\bcj{\bcind{j}}
+\def\CC{\ensuremath{\mathcal{C}}}
+\def\logcsp{\ensuremath{n}}
+
+\def\walhad{\ensuremath{\mathrm{WH}(\alpha)}}
+\newcommand{\whx}[1]{\ensuremath{\mathrm{WH}(#1)}}
+
+\def\fc{\ensuremath{\chi}}
+\def\qq{\ensuremath{q}}
+\def\fdom{\ensuremath{\bool^\qq}}
+\def\aa{\ensuremath{\alpha}}
+\def\bbb{\ensuremath{\beta}}
+\def\fcb{\ensuremath{\fc_\beta}}
+\def\fca{\ensuremath{\fc_\aa}}
+\def\fbca{\ensuremath{\mathrm{WH}_\aa}}
+\def\fCC{\ensuremath{\widetilde \CC}}
+
+%% Standardizing
+%\def\L{\ensuremath{\csp}}
+\def\N{\ensuremath{n}}
+\def\whtext{Walsh-Hadamard}
+\def\logcsp{\ensuremath{{\log\csp}}}
+\def\wh{\ensuremath{\mathrm{WH}}}
+\def\cwh{\ensuremath{\mathcal{C}_\wh}}
+\def\cwhk{\ensuremath{\cwh^\csp}}
+
+\def\L{\ensuremath{\N}}
+\def\logL{\ensuremath{{\log \N}}}
+\renewcommand{\lotpar}[2]{\ensuremath{{\L\choose 1}\mbox{-}\mathrm{OT}_{#2}^{#1}}}
+
+\def\delk{\delpar{\csp-1}}
+
+% PSI stuff
+\newcommand{\msf}[1]{\ee{\mathsf{#1}}}
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,288 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Common">
+      <UniqueIdentifier>{359cc1cc-4102-4809-a1b7-e2caa2a3636c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Crypto">
+      <UniqueIdentifier>{6c565298-e3cd-46bb-ae95-92da3ac58263}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OT">
+      <UniqueIdentifier>{027acd13-01ed-4769-97d7-c9f831a8adc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\OT\tools">
+      <UniqueIdentifier>{a05faa47-09f3-49b9-a243-0ba12f7c4c91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PSI">
+      <UniqueIdentifier>{2c805d83-f4ab-4d62-955f-b15c2a623158}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Common">
+      <UniqueIdentifier>{b0ad03cd-1191-4a73-b17c-7826ae55a2ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Crypto">
+      <UniqueIdentifier>{5a130c82-f1f4-46dd-a138-71fdde95e3dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OT">
+      <UniqueIdentifier>{e224d9db-a72e-43dd-ac72-f1de6f402b5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\PSI">
+      <UniqueIdentifier>{19a51d51-a957-4430-8afe-e1b559739ec3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\OT\Tools">
+      <UniqueIdentifier>{c78622c2-1a3d-464a-8809-58ffc3acaca4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Network">
+      <UniqueIdentifier>{a2dd4791-8f4b-4dac-855c-078730828278}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Network">
+      <UniqueIdentifier>{6d429df5-5441-472c-b3e8-d1c8c526c6f1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Crypto\AES.cpp">
+      <Filter>Source Files\Crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="Crypto\Commit.cpp">
+      <Filter>Source Files\Crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="Crypto\PRNG.cpp">
+      <Filter>Source Files\Crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="Crypto\sha1.cpp">
+      <Filter>Source Files\Crypto</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\BitVector.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\ByteStream.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Defines.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Timer.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\Channel.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Log.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="PSI\SimpleHasher.cpp">
+      <Filter>Source Files\PSI</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\Base\naor-pinkas.cpp">
+      <Filter>Source Files\OT</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\Base\crypto\crypto.cpp">
+      <Filter>Source Files\OT</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\Base\crypto\ecc-pk-crypto.cpp">
+      <Filter>Source Files\OT</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\Base\Math\bigint.cpp">
+      <Filter>Source Files\OT\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\Base\Math\DMC.cpp">
+      <Filter>Source Files\OT\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\Base\Math\modp.cpp">
+      <Filter>Source Files\OT\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\Base\Math\Zp_Data.cpp">
+      <Filter>Source Files\OT\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\Base\PvwBaseOT.cpp">
+      <Filter>Source Files\OT</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\Base\Tools.cpp">
+      <Filter>Source Files\OT\Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\BtAcceptor.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\BtChannel.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\BtEndpoint.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Network\BtIOService.cpp">
+      <Filter>Source Files\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\BitIterator.cpp">
+      <Filter>Source Files\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\Base\BaseOT.cpp">
+      <Filter>Source Files\OT</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\BaseSSOT.cpp">
+      <Filter>Source Files\OT</Filter>
+    </ClCompile>
+    <ClCompile Include="PSI\BopPsiReceiver.cpp">
+      <Filter>Source Files\PSI</Filter>
+    </ClCompile>
+    <ClCompile Include="PSI\CuckooHasher.cpp">
+      <Filter>Source Files\PSI</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\IknpOtExtReceiver4k.cpp">
+      <Filter>Source Files\PSI</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\IknpOtExtSender4k.cpp">
+      <Filter>Source Files\PSI</Filter>
+    </ClCompile>
+    <ClCompile Include="PSI\RopPsiSender.cpp">
+      <Filter>Source Files\PSI</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\SSOTReceiver.cpp">
+      <Filter>Source Files\PSI</Filter>
+    </ClCompile>
+    <ClCompile Include="OT\SSOTSender.cpp">
+      <Filter>Source Files\PSI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Common\ByteStream.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\BitVector.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Defines.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Timer.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\mpsc_queue.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Exceptions.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Crypto\Commit.h">
+      <Filter>Header Files\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="Crypto\AES.h">
+      <Filter>Header Files\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="Crypto\PRNG.h">
+      <Filter>Header Files\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="Crypto\sha1.h">
+      <Filter>Header Files\Crypto</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\OTExtInterface.h">
+      <Filter>Header Files\OT</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Channel.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\Endpoint.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Log.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\ArrayView.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="PSI\SimpleHasher.h">
+      <Filter>Header Files\PSI</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\Base\typedefs.h">
+      <Filter>Header Files\OT</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\Base\crypto\crypto.h">
+      <Filter>Header Files\OT</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\Base\crypto\ecc-pk-crypto.h">
+      <Filter>Header Files\OT</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\Base\naor-pinkas.h">
+      <Filter>Header Files\OT</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\Base\crypto\pk-crypto.h">
+      <Filter>Header Files\OT</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\Base\Math\bigint.h">
+      <Filter>Header Files\OT\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\Base\Math\DMC.h">
+      <Filter>Header Files\OT\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\Base\Math\modp.h">
+      <Filter>Header Files\OT\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\Base\Math\Zp_Data.h">
+      <Filter>Header Files\OT\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\Base\PvwBaseOT.h">
+      <Filter>Header Files\OT</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\Base\Tools.h">
+      <Filter>Header Files\OT\tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\BtAcceptor.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\BtChannel.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\BtEndpoint.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\BtIOService.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Network\BtSocket.h">
+      <Filter>Header Files\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\BitIterator.h">
+      <Filter>Header Files\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\Base\BaseOT.h">
+      <Filter>Header Files\OT</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\BaseSSOT.h">
+      <Filter>Header Files\OT</Filter>
+    </ClInclude>
+    <ClInclude Include="PSI\BopPsiReceiver.h">
+      <Filter>Header Files\PSI</Filter>
+    </ClInclude>
+    <ClInclude Include="PSI\BopPsiSender.h">
+      <Filter>Header Files\PSI</Filter>
+    </ClInclude>
+    <ClInclude Include="PSI\CuckooHasher.h">
+      <Filter>Header Files\PSI</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\IknpOtExtReceiver4k.h">
+      <Filter>Header Files\PSI</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\IknpOtExtSender4k.h">
+      <Filter>Header Files\PSI</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\SSOTExtInterface.h">
+      <Filter>Header Files\PSI</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\SSOTReceiver.h">
+      <Filter>Header Files\PSI</Filter>
+    </ClInclude>
+    <ClInclude Include="OT\SSOTSender.h">
+      <Filter>Header Files\PSI</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
