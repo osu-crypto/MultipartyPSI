@@ -27,7 +27,7 @@
 
 \iffullversion
 
-    \title{Multi-Party Private Set Intersection}
+\title{Practical Collusion-free Multi-party Private Set Intersection}
 
     \author{
         Vladimir Kolesnikov\thanks{Bell Labs, \textsf{kolesnikov@research.bell-labs.com}} \and
@@ -37,7 +37,7 @@
 
 \else
 
-\title{Multi-party Private Set Intersection}
+\title{Practical Collusion-free Multi-party Private Set Intersection}
     \numberofauthors{3}
     \author{
     \alignauthor Vladimir Kolesnikov\\
@@ -107,11 +107,12 @@ We propose a PSI protocol for multi parties....
 
 
 \input{intro}
+\input{relwork}
 \input{overview}
 \input{prelims}
-\input{oprf}
-\input{3psi}
-\input{npsi}
+\input{mainCons}
+\input{sub3psi} %subsection of main contruction
+\input{subnpsi} %subsection of main contruction
 \input{implementation}
 
 
@@ -132,9 +133,11 @@ We propose a PSI protocol for multi parties....
     \bibliography{bib,abbrev2,crypto_crossref}
 \else
 
-    {\small
-    \bibliographystyle{acm}
+    %{
+		%\small
+    %\bibliographystyle{acm}
+		\bibliographystyle{alpha}
     \bibliography{bib,abbrev2,crypto_crossref}
-    }
+    %}
 \fi
 \end{document}

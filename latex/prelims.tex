@@ -1,3 +1,55 @@
 \section{Technical Preliminaries}
 \label{sect:prelims}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Our \SSOT Variant}
+\subsubsection{Our \SSOT variant}
+\label{sec:ssotvar}
+\subsubsection{Our \SSOT functionality}
+\label{sec:ssotfunc}
+
+In \figureref{fig:ssotfunc} we formally describe the variant \SSOT functionality we achieve. The sender has $n$ pairs $\{x_i, y_i\}$, the receiver has $m$ strings $x^*_j$. For each $j \in [1,m]$, the SSOT functionality allows the receiver to learn the $y_i$ if $x^*_j=x_i$, otherwise he learns a random string $\$$ that is randomly chosen by the sender.
+
+\begin{figure}[htb]\centering
+\framebox{
+    \begin{minipage}{0.95\linewidth}
+        The functionality is parameterized by a \SSOT $F$, and two parties: a {\bf sender} and {\bf receiver}.
+
+        \medskip
+				On input $n$ pairs $(\{x_1, y_1\},\{x_2, y_2\}, \ldots, \{x_n, y_n\})$ from the receiver, 
+        On input $m$ strings $(x^*_1,x^*_2, \ldots, x^*_m)$ from the receiver, 
+        \begin{itemize}
+			\item Choose random strings: $r_1, r_2, \ldots, r_m$ and give these to the sender.
+        	\item Give $(y^*_1,y^*_2, \ldots, y^*_m)$ to the receiver, where $y^*_j=y_i$ if $x^*_j=x_i$; $y^*_j=r_j$ if $x^*_j \not \in \{x_1, x_2, \ldots, x_m \}$				
+				\end{itemize}
+
+    \end{minipage}
+}
+\caption{The \SSOT ideal functionality.}
+\label{fig:ssotfunc}
+\end{figure} 
+
+
+%%%%%%%%%%%
+\subsection{PSI }
+\subsubsection{PSI collusion}
+\subsubsection{PSI functionality}
+\label{sec:psifunc}
+In \figureref{fig:psifunc} we formally describe the PSI functionality.% we achieve. The sender has $n$ pairs $\{x_i, y_i\}$, the receiver has $m$ strings $x^*_j$. For each $j \in [1,m]$, the SSOT functionality allows the receiver to learn the $y_i$ if $x^*_j=x_i$, otherwise he learns a random string $\$$ that is randomly chosen by the sender.
+
+\begin{figure}[htb]\centering
+\framebox{
+    \begin{minipage}{0.95\linewidth}
+    \todo{.....} \\
+		\todo{...learn the intersection of $n$ sets, and nothing else..}  \\
+		\todo{.....} 
+    \end{minipage}
+}
+\caption{PSI ideal functionality.}
+\label{fig:psifunc}
+\end{figure} 
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:
