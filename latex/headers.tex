@@ -16,8 +16,11 @@
 \newcommand{\batchOPRF}{\textsf{BaRK-OPRF}\xspace}
 \hyphenation{BaRK-OPRF}
 
-\newcommand{\SSOT}{\todo{new} \textsf{SSOT}\xspace}
+\newcommand{\SSOT}{\colourblue{Private/Blind} \textsf{KS}\xspace}
 \hyphenation{SSOT}
+
+\newcommand{\KS}{\textsf{Private KS}\xspace}
+\hyphenation{KS}
 
 \newcommand{\Enc}{\mathsf{Enc}}
 \newcommand{\Dec}{\mathsf{Dec}}
@@ -97,6 +100,14 @@
     \textcolor{red}{#1}%
 }
 
+\newcommand{\colourblue}[1]{%
+	\mbox{}% prevent marginpar from being on previous paragraph
+	%    \marginpar{%
+	%        \colorbox{red!80!black}{\textcolor{white}{to-do}}%
+	%        \vspace*{-22pt}% hack!
+	%    }%
+	\textcolor{blue}{#1}%
+}
 
     \renewcommand{\topfraction}{0.9}    % max fraction of floats at top
     \renewcommand{\bottomfraction}{0.8} % max fraction of floats at bottom
