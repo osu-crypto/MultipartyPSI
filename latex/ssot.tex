@@ -24,9 +24,7 @@ The basic idea of the \SSOT construction is that the sender $\SS$ uses the outpu
 By adding on these above steps, $\RR$ knows function $M$ and the set $B$, he can compute $\tilde{sk^*}=M(sk^*)$, and always gets the string corresponding to his key. Note that if his search word is in the sender's set of keyword $\{sk_1, \ldots , sk_n\}$, then he can decrypt a \textit{right} cipher-text using $sk^*$, and get the \textit{real} payload. Otherwise, he decrypt a random string created by $\SS$.
 
 
-Moreover, we require an encryption scheme $\Enc$ one-time secure, \textit{i.e.}, for all $m, m'$, the distributions $\Enc(k,m)$ and $\Enc(k,m')$ (induced by random choice of $k$), are indistinguishable. 
-
-Our \SSOT protocol is presented in \figureref{fig:Cons1ssot}. 
+Moreover, for encryption scheme we require that for all $m$, the distribution $Enc(sk, m)$ (induced by random choice of $sk$), is pseudorandom. In other words,the encryption scheme is one-time secure. Our \SSOT protocol is presented in \figureref{fig:Cons1ssot}. 
 
 
 \begin{figure}[h]\centering
@@ -35,7 +33,7 @@ Our \SSOT protocol is presented in \figureref{fig:Cons1ssot}.
 			\noindent{
 				\\
 				{\sc Input of \SS:} \numinst\ pairs  
-				$\{ (x_0, p_0), \ldots, (x_{n-1}, p_{n-1}) \}$, and $\hat{p}$, where $x_i \in \{0,1\}^*$, $x_i \ne x_j$,  and $p_i,\hat{p} \in \{0,1\}^\ell$.
+				$\{ (x_0, p_0), \ldots, (x_{n-1}, p_{n-1}) \}$, where $x_i \in \{0,1\}^*$, $x_i \ne x_j$,  and $p_i \in \{0,1\}^\ell$.
 				
 				\medskip
 				
@@ -46,9 +44,9 @@ Our \SSOT protocol is presented in \figureref{fig:Cons1ssot}.
 				
 				{\sc Parameters:}
 				\begin{itemize}\addtolength{\itemsep}{-6pt}
-					\item  A \batchOPRF function $F$ with output length $\kappa$. 
+					\item  A \batchOPRF function $F_k$ with output length $\kappa$, where $k$ is random key.
 					\item A mapping function $M:\bool^\kappa \to \bool^m$, where $m=\floor{\log(n)}+1$ as defined above.
-						\item A $\kappa$-Hamming correlation-robust  $H:\bool^m \to \bool^\kappa$, 
+						\item A $\kappa$-RO hash  $H:\bool^m \to \bool^\kappa$, 
 					\item A suitable encryption scheme $\Enc$ as defined above.
 				\end{itemize}
 			}
@@ -57,20 +55,23 @@ Our \SSOT protocol is presented in \figureref{fig:Cons1ssot}.
 			
 			\begin{enumerate}
 				\addtocounter{enumi}{0}
-				\item $\forall$ $0\leq i < \L$, \SS\ computes $sk_i = F(x_i)$.
+				\item \SS\ and \RR\ run \batchOPRF
+				\begin{itemize}
+					\item \SS\ receives a random key $k$, 					
+					\item \RR\ receives $sk^*=F_k(x^*)$
+					\item $\forall$ $0\leq i < \L$, \SS\ computes $sk_i = F_k(x_i)$.
+				\end{itemize}
 
 				\item \SS\ chooses $m$ bit positions $B=\{b_1,  \ldots, b_m\}$, under which the $sk_i , i \in [0,\L],$ are distinct, sends it to \RR 
 				
-				\item $\forall$ $0\leq i < \L$, \SS\ computes $\tilde{sk}_{i} = M(sk_i)$, and chooses $2^m-n$ values $\tilde{sk}_{i}, i \in [\L+1, 2^m-\L]$ such that $2^m$ $\tilde{sk}_{i}$ are distinct.
-				
-				\item \SS\ chooses $\sec \from\bool^\csp$ at random. Let $\seci$ denote the $i$-th bit of \sec.
+				\item $\forall$ $0\leq i < \L$, \SS\ computes $\tilde{sk}_{i} = M(sk_i)$\\
+				$\forall$ $\L < i < 2^m$, \SS\ chooses $\tilde{sk}_{i} \from\bool^m$ at random such that all $2^m$ values $\tilde{sk}_{i}, i \in [0, 2^m-1]$ are distinct.				
 					
 				\item  $\forall$ $0\leq i < \L$, \SS\ computes $y_i = \Enc(sk_i, p_i)$
 				 \\$\forall$ $\L < i < 2^m$, \SS\ choose $y_i \from\bool^\kappa$ at random
-				 \\ $\forall$ $0\leq i < 2^m$, \SS\ sends $\{H(\tilde{sk}_{i}), y_i\}$ to \RR\
+				 \item $\forall$ $0\leq i < 2^m$, \SS\ sends $\{H(\tilde{sk}_{i}), y_i\}$ to \RR\
 				\item \RR\ receives $\{H(\tilde{sk}_{i}), y_i\}$, $i\in[2^\numinst]$ and does the following: 
 				\begin{itemize}
-					\item computes $sk^* = F(x^*)$
 					\item computes $\tilde{sk^*} = M(sk^*)$
 					\item find $i$ such that $H(\tilde{sk^*})= H(\tilde{sk_i})$
 					\item output $z=\Dec(sk^*, y_i)$

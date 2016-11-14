@@ -14,13 +14,13 @@ The main difference of our \SSOT functionality with the \KS\cite{TCC:FIPR05} fun
         The functionality is parameterized by a payload-length parameter $l$, and by two parties: a {\bf sender} and {\bf receiver}.
 
         \medskip
-				   On input $n$ pairs $\{ (x_1, p_1), \ldots, (x_{n}, p_{n}) \}$, $\hat{p}$ from the sender 
-				(where $x_i \in \{0,1\}^*$ are all distinct and $p_i, \hat{p} \in \{0,1\}^\ell$), \\
+				   On input $n$ pairs $\{ (x_1, p_1), \ldots, (x_{n}, p_{n}) \}$ from the sender 
+				(where $x_i \in \{0,1\}^*$ are all distinct and $p_i \in \{0,1\}^\ell$), \\
 				 On input $x^* \in \{0,1\}^*$ from the receiver:
 				\begin{itemize}
 					\item Sender receives no output.
 					\item If $x^* = x_i$ for some $i$, then give output $(n, p_i)$ to the receiver.
-					\item Otherwise give output $(n,\hat{p})$ to the receiver.
+					\item Otherwise give output $(n,\hat{p})$ to the receiver, where $\hat{p}$ depends on $x^*$ and is indistinguishable with all $p_i$
 				\end{itemize}
 
     \end{minipage}
@@ -37,8 +37,8 @@ In \figureref{fig:1ssotfunc} definition, the Receiver $\RR$ searches for a singl
 			The functionality is parameterized by a payload-length parameter $l$, and by two parties: a {\bf sender} and {\bf receiver}.
 			
 			\medskip
-			On input $n$ pairs $\{ (x_1, p_1), \ldots, (x_{n}, p_{n}) \}$, $m$ strings $\{ \hat{p_1}, \ldots, \hat{p_m} \}$ from the sender 
-			(where $x_i \in \{0,1\}^*$,$\hat{p_i} \in \{0,1\}^\ell$ are all distinct, and $p_i \in \{0,1\}^\ell$), \\
+			On input $n$ pairs $\{ (x_1, p_1), \ldots, (x_{n}, p_{n}) \}$ from the sender 
+			(where $x_i \in \{0,1\}^*$ are all distinct, and $p_i \in \{0,1\}^\ell$), \\
 			On input $m$ $\{x^*_1, \ldots, x^*_m\}$ from the receiver, (where $x_i \in \{0,1\}^*$):
 			\begin{itemize}
 				\item Sender receives no output.
@@ -46,7 +46,7 @@ In \figureref{fig:1ssotfunc} definition, the Receiver $\RR$ searches for a singl
 				\begin{itemize}
 					
 				\item if $x^*_j = x_i$ for some $i$, then give output $(n, p_i)$ to the receiver.
-				\item Otherwise give output $(n,\hat{p_j})$ to the receiver.
+				\item Otherwise give output $(n,\hat{p_j})$ to the receiver, where $\hat{p_j}$ depends on $x_j^*$ and is indistinguishable with all $p_i$
 			\end{itemize}
 			\end{itemize}
 			
