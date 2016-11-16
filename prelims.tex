@@ -1,0 +1,89 @@
+\section{Technical Preliminaries}
+\label{sect:prelims}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Our \SSOT Variant}
+\label{sec:ssotfunc}
+
+In this section we formally describe the variant \SSOT definition. In \SSOT, the sender $\SS$  has $n$ distinct keywords with $n$ corresponding payloads $(x_i, p_i)$ and one dummy payload $\hat{p}$ that have to be indistinguishable from $p_i$. The receiver $\RR$ has a \textit{search word} $x^*$. If there is a keyword of the pair that is equal to the \textit{search word}, $\RR$  would receives the corresponding payload. Otherwise, $\RR$'s output is the dummy payload $\hat{p}$ created by Sender $\SS$ and $\RR$ does not know what happened.
+
+The main difference of our \SSOT functionality with the \KS\cite{TCC:FIPR05} functionality is in that in \SSOT, $\SS$ also generate a dummy payload $\hat{p}$, and if the \textit{search word} is not in the set of the \textit{keyword}, $\RR$ receives the \textit{dummy} payload that is indistinguishable with the \textit{real} payload. In other words, unlike the \KS functionality\cite{TCC:FIPR05} in case that $\RR$ receives nothing if his \textit{search word} is not equal to any \textit{keyword} of $\SS$, in our \SSOT  $\RR$ always receives the secret string corresponding to his \textit{search word}.  The formal definition of our \SSOT is given in  
+\figureref{fig:1ssotfunc}. For the privacy, our \SSOT requires both parties learns no additional information beyond their output that are defined by the definition in \figureref{fig:1ssotfunc}. 
+
+
+\begin{figure}[htb]\centering
+\framebox{
+    \begin{minipage}{0.95\linewidth}
+        The functionality is parameterized by a payload-length parameter $l$, and by two parties: a {\bf sender} and {\bf receiver}.
+
+        \medskip
+				   On input $n$ pairs $\{ (x_1, p_1), \ldots, (x_{n}, p_{n}) \}$ from the sender 
+				(where $x_i \in \{0,1\}^*$ are all distinct and $p_i \in \{0,1\}^\ell$), \\
+				 On input $x^* \in \{0,1\}^*$ from the receiver:
+				\begin{itemize}
+					\item Sender receives no output.
+					\item If $x^* = x_i$ for some $i$, then give output $(n, p_i)$ to the receiver.
+					\item Otherwise give output $(n,\hat{p})$ to the receiver, where $\hat{p}$ depends on $x^*$ and is indistinguishable with all $p_i$
+				\end{itemize}
+
+    \end{minipage}
+}
+\caption{The \SSOT ideal functionality}
+\label{fig:1ssotfunc}
+\end{figure} 
+
+In \figureref{fig:1ssotfunc} definition, the Receiver $\RR$ searches for a single keyword. In fact, Receiver may repeat the key word procedure many times. To achieve an efficient solution in this case, we describe an extended version of \SSOT (called as \textit{non-adaptive}) that allows $\RR$ does multiple queries, but, at the same time. It means that our extended version limits these queries defined before running the procedure. An ideal functionality of the \textit{non-adaptive} \SSOT is given in \figureref{fig:nssotfunc}
+
+\begin{figure}[htb]\centering
+	\framebox{
+		\begin{minipage}{0.95\linewidth}
+			The functionality is parameterized by a payload-length parameter $l$, and by two parties: a {\bf sender} and {\bf receiver}.
+			
+			\medskip
+			On input $n$ pairs $\{ (x_1, p_1), \ldots, (x_{n}, p_{n}) \}$ from the sender 
+			(where $x_i \in \{0,1\}^*$ are all distinct, and $p_i \in \{0,1\}^\ell$), \\
+			On input $m$ $\{x^*_1, \ldots, x^*_m\}$ from the receiver, (where $x_i \in \{0,1\}^*$):
+			\begin{itemize}
+				\item Sender receives no output.
+				\item For each $ 1 \leq j \leq m$:
+				\begin{itemize}
+					
+				\item if $x^*_j = x_i$ for some $i$, then give output $(n, p_i)$ to the receiver.
+				\item Otherwise give output $(n,\hat{p_j})$ to the receiver, where $\hat{p_j}$ depends on $x_j^*$ and is indistinguishable with all $p_i$
+			\end{itemize}
+			\end{itemize}
+			
+		\end{minipage}
+	}
+	\caption{The non-adaptive $m$-times \SSOT ideal functionality}
+	\label{fig:nssotfunc}
+\end{figure} 
+
+
+
+%%%%%%%%%%%
+\subsection{PSI }
+\subsubsection{PSI collusion}
+\subsubsection{PSI functionality}
+\label{sec:psifunc}
+In \figureref{fig:psifunc} we formally describe the PSI functionality.% we achieve. The sender has $n$ pairs $\{x_i, y_i\}$, the receiver has $m$ strings $x^*_j$. For each $j \in [1,m]$, the SSOT functionality allows the receiver to learn the $y_i$ if $x^*_j=x_i$, otherwise he learns a random string $\$$ that is randomly chosen by the sender.
+
+\begin{figure}[htb]\centering
+\framebox{\begin{minipage}{0.95\linewidth}
+		
+		The functionality is parameterized by the number of parties $n$,  the size of the parties' sets $m$, and the bit-length of the parties' items $\sigma$. 
+		\begin{itemize}
+			\item On input $X_i=\{x^1_i, \ldots, x^m_i\} \subseteq\{0,1\}^\sigma$ from each party $P_i$.
+			
+			\item Give output $\bigcap\limits_{i=0}^n X_i$ to $P_i$.
+		\end{itemize}
+	\end{minipage}
+}
+\caption{PSI ideal functionality.}
+\label{fig:psifunc}
+\end{figure} 
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

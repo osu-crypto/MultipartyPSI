@@ -1,0 +1,42 @@
+\subsection{Private Set Intersection of Three or greater}
+\label{sect:npsi-construction}
+
+Similar to the scheme of the previous section ~\ref{sect:3psi-construction}, the following psi protocol is secure for more than three parties if we allow \todo{ $P*$ and one party $P_i$ colluded}. 
+
+\begin{figure}[h]\centering
+\framebox{
+    \begin{minipage}{0.95\linewidth}
+		\todo{.....} \\
+		\todo{.....} use \todo{\batchOPRF} and \todo{\SSOT .......} \\
+		\todo{.....} 
+    \end{minipage}
+}
+\caption{The PSI protcol for more than 3 parties in cases that we allow \todo{$P*$ and one party $P_i$ colluded}}
+\label{fig:npsicollud}
+\end{figure}
+
+\subsubsection{Problem of previous scheme}
+Problem is that $P^*$ and two neighbor parties of the party $P_i$ colludes, they can see incoming and outgoing values of $P_i$ \todo{........} To handle this problem, each party should have their own secret value. We describe a \todo{"`share distribution"' protocol} in Section ~\ref{sect:share}\todo{........}
+
+\subsubsection{Share distribution}
+\label{sect:share}
+
+		\todo{.....} \\
+		\todo{.....} call \todo{\SSOT} \\
+		\todo{.....} 
+
+\subsubsection{Collusion-free PSI protcol for more than 3 parties}
+\begin{figure}[h]\centering
+\framebox{
+    \begin{minipage}{0.95\linewidth}
+		\todo{.....} \\
+		\todo{.....} use \todo{\batchOPRF}, \todo{\SSOT}, and \todo{ShareDistribtion .......} \\
+		\todo{.....} 
+    \end{minipage}
+}
+\caption{The \bf{collusion-free} PSI protcol for more than 3 parties}
+\label{fig:npsicollud}
+\end{figure}
+
+\subsubsection{Optimization}
+Our multi-party protocol is \todo{\textbf{faster} if we allow upto $n-1$ parties colluded}, where $n$ is the number of parties in total. This is because we do not need to call \SSOT in the share distribution protocol  ~\ref{sect:share}

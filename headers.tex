@@ -1,0 +1,139 @@
+\usepackage{xspace,amsmath,amsfonts,amssymb,hyperref,tikz,multirow}
+
+
+\newcommand{\func}[1]{\ensuremath{\mathcal{F}_{\textsf{#1}}}\xspace}
+\newcommand{\adv}{\ensuremath{\mathcal{A}}\xspace}
+
+%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\etal}{{\sl et~al.~}}
+\newcommand{\eg}{{\sl e.g.}}
+\newcommand{\ie}{{\sl i.e.}}
+\newcommand{\apriori}{{\sl a~priori\/}\xspace}
+
+\newcommand{\secpar}{\kappa}
+
+\newcommand{\batchOPRF}{\textsf{BaRK-OPRF}\xspace}
+\hyphenation{BaRK-OPRF}
+
+\newcommand{\SSOT}{\colourblue{Private/Blind} \textsf{KS}\xspace}
+\hyphenation{SSOT}
+
+\newcommand{\KS}{\textsf{Private KS}\xspace}
+\hyphenation{KS}
+
+\newcommand{\Enc}{\mathsf{Enc}}
+\newcommand{\Dec}{\mathsf{Dec}}
+
+%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\rs}{\boldsymbol{r}}
+\newcommand{\ts}{\boldsymbol{t}}
+\newcommand{\us}{\boldsymbol{u}}
+\newcommand{\qs}{\boldsymbol{q}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\algo}[1]{\ensuremath{\text{\sf #1}}\xspace}
+\newcommand{\command}[1]{\ensuremath{\text{\sc #1}}\xspace}
+
+%%%%%%%%%%%%%%%%%%%%
+
+%% comment out for LNCS
+\iffullversion
+\usepackage{amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corol}[theorem]{Corollary}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{obs}[theorem]{Observation}
+\newtheorem{conj}[theorem]{Conjecture}
+\fi
+
+\newenvironment{proofof}[1]{\begin{proof}[Proof of #1.]}{\end{proof}}
+\newenvironment{proofsketch}{\begin{proof}[Proof Sketch]}{\end{proof}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\namedref}[2]{\hyperref[#2]{#1~\ref*{#2}}}
+%% if you don't like it, use this instead:
+%\newcommand{\namedref}[2]{#1~\ref{#2}}
+\newcommand{\chapterref}[1]{\namedref{Chapter}{#1}}
+\newcommand{\sectionref}[1]{\namedref{Section}{#1}}
+\newcommand{\theoremref}[1]{\namedref{Theorem}{#1}}
+\newcommand{\propositionref}[1]{\namedref{Proposition}{#1}}
+\newcommand{\definitionref}[1]{\namedref{Definition}{#1}}
+\newcommand{\corollaryref}[1]{\namedref{Corollary}{#1}}
+\newcommand{\obsref}[1]{\namedref{Observation}{#1}}
+\newcommand{\lemmaref}[1]{\namedref{Lemma}{#1}}
+\newcommand{\claimref}[1]{\namedref{Claim}{#1}}
+\newcommand{\figureref}[1]{\namedref{Figure}{#1}}
+\newcommand{\subfigureref}[2]{\hyperref[#1]{Figure~\ref*{#1}#2}}
+\newcommand{\equationref}[1]{\namedref{Equation}{#1}}
+\newcommand{\appendixref}[1]{\namedref{Appendix}{#1}}
+
+
+\definecolor{darkred}{rgb}{0.5, 0, 0} 
+\definecolor{darkgreen}{rgb}{0, 0.5, 0} 
+\definecolor{darkblue}{rgb}{0,0,0.5} 
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=darkred,
+    citecolor=darkgreen,
+    urlcolor=darkblue   
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\todo}[1]{%
+    \mbox{}% prevent marginpar from being on previous paragraph
+%    \marginpar{%
+%        \colorbox{red!80!black}{\textcolor{white}{to-do}}%
+%        \vspace*{-22pt}% hack!
+%    }%
+    \textcolor{red}{#1}%
+}
+
+\newcommand{\colourblue}[1]{%
+	\mbox{}% prevent marginpar from being on previous paragraph
+	%    \marginpar{%
+	%        \colorbox{red!80!black}{\textcolor{white}{to-do}}%
+	%        \vspace*{-22pt}% hack!
+	%    }%
+	\textcolor{blue}{#1}%
+}
+
+    \renewcommand{\topfraction}{0.9}    % max fraction of floats at top
+    \renewcommand{\bottomfraction}{0.8} % max fraction of floats at bottom
+
+
+    %   Parameters for TEXT pages (not float pages):
+    \setcounter{topnumber}{2}
+    \setcounter{bottomnumber}{2}
+    \setcounter{totalnumber}{4}     % 2 may work better
+    \setcounter{dbltopnumber}{2}    % for 2-column pages
+    \renewcommand{\dbltopfraction}{0.9} % fit big float above 2-col. text
+    \renewcommand{\textfraction}{0.07}  % allow minimal text w. figs
+    %   Parameters for FLOAT pages (not text pages):
+    \renewcommand{\floatpagefraction}{0.7}      % require fuller float pages
+        % N.B.: floatpagefraction MUST be less than topfraction !!
+    \renewcommand{\dblfloatpagefraction}{0.7}   % require fuller float pages
+
+
+
+\newif\ifsubmission
+\submissionfalse
+
+\ifsubmission
+  \newcommand{\ch}[1]{#1}
+  \newcommand{\del}[1]{}
+\else
+  \newcommand{\del}[1]{\textcolor{magenta}{[to be deleted: {\em {#1}}]}}
+  \newcommand{\ch}[1]{\textcolor{blue}{#1}} 
+\fi

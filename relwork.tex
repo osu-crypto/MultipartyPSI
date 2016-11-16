@@ -1,0 +1,78 @@
+%%% Local Variables:
+%%% TeX-master: "main"
+%%% End:
+% !TEX root = main.tex
+\section{Related work}
+\label{sect:relwork}
+
+\subsection{Oblivious transfer}
+\todo{need to paraphrase}
+
+%As mentioned in Section~\ref{sect:intro}, given its critical importance in secure computation, the IKNP OT extension has a surprisingly short list of follow up improvements, extensions and generalizations. 
+%
+%Most relevant prior work for us is the KK protocol~\cite{C:KolKum13}, which views the  IKNP OT from a new angle and presents a framework generalizing IKNP.  More specifically, under the hood, players in the IKNP protocol encode Receiver's selection bit $b$ as a repetition string of $k$ copies of $b$.  KK generalized this and allowed the use of an error-correcting code (ECC) with large distance as the selection bit encoding.  For a code consisting of $n$ codewords, this allowed to do $1$-out of-$n$ OT with consuming a single row of the OT extension matrix.
+%%In this work, we take the coding-theoretic perspective to the extreme.  We observe that we never need to decode codewords, and by using (pseudo-)random codes we are able to achieve what amounts to a 1-out-of-poly OT by consuming a single row of the OT matrix, which for the same security guarantee is only about $3.5\times$ longer than in the original IKNP protocol.
+
+%Our work is strictly in the semi-honest security model. Other work on OT extension extends the IKNP protocol to the malicious model~\cite{EC:ALSZ15,C:KelOrsSch15} and the PVC (publicly verifiable covert) model~\cite{AC:KolMal15}.
+
+\subsection{Oblivious PRF}
+\paragraph{Oblivious PRF} 
+%\sloppypar 
+
+%\todo{need to paraphrase}
+%
+%Oblivious pseudorandom functions were introduced by Freedman, Ishai, Pinkas, \& Reingold~\cite{TCC:FIPR05}. In general, the most efficient prior protocols for OPRF require expensive public-key operations because they are based on algebraic PRFs.
+%For example, an OPRF of \cite{TCC:FIPR05} is based on the Naor-Reingold PRF~\cite{NaoRei04} and therefore requires exponentiations. Furthermore, it requires a number of OTs proportional to the bit-length of the PRF input. 
+%The protocol of \cite{EC:CamNevShe07} constructs an OPRF from unique blind signature schemes.
+%The protocol of \cite{TCC:JarLiu09} obliviously evaluates a variant of the Dodis-Yampolskiy PRF~\cite{PKC:DodYam05} and hence requires exponentiations (as well as other algebraic encryption components to facilitate the OPRF protocol).
+
+\paragraph{\batchOPRF functionality}
+
+
+In \figureref{fig:oprf} we formally describe the variant OPRF functionality \cite{CCS:KKRT16}. It generates $m$ instances of the PRF with related keys, and allows the receiver to learn the (relaxed) output on one input per key.
+
+\begin{figure}[htb]\centering
+\framebox{
+    \begin{minipage}{0.95\linewidth}
+        The functionality is parameterized by a relaxed PRF $F$, a number $m$ of instances, and two parties: a {\bf sender} and {\bf receiver}.
+
+        \medskip
+
+        On input $(r_1, \ldots, r_m)$ from the receiver, 
+        \begin{itemize}
+			\item Choose random components for seeds to the PRF: $k^*, k_1, \ldots, k_m$ and give these to the sender.
+            \item Give $\widetilde F( (k^*,k_1), r_1), \ldots, \widetilde F((k^*,k_m), r_m)$ to the receiver.
+        \end{itemize}
+
+    \end{minipage}
+}
+\caption{Batched, related-key OPRF (\batchOPRF) ideal functionality.}
+\label{fig:oprf}
+\end{figure}
+\subsection{Private Keyword Search }
+\label{sec:KS}
+
+\subsection{Private set intersection}              
+\subsubsection{Two-Party private set intersection}
+%Oblivious PRFs have many applications, but in this paper we explore in depth the application to private set intersection (PSI).
+%We consider only the semi-honest security model.  Our PSI protocol is
+%most closely related to that of Pinkas et
+%al.~\cite{DBLP:conf/uss/Pinkas0SZ15}, which is itself an optimized
+%variant of a previous protocol of~\cite{DBLP:conf/uss/Pinkas0Z14}. We describe this protocol in great detail in \sectionref{sec:psi}.
+%
+%We refer the reader to \cite{DBLP:conf/uss/Pinkas0Z14} for an overview of the many different protocol paradigms for PSI. As we have mentioned, the OT-based protocols have proven to be the fastest in practice. We do, however, point out that the OT-based protocols do not have the lowest {\em communication} cost. In settings where computation is not a factor, but communication is at a premium, the best protocols are those in the Diffie-Hellman paradigm introduced in~\cite{DBLP:conf/sigecom/HubermanFH99}. In the semi-honest version of these protocols, each party sends only $2n$ group elements, where $n$ is the number of items in each set. However, these protocols require a number of exponentiations proportional to the number of items, making their performance slow in practice. Concretely, \cite{DBLP:conf/uss/Pinkas0SZ15} found Diffie-Hellman-based protocols to be over $200\times$ slower than the OT-based ones.
+%
+%While we closely follow the paradigm of \cite{DBLP:conf/uss/Pinkas0Z14}, we abstract parts of their protocol in the language of oblivious PRFs (OPRF). The connection between OPRF and PSI was already pointed out in \cite{TCC:FIPR05}. However, the most straightforward way of using OPRF to achieve PSI requires an OPRF protocol in which the receiver can evaluate the PRF on many inputs, whereas our OPRF allows only a single evaluation point for the receiver. OPRFs have been used for PSI elsewhere, generally in the malicious adversarial model \cite{TCC:JarLiu09,JC:HazLin10,TCC:Hazay15}.
+
+
+\todo{describe PSI protocol[CCS:KKRT16]}
+
+
+\subsubsection{Multi-Party private set intersection}
+Privacy-preserving Set Operations \cite{C:KLD05}
+
+Multi-Party Privacy-Preserving Set Intersection with
+Quasi-Linear Complexity \cite{DBLP:journals/ieicet/CheonJS12}
+
+Scaling Private Set Intersection to Billion-Element Sets \cite{KMES14}
+
