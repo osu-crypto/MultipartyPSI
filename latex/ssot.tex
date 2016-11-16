@@ -144,7 +144,7 @@ According the privacy of the \batchOPRF protocols~\cite{CCS:KKRT16}, it is trivi
  	
  \end{itemize}
 
-To prove that this simulated view is indistinguishable from the real one, we first consider the value that \SS\ uses as a key to $\Enc$. This encrypted key is the output of \batchOPRF, thus it is a pseudorandom string. However, the protocol also gives knowledge of the RO hash of $m$ bit string of the key as $H(M( sk^*))$. Since the output length of \batchOPRF is $\sigma=\kappa+m$ in our protocol, probability for \RR\ learning the key is $1/2^\kappa$. Therefore, choosing $m$ bit positions in step 2 can be simulated independently on the input of $\SS$. In other words, step 1(a), step 2, and step 6(a) are perfectly simulated.
+To prove that this simulated view is indistinguishable from the real one, we first consider the value that \SS\ uses as a key to $\Enc$. This encrypted key is the output of \batchOPRF, thus it is a pseudorandom string. However, the protocol also gives knowledge of the RO hash of $m$ bit string of the key as $H(M(sk_i))$. Since the output length of \batchOPRF is $\sigma=\kappa+m$ in our protocol, and we assume that $H(M(sk_i))$ leaks $m$ bit of the key $sk$, the probability for \RR\ learning the $\SS$'s key is $1/2^\kappa$. Therefore, choosing $m$ bit positions in step 2 can be simulated independently on the input of $\SS$. In other words, step 1(a), step 2, and step 6(a) are perfectly simulated.
 
 Now, consider the encrypted scheme $\Enc$,  we require the distribution of $\Enc$ is pseudorandom, thus the real view is indistinguishable from the one in which value of the form  $\Enc(sk_i, p_i)$ in step 4(a) are replaced with random string in step 4(b). 
 
