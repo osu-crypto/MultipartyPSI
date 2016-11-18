@@ -1,3 +1,32 @@
 \section{Technical Overview of Our Results}
 \label{sect:overview}
 
+\subsection{Programmable (Oblivious) PRFs}
+
+\renewcommand{\P}{\mathcal{P}}
+
+Let $\P$ be a set of points $\{ (x_i, y_i) \}$. A {\bf programmable PRF} $F$ satisfies two properties, informally:
+\begin{itemize}
+    \item Programmability: the output of $F$ will agree with the points $\P$, hence: $F(\P,k, x_i) = y_i$.
+    \item Pseudorandomness: When the $y_i$ values and key $k$ are chosen uniformly at random, then oracle access to $F(\P,k, \cdot)$ is indistinguishable from a random function. The actual definition has many caveats (see below), but the main spirit is that $F$ is pseudorandom.
+\end{itemize}
+
+An {\bf oblivious programmable PRF} protocol is a two-party protocol with the following behavior. The {\em sender} has a set of points $\P = \{ (x_i, y_i) \}$, and the receiver has a value $x^*$. The sender learns a PPRF key $k$, while the receiver learns $F(\P,k,x^*)$. Most importantly, the receiver does not learn anything about the programming set $\P$ (neither the $x_i$'s nor the $y_i$'s).
+
+\paragraph{Caveats, disclaimers}
+Our actual construction achieves properties that are slightly weaker than informally stated above. However, all of these relaxed notions are sufficent for our eventual application to PSI.
+\begin{itemize}
+
+    \item In the oblivious PPRF protocol, the receiver learns slightly more than $F(\P,k,x^*)$. This is in line with previous OPRF protocols \cite{xx,xx}. To formalize this, we say that the receiver learns a {\em relaxed PRF output} $\tilde F(\P,k,x^*)$, where: (1) the ``true'' output $F(\P,k,x^*)$ can be computed from the relaxed output, and (2) the pseudorandomness of $F$ holds with respect to an adversary who queries $\tilde F$. That is, outputs of $F$ look random to an adversary who learns some outputs of $\tilde F$. In the context of OPPRF, the relaxed output should also leak nothing about the programmed points $\P$.
+
+    \item We require the pseudorandomness property to hold only against a bounded number of queries, and for adversaries who make a single query to the {\em relaxed} PRF $\tilde F$. Namely, for fixed $m$, an adversary who learns $\tilde F(\P,k,v^*)$ cannot distinguish $F(\P,k,v_1), \ldots, F(\P,k,v_m)$ from random (for any $\{ v_1, \ldots, v_m \} \not\ni v^*$). The parameters of the OPPRF depend on the bound $m$, which is a function of how OPPRF is used in an application.
+
+    \item Our protocol generates many instances of OPPRF, each one with a different key. However, the keys are related. Specifically, we can write the key $k_i$ from the $i$th instance as $k_i = (k^*, k'_i)$, where $k^*$ is common to all instances. We require a PPRF that is secure in the presence of such related keys. Indeed, the PPRF that we use has this property.
+
+\end{itemize}
+
+
+
+\subsection{Application to multi-party PSI}
+
+We consider the problem of private set intersection among many parties, in the semi-honest model.
