@@ -8,7 +8,7 @@
 Let $\P$ be a set of points $\{ (x_i, y_i) \}$. A {\bf programmable PRF} $F$ satisfies two properties, informally:
 \begin{itemize}
     \item Programmability: the output of $F$ will agree with the points $\P$, hence: $F(\P,k, x_i) = y_i$.
-    \item Pseudorandomness: When the $y_i$ values and key $k$ are chosen uniformly at random, then oracle access to $F(\P,k, \cdot)$ is indistinguishable from a random function. The actual definition has many caveats (see below), but the main spirit is that $F$ is pseudorandom.
+    \item Pseudorandomness: When the \todo{$x_i$ ?} values and key $k$ are chosen uniformly at random, then oracle access to $F(\P,k, \cdot)$ is indistinguishable from a random function. The actual definition has many caveats (see below), but the main spirit is that $F$ is pseudorandom.
 \end{itemize}
 
 An {\bf oblivious programmable PRF} protocol is a two-party protocol with the following behavior. The {\em sender} has a set of points $\P = \{ (x_i, y_i) \}$, and the receiver has a value $x^*$. The sender learns a PPRF key $k$, while the receiver learns $F(\P,k,x^*)$. Most importantly, the receiver does not learn anything about the programming set $\P$ (neither the $x_i$'s nor the $y_i$'s).

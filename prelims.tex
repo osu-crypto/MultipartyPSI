@@ -5,58 +5,52 @@
 \subsection{Our \SSOT Variant}
 \label{sec:ssotfunc}
 
-In this section we formally describe the variant \SSOT definition. In \SSOT, the sender $\SS$  has $n$ distinct keywords with $n$ corresponding payloads $(x_i, p_i)$ and one dummy payload $\hat{p}$ that have to be indistinguishable from $p_i$. The receiver $\RR$ has a \textit{search word} $x^*$. If there is a keyword of the pair that is equal to the \textit{search word}, $\RR$  would receives the corresponding payload. Otherwise, $\RR$'s output is the dummy payload $\hat{p}$ created by Sender $\SS$ and $\RR$ does not know what happened.
+In this section we formally describe the variant \OPPRF definition. In \OPPRF, the sender $\SS$  has a set of $n$ points $\P = \{ (x_i, y_i) \}$. All $x_i$ are distinct with an arbitrary length, all $y_i$ are pseudorandom and should be padded to a fixed length. The receiver $\RR$ has a value $x^*$. If there is a pair $\{ (x_i, y_i) \}$ in $\P$ that $x_i$ is equal to $x^*$, $\RR$ would receives the corresponding "true" value $y_i$. Otherwise, $\RR$'s output is a random value that cannot distinguish from $y_i$.
 
-The main difference of our \SSOT functionality with the \KS\cite{TCC:FIPR05} functionality is in that in \SSOT, $\SS$ also generate a dummy payload $\hat{p}$, and if the \textit{search word} is not in the set of the \textit{keyword}, $\RR$ receives the \textit{dummy} payload that is indistinguishable with the \textit{real} payload. In other words, unlike the \KS functionality\cite{TCC:FIPR05} in case that $\RR$ receives nothing if his \textit{search word} is not equal to any \textit{keyword} of $\SS$, in our \SSOT  $\RR$ always receives the secret string corresponding to his \textit{search word}.  The formal definition of our \SSOT is given in  
-\figureref{fig:1ssotfunc}. For the privacy, our \SSOT requires both parties learns no additional information beyond their output that are defined by the definition in \figureref{fig:1ssotfunc}. 
+When viewing our \OPPRF functionality in term of search keyword and payload, the main difference of our \OPPRF functionality with the \KS\cite{TCC:FIPR05} functionality is in the receiver's output. In \OPPRF, if the \textit{search word} of the receiver is not in the set of the \textit{keyword} of the sender, $\RR$ receives the \textit{dummy} payload that is indistinguishable with the \textit{real} payload $\{y_i\}$. In other words, unlike the \KS functionality\cite{TCC:FIPR05} in case that $\RR$ receives nothing if his \textit{search word} is not equal to any \textit{keyword} of $\SS$, in our \OPPRF  $\RR$ also receives the random "fake" corresponding payload to his \textit{search word}. The formal definition of our \OPPRF is given in  
+\figureref{fig:1ssotfunc}. For the privacy, our \OPPRF requires both parties learns no additional information beyond their output that are defined by the definition in \figureref{fig:1ssotfunc}. 
 
-
-\begin{figure}[htb]\centering
-\framebox{
-    \begin{minipage}{0.95\linewidth}
-        The functionality is parameterized by a payload-length parameter $l$, and by two parties: a {\bf sender} and {\bf receiver}.
-
-        \medskip
-				   On input $n$ pairs $\{ (x_1, p_1), \ldots, (x_{n}, p_{n}) \}$ from the sender 
-				(where $x_i \in \{0,1\}^*$ are all distinct and $p_i \in \{0,1\}^\ell$), \\
-				 On input $x^* \in \{0,1\}^*$ from the receiver:
-				\begin{itemize}
-					\item Sender receives no output.
-					\item If $x^* = x_i$ for some $i$, then give output $(n, p_i)$ to the receiver.
-					\item Otherwise give output $(n,\hat{p})$ to the receiver, where $\hat{p}$ depends on $x^*$ and is indistinguishable with all $p_i$
-				\end{itemize}
-
-    \end{minipage}
-}
-\caption{The \SSOT ideal functionality}
-\label{fig:1ssotfunc}
-\end{figure} 
-
-In \figureref{fig:1ssotfunc} definition, the Receiver $\RR$ searches for a single keyword. In fact, Receiver may repeat the key word procedure many times. To achieve an efficient solution in this case, we describe an extended version of \SSOT (called as \textit{non-adaptive}) that allows $\RR$ does multiple queries, but, at the same time. It means that our extended version limits these queries defined before running the procedure. An ideal functionality of the \textit{non-adaptive} \SSOT is given in \figureref{fig:nssotfunc}
 
 \begin{figure}[htb]\centering
 	\framebox{
 		\begin{minipage}{0.95\linewidth}
-			The functionality is parameterized by a payload-length parameter $l$, and by two parties: a {\bf sender} and {\bf receiver}.
+			The functionality is parameterized by a relaxed {\bf programmable PRF} $F$,  a fixed length parameter $l$, and by two parties: a {\bf sender} and {\bf receiver}.
 			
 			\medskip
-			On input $n$ pairs $\{ (x_1, p_1), \ldots, (x_{n}, p_{n}) \}$ from the sender 
-			(where $x_i \in \{0,1\}^*$ are all distinct, and $p_i \in \{0,1\}^\ell$), \\
-			On input $m$ $\{x^*_1, \ldots, x^*_m\}$ from the receiver, (where $x_i \in \{0,1\}^*$):
+			On input $n$ pairs $\P=\{ (x_1, y_1), \ldots, (x_{n}, y_{n}) \}$ from the sender, where $x_i \in \{0,1\}^*$ are all distinct and $y_i$ are in a pseudorandom distribution $\{0,1\}^\ell$; \\
+			On input $x^* \in \{0,1\}^*$ from the receiver:
 			\begin{itemize}
-				\item Sender receives no output.
-				\item For each $ 1 \leq j \leq m$:
-				\begin{itemize}
-					
-				\item if $x^*_j = x_i$ for some $i$, then give output $(n, p_i)$ to the receiver.
-				\item Otherwise give output $(n,\hat{p_j})$ to the receiver, where $\hat{p_j}$ depends on $x_j^*$ and is indistinguishable with all $p_i$
-			\end{itemize}
+				\item Choose random components for seeds to the PRF: $k^*, k_1, \ldots, k_m$ and give these to the sender.
+				\item Give $ F( \P,(k^*,k_1), x^*)$ to the receiver.
 			\end{itemize}
 			
 		\end{minipage}
 	}
-	\caption{The non-adaptive $m$-times \SSOT ideal functionality}
-	\label{fig:nssotfunc}
+	\caption{The \OPPRF ideal functionality}
+	\label{fig:1ssotfunc}
+\end{figure} 
+
+\todo{need: The non-adaptive $m$-times \OPPRF ideal functionality?}
+
+In \figureref{fig:1ssotfunc} definition, the Receiver $\RR$ has only a single value for the programmable PRF. In fact, Receiver may repeat the above procedure many times. To achieve an efficient solution in this case, we describe an extended version of \OPPRF (called as \textit{non-adaptive}) that allows $\RR$ does multiple queries, but, at the same time. It means that our extended version limits these queries defined before running the procedure. An ideal functionality of the \textit{non-adaptive} \OPPRF is given in \figureref{fig:nssotfunc}
+
+\begin{figure}[htb]\centering
+	\framebox{
+		\begin{minipage}{0.95\linewidth}
+			The functionality is parameterized by a relaxed {\bf programmable PRF} $F$,  a fixed length parameter $l$, and by two parties: a {\bf sender} and {\bf receiver}.
+			
+			\medskip
+			On input $n$ pairs $\P=\{ (x_1, y_1), \ldots, (x_{n}, y_{n}) \}$ from the sender, where $x_i \in \{0,1\}^*$ are all distinct and $y_i$ are in a pseudorandom distribution $\{0,1\}^\ell$; \\
+			On input $m$ $\{x^*_1, \ldots, x^*_m\}$ from the receiver, where $x^*_i \in \{0,1\}^*$:
+			\begin{itemize}
+				\item Choose random components for seeds to the PRF: $k^*, k_1, \ldots, k_m$ and give these to the sender.
+				\item Give $ F( \P,(k^*,k_1), x^*_1), \ldots, F(\P, (k^*,k_m), x^*_m)$ to the receiver.
+			\end{itemize}
+		
+	\end{minipage}
+}
+\caption{The non-adaptive $m$-times \OPPRF ideal functionality}
+\label{fig:nssotfunc}
 \end{figure} 
 
 
