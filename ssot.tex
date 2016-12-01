@@ -6,6 +6,8 @@ We present our constructions as follows.  We start with the default \OPPRF  (1-o
 
 
 \subsection{Notation}
+In all our protocols, we denote $\kappa$ as the computational security parameter while $\lambda$ denotes a statistical security.\todo{...}
+parameter
 \subsection{\OPPRF construction}
 \label{sect:constr1SSOT}
 
@@ -58,11 +60,11 @@ Moreover, we require an encryption scheme such that for all $m$ the distribution
 			
 			\begin{enumerate}
 				\addtocounter{enumi}{0}
-				\item the parties performs a \batchOPRF with sender \SS\ and receiver \RR\
+				\item the parties performs a \batchOPRF with sender \SS\ on input $n$ values $\{x_i\}$ and receiver \RR\ on input $x^*$
 				\begin{enumerate}
-					\item \SS\ receives $n$ random keys $k=\{(k^*,k'_i)\}$, 					
-					\item \RR\ receives $sk^*=F_k(x^*)$ with no information about the keys $k$
-					\item $\forall$ $0\leq i < \L$, \SS\ computes $sk_i = F_k(x_i)$.
+					\item \SS\ receives $n$ random keys $k=\{(k^*,k')\}$, 					
+					\item \RR\ receives $sk^*=\widetilde F_k(x^*)$ with no information about the keys $k$
+					\item $\forall$ $0\leq i < \L$, \SS\ computes $sk_i = \widetilde F_k(x_i)$.
 				\end{enumerate}
 				
 				\item \SS\ chooses $m$ bit positions at random $B=\{b_1,  \ldots, b_m\}$, under which the $n$ values $\{sk_i\}^{n-1}_0$ are distinct; sends the set of $B$ to \RR 
@@ -128,8 +130,8 @@ In order to show that both parties do not learn any additional information more 
 	\label{thm:sotpriv}
 	The \OPPRF protocol in \figureref{fig:Cons1ssot} securely realizes the  functionality of \figureref{fig:1ssotfunc} in the presence of semi-honest adversaries, provided that:
 	\begin{itemize}\addtolength{\itemsep}{-6pt}
-		\item  A \batchOPRF function $F_k$ with random key $k$ and output length $\kappa$.
-		\item A mapping function $M:\bool^\kappa \to \bool^m$, where $m=\floor{\log(n)}+1$ as defined above.
+		\item  A \batchOPRF function $F_k$ with output length $\sigma$, where $\sigma=\kappa+\floor{\log(n)}+1$
+		\item A mapping function $M:\bool^\sigma \to \bool^m$, where $m=\floor{\log(n)}+1$ as defined above.
 		\item A $\kappa$-RO hash  $H:\bool^m \to \bool^\kappa$, 
 		\item A one-time pad encryption scheme $\Enc$.
 	\end{itemize}
@@ -171,6 +173,9 @@ In order to show that both parties do not learn any additional information more 
 
 \subsection{Non-adaptive \OPPRF construction}
 \label{sect:constrnSSOT}
+\todo{\textbf{same $y_i$ uses $3+s$ times in one time pad \Enc=>leak????}}
+
+
 We now present the non-adaptive \OPPRF construction which allows the receiver does multiple \OPPRF queries, but the queries must defined before running the protocol. Since our \OPPRF protocol is based on \textit{batch} related-key OPRF (\batchOPRF), this protocol shows an efficient solution to reduce the costs in this non-adaptive setting, and have application to our multi-party private set intersection described in \sectionref{sec:psi}. The basic idea of the construction is to use the \textit{hashing to bin} technique that is very popular in two-party PSI protocols~\cite{DBLP:conf/uss/Pinkas0SZ15,DBLP:conf/uss/Pinkas0Z14}. Our  non-adaptive \OPPRF protocol is presented in \figureref{fig:Consnssot}. 
 
 
@@ -195,7 +200,7 @@ We now present the non-adaptive \OPPRF construction which allows the receiver do
 					\item   1-out-of-n \OPPRF function $F$;					 
 					\item three random hash $\{H_1, H_2, H_3\}: \{ 0,1\}^* \to [1.2m]$ 
 					\item  max. stash size $s$ as defined in Table~\ref{tbl:params}
-					\item max. number of items in $\SS$'s bin $\gamma$, where $\gamma$ as defined in Table~\ref{tbl:params}
+					\item max. number of items $\beta$ in $\SS$'s bin , where $\beta$ as defined in Table~\ref{tbl:params}
 				\end{itemize}
 			}
 			
@@ -203,15 +208,15 @@ We now present the non-adaptive \OPPRF construction which allows the receiver do
 			
 			\begin{enumerate}
 				\addtocounter{enumi}{0}
-				\item \RR\ hashes his items $X^*=\{x^*_0, \ldots, x^*_{m-1}\}$ into $1.2m$ bins using Cuckoo hashing defined by 3 hash functions $\{H_1, H_2, H_3\}$. After the certain number of times, if the insertion attempts of the item $x^*_i$ to $[1.2n]$ bins  fails,  \RR\ put this item is in the stash bins in an arbitrary order; otherwise $x^*_i$ is in the bin \#$b(x^*_i) \in [1.2m]$.  
+				\item \RR\ hashes his items $X^*=\{x^*_0, \ldots, x^*_{m-1}\}$ into $1.2m$ bins using Cuckoo hashing defined by 3 hash functions $\{H_1, H_2, H_3\}$. After the certain number of times, if the insertion attempts of the item $x^*_i$ to $[1.2m]$ bins  fails,  \RR\ put this item is in the stash bins in an arbitrary order; otherwise $x^*_i$ is in the bin \#$b(x^*_i) \in [1.2m]$.  
 				\\
 				For $i \in [1.2m+s]$, if the bin \#$i$ is empty, then pad this bin using a dummy value $r_i$; otherwise if $x^*_j$ is in bin \#$i$ then set $r_i = x^*_j$. 
 				
-				\item \SS\ hashes his items $X=\{x_0, \ldots, x_{n-1}\}$ into $1.2m$ bins using 3 hash functions $\{H_1, H_2, H_3\}$. For $i \in [1.2m]$, index all $x_j$ is in bin \#$i$ as $r_{i,j}$, and pad this bin \#$i$ to $\gamma$ items using distinct dummy values $r_{i,k}$; for $i \in [s]$, pad this bin \#$i$ by the set $X$.
+				\item \SS\ hashes his items $X=\{x_0, \ldots, x_{n-1}\}$ into $1.2m$ bins using 3 hash functions $\{H_1, H_2, H_3\}$. For $i \in [1.2m]$, index all $x_j$ is in bin \#$i$ as $r_{i,j}$, and pad this bin \#$i$ to $\beta$ items using distinct dummy values $r_{i,k}$; for $i \in [s]$, pad this bin \#$i$ by the set $X$.
 				
 				\item For $i \in [1.2m]$  the parties performs a 1-out-of-n \OPPRF protocol with sender \SS\ and receiver \RR\
 				\begin{enumerate}				
-					\item \SS\ inputs $\gamma$ points $\P_\gamma=\{(r_{i,j}, \hat{y_j})\}$, where:					
+					\item \SS\ inputs $\beta$ points $\P_\gamma=\{(r_{i,j}, \hat{y_j})\}$, where:					
 					\[
 					\hat{y_j})= 
 					\begin{cases}
@@ -220,7 +225,7 @@ We now present the non-adaptive \OPPRF construction which allows the receiver do
 					\end{cases}
 					\]			
 						\item \RR\ inputs the value $r_i$	
-					\item \SS\ receives $\gamma$ random keys $k_i=\{(k^*,k'_{i,j})\}$, 
+					\item \SS\ receives $\beta$ random keys $k_i=\{(k^*,k'_{i})\}$, 
 							
 					\item \RR\ outputs $F( \P_\gamma,k_i, r_i)$
 				\end{enumerate}
@@ -229,7 +234,7 @@ We now present the non-adaptive \OPPRF construction which allows the receiver do
 				\begin{enumerate}
 						\item \SS\ inputs $n$ points $\P$
 						\item \RR\ inputs the value $r_i$ 
-						\item \SS\ receives $n$ random keys $k_i=\{(k^*,k'_{i,j})\}$, 
+						\item \SS\ receives $n$ random keys $k_i=\{(k^*,k'_{i})\}$, 
 					\item \RR\ outputs $F( \P,k_i, r_i)$	
 				\end{enumerate}
 				

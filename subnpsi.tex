@@ -1,22 +1,66 @@
-\subsection{Private Set Intersection of Three or greater}
+\subsection{$(n>3)$-Party Private Set Intersection with $(t<n-1)$-Party Collusion}
 \label{sect:npsi-construction}
-
-Similar to the scheme of the previous section ~\ref{sect:3psi-construction}, the following psi protocol is secure for more than three parties if we allow \todo{ $P*$ and one party $P_i$ colluded}. 
+In this section, we propose a $n$-party protocol ($n >3 $) which is secure against up to an arbitrary subset of the $t<n-1$ corrupted parties.
+Similar to the 3-party PSI protocol, the PSI protocol is based on \batchOPRF function $\widetilde F$, \OPPRF function $F$, and 2-party \PSI. However, to prevent $t<n-1$ corrupted parties, our protocol requires Secret Sharing Scheme. We first describe the following multi-party PSI protocol with no-collusion in Figure~\ref{fig:npsicollud}. The idea is that the parties $P_1$ and $P_2$ start by jointly performing a \batchOPRF protocol on their same bin with receiver $P_1$ and sender $P_2$. $P_2$ computes \batchOPRF for each items in his bin and interacts as sender role with $P_3$ as receiver via \OPPRF. $P_2$ inputs is pairs included his item and corresponding \batchOPRF values, and pad some random pairs to $\beta$ pairs in total. $P_3$ inputs is his set of items. After \OPPRF, $P_3$ receives a programmable PRF that corresponds to each his item. Next, $P_3$ makes $\beta$ pairs which come from his item together with the corresponding \OPPRF value received from previous step, and pad some dummy pairs to get $\beta$ pairs in total. $P_3$ and $P_4$ run \OPPRF where $P_3$ is a sender on input of $\beta$ pairs and $P_4$ is a receiver on input of his set of items. $P_4$ receives  programmable PRF for each item in his set. The protocol continues serial consequence \OPPRF between $P_i$ and $P_{i+1}$ until $P_n$ gets corresponding \OPPRF value for each item in his set. Finally, $P_n$ and $P_1$ performs two-party PSI which $P_n$'s input is the set of  \OPPRF values and $P_1$ is the item $r_1$. $P_1$
+is a receiver with the intersection result. 
 
 \begin{figure}[h]\centering
-\framebox{
-    \begin{minipage}{0.95\linewidth}
-		\todo{.....} \\
-		\todo{.....} use \todo{\batchOPRF} and \todo{\SSOT .......} \\
-		\todo{.....} 
-    \end{minipage}
-}
-\caption{The PSI protcol for more than 3 parties in cases that we allow \todo{$P*$ and one party $P_i$ colluded}}
+	\framebox{
+		\begin{minipage}{0.95\linewidth}
+			\noindent{
+				\\
+				{\sc Input of $P_1$:} an item $r_1 \in \{0,1\}^*$.
+				
+				{\sc Input of $P_i$:} $R_i=\{r^1_i, \ldots, r^{m_i}_i\} \subseteq\{0,1\}^*$ from each party $P_i, i \in [2,n]$, where $m_i$ is the size of $P_i$ set ($m_i \leq \beta$)
+				
+				\medskip
+				
+				{\sc Parameters:}
+				\begin{itemize}\addtolength{\itemsep}{-6pt}
+					\item  A \batchOPRF function $\widetilde F$ 
+					\item   non-adaptive \OPPRF function $F$;	
+					\item   two-party \PSI function $\bar F$ in \todo{section \ref{jj}};	
+					\item max. number of items $\beta$ in a bin , where $\beta$ as defined in Table~\ref{tbl:params}
+				\end{itemize}
+			}
+			
+			{\sc Protocol:}
+			
+			\begin{enumerate}
+				\addtocounter{enumi}{0}
+				\item the parties $P_1$ and $P_2$ performs a \batchOPRF with sender $P_2$ on input $R_2$ and receiver $P_1$ on input $r_1$
+				\begin{enumerate}
+					\item $P_2$ receives $m_2$ random related keys $k_2=\{(k^*,k^j)\}, j \in [m_2]$, 					
+					\item $P_1$ receives $y_1=\widetilde F_k(r_1)$ with no information about the keys $k$
+					\item $\forall$ $1\leq j \leq m_i$, $P_2$ computes $y^j_2 = F_{k_2}(r^j_2)$, makes a pair $({r}^j_2, {y}^{j}_2)$
+				\end{enumerate}				
+								
+				\item For $1<i< n:$
+				\begin{enumerate}
+					\item the parties $P_i$ and $P_{i+1}$ performs a non-adaptive \OPPRF protocol with sender $P_i$ on inputs $\beta$ points $\P_i=\{ (r^1_i, y^1_i), \ldots, (r^{\beta}_{i}, y^{\beta}_{i}) \}$ and receiver $P_{i+1}$ on inputs  $R_i$
+					\begin{enumerate} 
+						\item $P_i$ receives $m_{i+1}$ random keys $\bar{k}_i=\{({k_i}^*,{k}'_{i,j})\}$ 
+						\item $P_{i+1}$  outputs $y^j_{i+1}=F( \P_i,{k}_i, r^j_{i+1})$ where $j \in [m_{i+1}]$	
+					\end{enumerate}
+					\item $\forall$ $ m_{i+1} < j \leq \beta$, if $i+1 \neq n$, $P_{i+1}$ generates a pair $({r}^j_{i+1}, {y}^{j}_{i+1})$ by choosing at random ${r}^j_{i+1} \from\bool^*$,  ${y}^j_{i+1} \from\bool^\kappa$. Otherwise,  $P_n$ chooses ${y}^j_n \from \bool^*$ at random.
+				\end{enumerate}
+				
+				\item the parties $P_n$ and $P_1$ performs a \PSI protocol with sender $P_n$ on inputs a set of $\beta$ values $Y_n=\{ y^1_n, \ldots, y^{\beta}_{n} \}$ and receiver $P_1$ on inputs  $y_1$
+				\begin{enumerate} 
+					\item $P_3$ receives nothing
+					\item $P_1$ outputs $\{y_1\} \cap Y_n$	
+				\end{enumerate}		
+			\end{enumerate}		
+		\end{minipage}
+	}
+\caption{Multi-Party Private Set Intersection with Non-Collusion}
 \label{fig:npsicollud}
 \end{figure}
 
 \subsubsection{Problem of previous scheme}
 Problem is that $P^*$ and two neighbor parties of the party $P_i$ colludes, they can see incoming and outgoing values of $P_i$ \todo{........} To handle this problem, each party should have their own secret value. We describe a \todo{"`share distribution"' protocol} in Section ~\ref{sect:share}\todo{........}
+
+
 
 \subsubsection{Share distribution}
 \label{sect:share}
@@ -25,7 +69,7 @@ Problem is that $P^*$ and two neighbor parties of the party $P_i$ colludes, they
 		\todo{.....} call \todo{\SSOT} \\
 		\todo{.....} 
 
-\subsubsection{Collusion-free PSI protcol for more than 3 parties}
+\subsection{$(n>3)$-Party Private Set Intersection with Free Collusion}
 \begin{figure}[h]\centering
 \framebox{
     \begin{minipage}{0.95\linewidth}
@@ -38,5 +82,5 @@ Problem is that $P^*$ and two neighbor parties of the party $P_i$ colludes, they
 \label{fig:npsicollud}
 \end{figure}
 
-\subsubsection{Optimization}
+\subsection{Optimization}
 Our multi-party protocol is \todo{\textbf{faster} if we allow upto $n-1$ parties colluded}, where $n$ is the number of parties in total. This is because we do not need to call \SSOT in the share distribution protocol  ~\ref{sect:share}

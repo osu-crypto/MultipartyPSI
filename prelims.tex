@@ -20,8 +20,8 @@ When viewing our \OPPRF functionality in term of search keyword and payload, the
 			On input $n$ pairs $\P=\{ (x_1, y_1), \ldots, (x_{n}, y_{n}) \}$ from the sender, where $x_i \in \{0,1\}^*$ are all distinct and $y_i$ are in a pseudorandom distribution $\{0,1\}^\ell$; \\
 			On input $x^* \in \{0,1\}^*$ from the receiver:
 			\begin{itemize}
-				\item Choose random components for seeds to the PRF: $k^*, k_1, \ldots, k_m$ and give these to the sender.
-				\item Give $ F( \P,(k^*,k_1), x^*)$ to the receiver.
+				\item Choose random component for seed to the PRF: $k^*, k$ and give these to the sender.
+				\item Give $ F( \P,(k^*,k), x^*)$ to the receiver.
 			\end{itemize}
 			
 		\end{minipage}
@@ -43,7 +43,7 @@ In \figureref{fig:1ssotfunc} definition, the Receiver $\RR$ has only a single va
 			On input $n$ pairs $\P=\{ (x_1, y_1), \ldots, (x_{n}, y_{n}) \}$ from the sender, where $x_i \in \{0,1\}^*$ are all distinct and $y_i$ are in a pseudorandom distribution $\{0,1\}^\ell$; \\
 			On input $m$ $\{x^*_1, \ldots, x^*_m\}$ from the receiver, where $x^*_i \in \{0,1\}^*$:
 			\begin{itemize}
-				\item Choose random components for seeds to the PRF: $k^*, k_1, \ldots, k_m$ and give these to the sender.
+				\item Choose random components for seeds to the PRF: $k^*, k_1, \ldots, k_m$ and give these to the sender. \todo{$1.2m+s$ keys!!!}
 				\item Give $ F( \P,(k^*,k_1), x^*_1), \ldots, F(\P, (k^*,k_m), x^*_m)$ to the receiver.
 			\end{itemize}
 		
@@ -54,10 +54,11 @@ In \figureref{fig:1ssotfunc} definition, the Receiver $\RR$ has only a single va
 \end{figure} 
 
 
-
 %%%%%%%%%%%
 \subsection{PSI }
 \subsubsection{PSI collusion}
+In the context of MPC, collusion between participants means that the corrupting parties exchange the information to learn something about the honest parties's inputs that is not allowed by the protocol. 
+\label{subsec:psicoll}
 \subsubsection{PSI functionality}
 \label{sec:psifunc}
 In \figureref{fig:psifunc} we formally describe the PSI functionality.% we achieve. The sender has $n$ pairs $\{x_i, y_i\}$, the receiver has $m$ strings $x^*_j$. For each $j \in [1,m]$, the SSOT functionality allows the receiver to learn the $y_i$ if $x^*_j=x_i$, otherwise he learns a random string $\$$ that is randomly chosen by the sender.
@@ -65,9 +66,9 @@ In \figureref{fig:psifunc} we formally describe the PSI functionality.% we achie
 \begin{figure}[htb]\centering
 \framebox{\begin{minipage}{0.95\linewidth}
 		
-		The functionality is parameterized by the number of parties $n$,  the size of the parties' sets $m$, and the bit-length of the parties' items $\sigma$. 
+		The functionality is parameterized by the number of parties $n$,  the size of the parties' sets $m$. 
 		\begin{itemize}
-			\item On input $X_i=\{x^1_i, \ldots, x^m_i\} \subseteq\{0,1\}^\sigma$ from each party $P_i$.
+			\item On input $X_i=\{x^1_i, \ldots, x^m_i\} \subseteq\{0,1\}^*$ from each party $P_i$.
 			
 			\item Give output $\bigcap\limits_{i=0}^n X_i$ to $P_i$.
 		\end{itemize}
@@ -75,6 +76,24 @@ In \figureref{fig:psifunc} we formally describe the PSI functionality.% we achie
 }
 \caption{PSI ideal functionality.}
 \label{fig:psifunc}
+\end{figure} 
+\todo{our PSI also works in case that each party have the different size of items. However, the protocol leaks these size.}
+
+In \figureref{fig:setinclfunc} we formally describe the set-inclusion functionality.% we achieve. The sender has $
+\begin{figure}[htb]\centering
+	\framebox{\begin{minipage}{0.95\linewidth}
+			
+			The functionality is parameterized by the number of parties $n$,  the size of item set for each party $m_i$. 
+			\begin{itemize}
+				\item On input $x^*$ for party$ P_0$
+				\item On input $X_i=\{x^1_i, \ldots, x^{m_i}_i\} \subseteq\{0,1\}^*$ from each party $P_i, 0<i <n$.
+				
+				\item Give output whether $x^* \in \bigcap\limits_{i=1}^{n-1} X_i$ to $P_0$.
+			\end{itemize}
+		\end{minipage}
+	}
+	\caption{Set-inclusion ideal functionality.}
+	\label{fig:setinclfunc}
 \end{figure} 
 
 %%% Local Variables:
