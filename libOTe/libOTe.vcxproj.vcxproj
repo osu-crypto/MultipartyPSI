@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Base\naor-pinkas.h" />
+    <ClInclude Include="NChooseK\AknOtReceiver.h" />
+    <ClInclude Include="NChooseK\AknOtSender.h" />
+    <ClInclude Include="NChooseOne\KkrtDefines.h" />
+    <ClInclude Include="NChooseOne\KkrtNcoOtReceiver.h" />
+    <ClInclude Include="NChooseOne\KkrtNcoOtSender.h" />
+    <ClInclude Include="NChooseOne\NcoOtExt.h" />
+    <ClInclude Include="NChooseOne\Oos\OosDefines.h" />
+    <ClInclude Include="NChooseOne\Oos\OosNcoOtReceiver.h" />
+    <ClInclude Include="NChooseOne\Oos\OosNcoOtSender.h" />
+    <ClInclude Include="Tools\LinearCode.h" />
+    <ClInclude Include="Tools\Tools.h" />
+    <ClInclude Include="TwoChooseOne\IknpOtExtReceiver.h" />
+    <ClInclude Include="TwoChooseOne\IknpOtExtSender.h" />
+    <ClInclude Include="TwoChooseOne\KosDotExtReceiver.h" />
+    <ClInclude Include="TwoChooseOne\KosDotExtSender.h" />
+    <ClInclude Include="TwoChooseOne\KosOtExtReceiver.h" />
+    <ClInclude Include="TwoChooseOne\KosOtExtSender.h" />
+    <ClInclude Include="TwoChooseOne\LzKosOtExtReceiver.h" />
+    <ClInclude Include="TwoChooseOne\LzKosOtExtSender.h" />
+    <ClInclude Include="TwoChooseOne\OTExtInterface.h" />
+    <ClInclude Include="TwoChooseOne\TcoOtDefines.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Base\naor-pinkas.cpp" />
+    <ClCompile Include="NChooseK\AknOtReceiver.cpp" />
+    <ClCompile Include="NChooseK\AknOtSender.cpp" />
+    <ClCompile Include="NChooseOne\KkrtNcoOtReceiver.cpp" />
+    <ClCompile Include="NChooseOne\KkrtNcoOtSender.cpp" />
+    <ClCompile Include="NChooseOne\Oos\OosNcoOtReceiver.cpp" />
+    <ClCompile Include="NChooseOne\Oos\OosNcoOtSender.cpp" />
+    <ClCompile Include="Tools\LinearCode.cpp" />
+    <ClCompile Include="Tools\Tools.cpp" />
+    <ClCompile Include="TwoChooseOne\IknpOtExtReceiver.cpp" />
+    <ClCompile Include="TwoChooseOne\IknpOtExtSender.cpp" />
+    <ClCompile Include="TwoChooseOne\KosDotExtReceiver.cpp" />
+    <ClCompile Include="TwoChooseOne\KosDotExtSender.cpp" />
+    <ClCompile Include="TwoChooseOne\KosOtExtReceiver.cpp" />
+    <ClCompile Include="TwoChooseOne\KosOtExtSender.cpp" />
+    <ClCompile Include="TwoChooseOne\LzKosOtExtReceiver.cpp" />
+    <ClCompile Include="TwoChooseOne\LzKosOtExtSender.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Tools\bch511.bin" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{CDDF083F-D729-4D38-A9F7-9CF40A9AC408}</ProjectGuid>
+    <RootNamespace>libOTe</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>libOTe</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)/cryptoTools;$(ProjectDir);$(SolutionDir)thirdparty/win/boost;$(SolutionDir)thirdparty/win/NTL/include;$(SolutionDir)thirdparty/win/;$(SolutionDir)thirdparty/win/miracl;C:/libs/boost;C:/libs/;C:/libs/NTL/include;C:/libs/miracl;C:\Program Files %28x86%29\Visual Leak Detector\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SOLUTION_DIR=R"**($(SolutionDir))**";_MBCS;%(PreprocessorDefinitions);_WIN32_WINNT=0x0501</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)/cryptoTools;$(ProjectDir);$(SolutionDir)thirdparty/win/boost;$(SolutionDir)thirdparty/win/NTL/include;$(SolutionDir)thirdparty/win/;$(SolutionDir)thirdparty/win/miracl;C:/libs/boost;C:/libs/;C:/libs/NTL/include;C:/libs/miracl;C:\Program Files %28x86%29\Visual Leak Detector\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SOLUTION_DIR=R"**($(SolutionDir))**";_MBCS;%(PreprocessorDefinitions);_WIN32_WINNT=0x0501;NDEBUG</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
