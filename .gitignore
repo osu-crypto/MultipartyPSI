@@ -5,6 +5,7 @@
 *.suo
 *.user
 *.sln.docstates
+copySourceToLinux*
 
 libPSI/
 libPSI_Tests/

@@ -2,7 +2,6 @@
 #include <functional>
 
 #include "AES_Tests.h"
-#include "AknBfPsi_Tests.h"
 #include "AknOt_Tests.h"
 #include "BtChannel_Tests.h"
 //#include "nkOt_Tests.h"
@@ -10,13 +9,10 @@
 #include "OT_Tests.h"
 #include "NcoOT_Tests.h"
 #include "AknOt_Tests.h"
-#include "AknBfPsi_Tests.h"
 #include "Ecc_Tests.h"
 #include "BinOtPsi_Tests.h"
 
 #include "ShamirSSScheme_Tests.h"
-#include "DcwBfPsi_Tests.h"
-#include "DktMPsi_Tests.h"
 
 using namespace osuCrypto;
 
@@ -94,30 +90,8 @@ void Ecc_all()
 
 
 
-void DktPsi_all()
-{ 
-    std::cout << std::endl;
-    run("DktPsi_EmptrySet_Test_Impl              ", DktMPsi_EmptrySet_Test_Impl);
-    run("DktPsi_FullSet_Test_Impl                ", DktMPsi_FullSet_Test_Impl);
-    run("DktPsi_SingltonSet_Test_Imp             ", DktMPsi_SingltonSet_Test_Impl);
-}
 
 
-void DcwPsi_all()
-{
-    std::cout << std::endl;
-    run("DcwPsi_EmptrySet_Test_Impl              ", DcwBfPsi_EmptrySet_Test_Impl);
-    run("DcwPsi_FullSet_Test_Impl                ", DcwBfPsi_FullSet_Test_Impl);
-    run("DcwPsi_SingltonSet_Test_Imp             ", DcwBfPsi_SingltonSet_Test_Impl);
-}
-
-void AknBfPsi_all()
-{
-    std::cout << std::endl;
-    run("AknBfPsi_EmptrySet_Test_Impl            ", AknBfPsi_EmptrySet_Test_Impl);
-    run("AknBfPsi_FullSet_Test_Impl              ", AknBfPsi_FullSet_Test_Impl);
-    run("AknBfPsi_SingltonSet_Test_Impl          ", AknBfPsi_SingltonSet_Test_Impl);
-}
 void OtBinPsi_all()
 {
     std::cout << std::endl;
@@ -139,7 +113,6 @@ void ShamirSSScheme_all()
 void run_all()
 {
     //LinearCode_Test_Impl();
-    //run("OosNcoOt_Test_Impl                      ", OosNcoOt_Test_Impl);
     //run("KkrtNcoOt_Test                          ", KkrtNcoOt_Test_Impl);
     //run("OtBinPsi_Oos_SingltonSet_Test_Impl       ", OtBinPsi_Oos_SingltonSet_Test_Impl);
 
@@ -148,8 +121,5 @@ void run_all()
     //bitVec_all();
     //Ecc_all();
     OT_all();
-    AknBfPsi_all();
     OtBinPsi_all();
-    DcwPsi_all();
-    DktPsi_all();
 }
