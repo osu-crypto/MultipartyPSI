@@ -166,7 +166,7 @@ namespace osuCrypto
             throw std::runtime_error(LOCATION);
 
 
-
+		//TODO: double check
         u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 
         if (maskSize > sizeof(block))
@@ -241,7 +241,6 @@ namespace osuCrypto
 
                 if (tIdx == 0) gTimer.setTimePoint("online.send.thrdStart");
 
-                auto& otRecv = *mOtRecvs[tIdx];
                 auto& otSend = *mOtSends[tIdx];
 
                 auto& chl = *chls[tIdx];
@@ -307,8 +306,8 @@ namespace osuCrypto
                 auto binStart = tIdx       * mBins.mBinCount / thrds.size();
                 auto binEnd = (tIdx + 1) * mBins.mBinCount / thrds.size();
 
-                auto otStart = binStart * mBins.mMaxBinSize;
-                auto otEnd = binEnd * mBins.mMaxBinSize;
+				auto otStart = binStart;// *mBins.mMaxBinSize;
+				auto otEnd = binEnd;//;* mBins.mMaxBinSize;
 
 
 
@@ -319,49 +318,6 @@ namespace osuCrypto
                 u64 otIdx = 0;
                 u64 maskIdx = otStart;
                 std::vector<block> ncoInput(mNcoInputBlkSize);
-
-                for (u64 bIdx = binStart; bIdx < binEnd;)
-                {
-                    u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
-
-                    for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
-                    {
-
-                        auto& bin = mBins.mBins[bIdx];
-                        std::random_shuffle(permutation.begin(), permutation.end(), prng);
-
-                        for (u64 i = 0; i < permutation.size(); ++i)
-                        {
-
-                            if (permutation[i] < bin.size())
-                            {
-                                u64 inputIdx = bin[permutation[i]];
-                                // ncoInput
-
-                                for (u64 j = 0; j < ncoInput.size(); ++j)
-                                {
-                                    ncoInput[j] = ncoInputBuff[j][inputIdx];
-                                }
-
-                                otRecv.encode(
-                                    otIdx,                //  input
-                                    ncoInput,             //  input
-                                    recvMasks[inputIdx]); // output
-
-                            }
-                            else
-                            {
-
-                                otRecv.zeroEncode(otIdx);
-                            }
-
-                            otIdx++;
-                        }
-                    }
-
-                    otRecv.sendCorrection(chl, currentStepSize * mBins.mMaxBinSize);
-                }
-
 
 
                 Buff buff;
@@ -430,7 +386,7 @@ namespace osuCrypto
                 if (tIdx == 0) gTimer.setTimePoint("online.send.sendMask");
 
 
-                otRecv.check(chl);
+               
                 otSend.check(chl);
 
                 // block until all masks are computed. the last to finish will set the promise...

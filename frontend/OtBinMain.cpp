@@ -109,8 +109,8 @@ void otBinSend()
                 u64 otIdx = 0;
                 //std::cout << "sender init" << std::endl;
                 sendPSIs.init(setSize, psiSecParam,128, sendChls,otSend, prng.get<block>());
-
-				std::cout << otSend.mChoiceBlks[0] << std::endl;
+				std::cout << "s\n";
+				std::cout << otSend.mGens[5].mSeed << std::endl;
 				
 
                 //return;
@@ -160,7 +160,7 @@ void otBinRecv()
     std::fstream online, offline;
     online.open("./online.txt", online.trunc | online.out);
     offline.open("./offline.txt", offline.trunc | offline.out);
-    u64 numTrial(2);
+    u64 numTrial(1);
 
     std::string name("psi");
 
@@ -239,8 +239,9 @@ void otBinRecv()
                 auto start = timer.setTimePoint("start");
                 recvPSIs.init(setSize, psiSecParam,128,  recvChls, otRecv, ZeroBlock);
 
-
-			
+				std::cout << "r\n";
+				std::cout << otRecv.mGens[5][0].mSeed << std::endl;
+				std::cout << otRecv.mGens[5][1].mSeed << std::endl;
 
                 //return;
 

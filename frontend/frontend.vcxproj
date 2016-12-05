@@ -81,13 +81,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="bloomFilterMain.cpp" />
     <ClCompile Include="CLP.cpp" />
     <ClCompile Include="cuckooTest.cpp" />
     <ClCompile Include="cuckoo\SimpleCuckoo.cpp" />
     <ClCompile Include="cuckoo\cuckooTests.cpp" />
-    <ClCompile Include="dcwMain.cpp" />
-    <ClCompile Include="dktMain.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="miraclTest.cpp" />
     <ClCompile Include="OtBinMain.cpp" />
