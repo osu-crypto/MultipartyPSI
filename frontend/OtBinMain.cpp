@@ -1,8 +1,6 @@
 #include "bloomFilterMain.h"
 #include "Network/BtEndpoint.h" 
 
-#include "MPSI/Beta/OtBinMPsiReceiver.h"
-#include "MPSI/Beta/OtBinMPsiSender.h"
 #include "OPPRF/OPPRFReceiver.h"
 #include "OPPRF/OPPRFSender.h"
 
@@ -17,25 +15,28 @@ using namespace osuCrypto;
 #include "NChooseOne/Oos/OosNcoOtReceiver.h"
 #include "NChooseOne/Oos/OosNcoOtSender.h"
 #include "Common/Log.h"
+#include "Common/Log1.h"
 #include "Common/Timer.h"
 #include "Crypto/PRNG.h"
 #include <numeric>
 
 //#define OOS
-#define pows  { 8/*8,12,,20*/ }
+#define pows  { 5/*8,12,,20*/ }
 #define threadss {1/*1,4,16,64*/}
+
+std::vector<block> sendSet;
 
 void otBinSend()
 {
-
+	Log::out << "dsfds" << Log::endl;
 
     setThreadName("CP_Test_Thread");
-    u64 numThreads(64);
+    u64 numThreads(1);
 
     std::fstream online, offline;
     online.open("./online.txt", online.trunc | online.out);
     offline.open("./offline.txt", offline.trunc | offline.out);
-    u64 numTrial(2);
+    u64 numTrial(1);
 
 
     std::cout << "role  = sender (" << numThreads << ") otBin" << std::endl;
@@ -85,13 +86,16 @@ void otBinSend()
                 PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 
 
-                std::vector<block> sendSet;
+                
                 sendSet.resize(setSize);
 
                 for (u64 i = 0; i < setSize; ++i)
                 {
                     sendSet[i] = prng.get<block>();
                 }
+
+				std::cout << "s\n";
+					std::cout << sendSet[5] << std::endl;
 
 #ifdef OOS
                 OosNcoOtReceiver otRecv(code);
@@ -109,8 +113,8 @@ void otBinSend()
                 u64 otIdx = 0;
                 //std::cout << "sender init" << std::endl;
                 sendPSIs.init(setSize, psiSecParam,128, sendChls,otSend, prng.get<block>());
-				std::cout << "s\n";
-				std::cout << otSend.mGens[5].mSeed << std::endl;
+				//std::cout << "s\n";
+			//	std::cout << otSend.mGens[5].mSeed << std::endl;
 				
 
                 //return;
@@ -118,7 +122,9 @@ void otBinSend()
                 sendChls[0]->recv(dummy, 1);
                 //std::cout << "sender init done" << std::endl;
 
-//               sendPSIs.sendInput(sendSet, sendChls);
+              sendPSIs.sendInput(sendSet, sendChls);
+
+			  sendPSIs.mBins.print();
 
                 u64 dataSent = 0;
                 for (u64 g = 0; g < sendChls.size(); ++g)
@@ -155,7 +161,7 @@ void otBinRecv()
 {
 
     setThreadName("CP_Test_Thread");
-    u64 numThreads(64);
+    u64 numThreads(1);
 
     std::fstream online, offline;
     online.open("./online.txt", online.trunc | online.out);
@@ -207,23 +213,23 @@ void otBinRecv()
                 PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 
 
-                std::vector<block> sendSet(setSize), recvSet(setSize);
+                std::vector<block> recvSet(setSize);
 
 
 
 
                 for (u64 i = 0; i < setSize; ++i)
                 {
-                    sendSet[i] = recvSet[i] = prng.get<block>();
+					  recvSet[i]= sendSet[i];// = prng.get<block>();
                 }
 
-
+				std::cout << "s\n";
+				std::cout << recvSet[5] << std::endl;
 #ifdef OOS
                 OosNcoOtReceiver otRecv(code);
                 OosNcoOtSender otSend(code);
 #else
                 KkrtNcoOtReceiver otRecv;
-                KkrtNcoOtSender otSend;
 #endif
                 OPPRFReceiver recvPSIs;
 
@@ -257,7 +263,10 @@ void otBinRecv()
                 auto mid = timer.setTimePoint("init");
 
 
-              //  recvPSIs.sendInput(recvSet, recvChls);
+                recvPSIs.sendInput(recvSet, recvChls);
+			//	recvPSIs.mBins.print();
+
+
                 auto end = timer.setTimePoint("done");
 
                 auto offlineTime = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
@@ -279,7 +288,7 @@ void otBinRecv()
                 time /= 1000;
                 auto Mbps = dataSent * 8 / time / (1 << 20);
 
-                std::cout << setSize << "  " << offlineTime << "  " << onlineTime << "        " << Mbps << " Mbps      " << (dataSent / std::pow(2.0, 20)) << " MB" << std::endl;
+                //std::cout << setSize << "  " << offlineTime << "  " << onlineTime << "        " << Mbps << " Mbps      " << (dataSent / std::pow(2.0, 20)) << " MB" << std::endl;
 
                 for (u64 g = 0; g < recvChls.size(); ++g)
                     recvChls[g]->resetStats();
@@ -290,7 +299,7 @@ void otBinRecv()
                 //std::cout << numThreads << std::endl;
                 //std::cout << timer << std::endl;
 
-                std::cout << gTimer << std::endl;
+             //   std::cout << gTimer << std::endl;
 
                 //if (recv.mIntersection.size() != setSize)
                 //    throw std::runtime_error("");

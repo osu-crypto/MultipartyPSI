@@ -3,6 +3,7 @@
 #include "Crypto/PRNG.h"
 #include <random>
 #include "Common/Log.h"
+#include "Common/Log1.h"
 #include <numeric>
 
 namespace osuCrypto
@@ -18,27 +19,42 @@ namespace osuCrypto
     {
     }
 
+
+
     void SimpleHasher1::print() const
     {
 
-        //std::cout << IoStream::lock;
+        std::cout << IoStream::lock;
+		//std::cout << "SimpleHasher1  " << std::endl;
+		Log::out << "SimpleHasher1  " << Log::endl;
+		//for (u64 i = 0; i < 10; ++i)
         for (u64 i = 0; i < mBins.size(); ++i)
         {
-            std::cout << "Bin #" << i << std::endl;
+			//std::cout << "Bin #" << i << std::endl;
+			Log::out << "Bin #" << i;
 
-            std::cout << " contains " << mBins[i].size() << " elements" << std::endl;
+			//std::cout << " contains " << mBins[i].size() << " elements" << std::endl;
+			//Log::out << " contains " << mBins[i].size() << " elements" << Log::endl;
 
             for (u64 j = 0; j < mBins[i].size(); ++j)
             {
-                std::cout
-                    << "    " << mBins[i][j]  
-                    /*<< "  " << mBins[i][j].second */<< std::endl;
+               // std::cout
+               //     << "    " << mBins[i][j]  
+               //     /*<< "  " << mBins[i][j].second */<< std::endl;
+				//Log::out
+				//	<< "    " << mBins[i][j]
+				//	/*<< "  " << mBins[i][j].second */ << Log::endl;
+
+				Log::out << "    c_idx=" << mBins[i][j];
             }
 
-            std::cout << std::endl; 
+			//std::cout << std::endl;
+			Log::out <<  Log::endl;
         }
 
-        std::cout << std::endl;// << IoStream::unlock;
+		//std::cout << std::endl;
+		Log::out <<  Log::endl;
+		std::cout << IoStream::unlock;
     }
 
     double maxprob1(u64 balls, u64 bins, u64 k)

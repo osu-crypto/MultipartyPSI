@@ -3,6 +3,7 @@
 #include "Crypto/PRNG.h"
 #include <random>
 #include "Common/Log.h"
+#include "Common/Log1.h"
 #include <numeric>
 
 namespace osuCrypto
@@ -10,19 +11,19 @@ namespace osuCrypto
 
     // parameters for k=2 hash functions, 2^n items, and statistical security 40
     CuckooParam1 k2n24s40CuckooParam1
-    { 2, 2.4, 2, 21 };
+    { 2, 1.2, 3, 21 };
     CuckooParam1 k2n20s40CuckooParam1
-    { 2, 2.4, 2, 20 };
+    { 2, 1.2, 3, 20 };
     CuckooParam1 k2n16s40CuckooParam1
-    { 3, 2.4, 2, 19 };
+    { 3, 1.2, 3, 19 };
     CuckooParam1 k2n12s40CuckooParam1
-    { 5, 2.4, 2, 18 };
+    { 5, 1.2, 3, 18 };
     CuckooParam1 k2n08s40CuckooParam1
-    { 8, 2.4, 2, 17 };
+    { 8, 1.2, 3, 17 };
 
     // not sure if this needs a stash of 40, but should be safe enough.
     CuckooParam1 k2n07s40CuckooParam1
-    { 40, 2.4, 2, 17 };
+    { 30, 1.2, 3, 17 };
 
 
     CuckooHasher1::CuckooHasher1()
@@ -70,41 +71,55 @@ namespace osuCrypto
 
     void CuckooHasher1::print() const
     {
+		std::cout << IoStream::lock;
+		//std::cout << "Cuckoo Hasher  " << std::endl;
+		Log::out << "Cuckoo Hasher  " << Log::endl;
 
-        std::cout << "Cuckoo Hasher  " << std::endl;
-
-
+		// for (u64 i = 0; i < 10; ++i)
         for (u64 i = 0; i < mBins.size(); ++i)
         {
-            std::cout << "Bin #" << i;
+			//Log::out << " contains 0 elements\n";
+          //  std::cout << "Bin #" << i;
+			Log::out << "Bin #" << i;
 
             if (mBins[i].isEmpty())
             {
-                std::cout << " - " << std::endl;
+            //    std::cout << " - " << std::endl;
+				Log::out << " - " << Log::endl;
+
             }
             else
             {
-                std::cout << "    c_idx=" << mBins[i].idx() << "  hIdx=" << mBins[i].hashIdx() << std::endl;
+              //  std::cout << "    c_idx=" << mBins[i].idx() << "  hIdx=" << mBins[i].hashIdx() << std::endl;
+				Log::out << "    c_idx=" << mBins[i].idx() << "  hIdx=" << mBins[i].hashIdx() << Log::endl;
 
             }
 
         }
-        for (u64 i = 0; i < mStash.size() && mStash[i].isEmpty() == false; ++i)
+	//	 for (u64 i = 0; i < 0 && mStash[i].isEmpty() == false; ++i)
+			 for (u64 i = 0; i < mStash.size() && mStash[i].isEmpty() == false; ++i)
         {
-            std::cout << "Bin #" << i;
+            //std::cout << "Bin #" << i;
+			Log::out << "SBin #" << i;
 
             if (mStash[i].isEmpty())
             {
-                std::cout << " - " << std::endl;
+              //  std::cout << " - " << std::endl;
+				Log::out << " - " << Log::endl;
+
             }
             else
             {
-                std::cout << "    c_idx=" << mStash[i].idx() << "  hIdx=" << mStash[i].hashIdx() << std::endl;
+			//	std::cout << "    c_idx=" << mStash[i].idx() << "  hIdx=" << mStash[i].hashIdx() << std::endl;
+				Log::out << "    c_idx=" << mStash[i].idx() << "  hIdx=" << mStash[i].hashIdx() << Log::endl;
 
             }
 
         }
-        std::cout << std::endl;
+		
+		//std::cout << std::endl;
+		Log::out << Log::endl;
+		std::cout << IoStream::unlock;
 
     }
     void CuckooHasher1::init(u64 n, block hashSeed, u64 statSecParam, bool multiThreaded)

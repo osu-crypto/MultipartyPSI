@@ -83,8 +83,8 @@
   <ItemGroup>
     <ClCompile Include="CLP.cpp" />
     <ClCompile Include="cuckooTest.cpp" />
-    <ClCompile Include="cuckoo\SimpleCuckoo.cpp" />
     <ClCompile Include="cuckoo\cuckooTests.cpp" />
+    <ClCompile Include="cuckoo\SimpleCuckoo.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="miraclTest.cpp" />
     <ClCompile Include="OtBinMain.cpp" />

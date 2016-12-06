@@ -88,7 +88,7 @@ namespace osuCrypto
             ArrayView<u64> idxs,
             Workspace& wordkspace);
 
-    private:
+   // private:
 
         std::vector<u64> mHashes;
         MatrixView<u64> mHashesView;

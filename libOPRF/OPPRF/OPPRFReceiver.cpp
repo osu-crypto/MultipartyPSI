@@ -5,6 +5,7 @@
 #include "Crypto/Commit.h"
 
 #include "Common/Log.h"
+#include "Common/Log1.h"
 #include "Base/naor-pinkas.h"
 #include <unordered_map>
 
@@ -87,7 +88,7 @@ namespace osuCrypto
 
         // this SimpleHasher1 class knows how to hash things into bins. But first we need 
         // to compute how many bins we need, the max size of bins, etc.
-        mBins.init(n, mHashingSeed, statSecParam,1);
+        mBins.init(n, mHashingSeed, statSecParam, false);
 
         // figure out how many OTs we need in total.
         u64 perBinOtCount = 1;
@@ -199,7 +200,7 @@ namespace osuCrypto
 
     void OPPRFReceiver::sendInput(std::vector<block>& inputs, const std::vector<Channel*>& chls)
     {
-#if 0
+#if 1
         // this is the online phase.
         gTimer.setTimePoint("online.recv.start");
 
@@ -216,8 +217,8 @@ namespace osuCrypto
             throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
 
-        std::vector<std::thread>  thrds(chls.size());
-        //std::vector<std::thread>  thrds(1);
+       // std::vector<std::thread>  thrds(chls.size());
+        std::vector<std::thread>  thrds(1);
 
         // since we are going to do this in parallel, these objects will
         // be used for synchronization. specifically, when all threads are 
@@ -226,18 +227,18 @@ namespace osuCrypto
         std::atomic<u32>
             insertRemaining((u32)thrds.size());
 
-        std::promise<void> insertProm, maskMergeProm;
-        std::shared_future<void>
-            insertFuture(insertProm.get_future()),
-            maskMergeFuture(maskMergeProm.get_future());
+		std::promise<void> insertProm , maskMergeProm;
+		std::shared_future<void>
+			insertFuture(insertProm.get_future()),
+           maskMergeFuture(maskMergeProm.get_future());
 
         std::promise<MatrixView<u8>> maskProm;
-        std::shared_future<MatrixView<u8>> maskFuture(maskProm.get_future());
+       std::shared_future<MatrixView<u8>> maskFuture(maskProm.get_future());
         ByteStream maskBuffer;
 
 
-        CuckooHasher1 maskMap;
-        maskMap.init(mN * mBins.mMaxBinSize, mStatSecParam, chls.size() > 1);
+      //  CuckooHasher1 maskMap;
+        //maskMap.init(mN * mBins.mMaxBinSize, mStatSecParam, chls.size() > 1);
 
 
         // this mutex is used to guard inserting things into the intersection vector.
@@ -259,18 +260,20 @@ namespace osuCrypto
                 if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
                 auto& otRecv = *mOtRecvs[tIdx];
-                auto& otSend = *mOtSends[tIdx];
 
 
                 auto& chl = *chls[tIdx];
 
                 auto startIdx = tIdx     * mN / thrds.size();
                 auto endIdx = (tIdx + 1) * mN / thrds.size();
+#pragma region Hashing
 
 
                 std::vector<AES> ncoInputHasher(mNcoInputBlkSize);
                 for (u64 i = 0; i < ncoInputHasher.size(); ++i)
                     ncoInputHasher[i].setKey(_mm_set1_epi64x(i) ^ mHashingSeed);
+
+				Log::out << "mHashingSeed: " << mHashingSeed << Log::endl;
 
                 u64 phaseShift = log2ceil(mN) / 8;
 
@@ -285,24 +288,19 @@ namespace osuCrypto
                             currentStepSize,
                             ncoInputBuff[hashIdx].data() + i);
                     }
-
+					
+					
                     // since we are using random codes, lets just use the first part of the code 
                     // as where each item should be hashed.
                     for (u64 j = 0; j < currentStepSize; ++j)
                     {
-                        block& item = ncoInputBuff[0][i + j];
-                        u64 addr = *(u64*)&item % mBins.mBinCount;
-
-                        // implements phase. Note that we are doing very course phasing. 
-                        // At the byte level. This is good enough for use. Since we just 
-                        // need things tp be smaller than 76 bits.
-                        if (phaseShift == 3)
-                            ncoInputBuff[0][i + j] = _mm_srli_si128(item, 3);
-                        else// if (phaseShift <= 2)
-                            ncoInputBuff[0][i + j] = _mm_srli_si128(item, 2);
-
-                        std::lock_guard<std::mutex> lock(mBins.mMtx[addr]);
-                        mBins.mBins[addr].emplace_back(i + j);
+						ArrayView<u64> hashes(3);
+						for (u64 k = 0; k < 3; ++k)
+						{
+							block& item = ncoInputBuff[k][i + j];
+							hashes[k] = *(u64*)&item;
+						}
+						mBins.insert(i + j, hashes);
                     }
                 }
 
@@ -312,13 +310,19 @@ namespace osuCrypto
                 else
                     insertProm.set_value();
 
+			//	mBins.print();
+
+#pragma endregion
+
+#pragma region PSI
+#if 1
                 if (tIdx == 0) gTimer.setTimePoint("online.recv.insertDone");
 
                 // get the region of the base OTs that this thread should do.
                 auto binStart = tIdx       * mBins.mBinCount / thrds.size();
                 auto binEnd = (tIdx + 1) * mBins.mBinCount / thrds.size();
-                auto otStart = binStart * mBins.mMaxBinSize;
-                auto otEnd = binEnd * mBins.mMaxBinSize;
+                auto otStart = binStart * 1;
+                auto otEnd = binEnd * 1;
 
                 PRNG prng(seed);
 
@@ -347,129 +351,39 @@ namespace osuCrypto
 
                         auto& bin = mBins.mBins[bIdx];
 
-                        for (u64 i = 0; i < bin.size(); ++i)
+						if (!bin.isEmpty())
                         {
-                            u64 inputIdx = bin[i];
-                            u16 swapIdx = (prng.get<u16>() % (mBins.mMaxBinSize - i)) + i;
-                            std::swap(perm[i], perm[swapIdx]);
-
+                            u64 inputIdx = bin.idx();
 
                             for (u64 j = 0; j < ncoInput.size(); ++j)
                                 ncoInput[j] = ncoInputBuff[j][inputIdx];
-
-
-
+							
                             otRecv.encode(
-                                otIdx + perm[i],      // input
+                                otIdx,      // input
                                 ncoInput,             // input
                                 recvMasks[inputIdx]); // output
                         }
-
-                        for (u64 i = bin.size(); i < mBins.mMaxBinSize; ++i)
+						else
                         {
-                            otRecv.zeroEncode(otIdx + perm[i]);      
+                            otRecv.zeroEncode(otIdx);      
                         }
 
-
-
-                        otIdx += mBins.mMaxBinSize;
+                        otIdx += 1;
 
                     }
 
-                    otRecv.sendCorrection(chl, currentStepSize * mBins.mMaxBinSize);
+                    otRecv.sendCorrection(chl, currentStepSize);
                 }
 
 
                 if (tIdx == 0) gTimer.setTimePoint("online.recv.recvMask");
 
-                otIdx = 0;
-
-                std::vector<block> tempMaskBuff(32);
-                std::vector<u64> tempIdxBuff(tempMaskBuff.size());
-                CuckooHasher1::Workspace w(tempMaskBuff.size());
-                u64 tempMaskIdx = 0;
-
-                for (u64 bIdx = binStart; bIdx < binEnd;)
-                {
-
-                    u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
-
-
-                    otSend.recvCorrection(chl, currentStepSize * mBins.mMaxBinSize);
-
-
-
-                    for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
-                    {
-                        auto& bin = mBins.mBins[bIdx];
-
-                        for (u64 i = 0; i < bin.size(); ++i)
-                        {
-
-                            u64 inputIdx = bin[i];
-
-                            u64 innerOtIdx = otIdx;
-
-                            for (u64 l = 0; l < mBins.mMaxBinSize; ++l)
-                            {
-                                for (u64 j = 0; j < ncoInput.size(); ++j)
-                                {
-                                    ncoInput[j] = ncoInputBuff[j][inputIdx];
-                                }
-
-                                block sendMask;
-
-                                otSend.encode(
-                                    innerOtIdx,
-                                    ncoInput,
-                                    sendMask);
-
-                                sendMask = sendMask ^ recvMasks[inputIdx];
-
-
-                                tempIdxBuff[tempMaskIdx] = inputIdx * mBins.mMaxBinSize + l;
-
-                                tempMaskBuff[tempMaskIdx] = ZeroBlock;
-                                memcpy(&tempMaskBuff[tempMaskIdx], &sendMask, maskSize);
-                                ++tempMaskIdx;
-
-                                if (tempMaskIdx == tempMaskBuff.size())
-                                {
-
-                                    // use aes as a hash function. A weak invertable one. but security doesnt matter here.
-                                    mAesFixedKey.ecbEncBlocks(tempMaskBuff.data(), tempMaskIdx, tempMaskBuff.data());
-                                    MatrixView<u64> hashes((u64*)tempMaskBuff.data(), tempMaskIdx, 2, false);
-                                    maskMap.insertBatch(tempIdxBuff, hashes, w);
-
-                                    tempMaskIdx = 0;
-                                }
-
-
-                                ++innerOtIdx;
-                            }
-                        }
-
-                        otIdx += mBins.mMaxBinSize;
-                    }
-
-                }
-
-
-                otSend.check(chl);
                 otRecv.check(chl);
-
-                // use aes as a hash function. A weak invertable one. but security doesnt matter here.
-                mAesFixedKey.ecbEncBlocks(tempMaskBuff.data(), tempMaskIdx, tempMaskBuff.data());
-                std::vector<u64> idxs(tempIdxBuff.begin(), tempIdxBuff.begin() + tempMaskIdx);
-                MatrixView<u64> hashes((u64*)tempMaskBuff.data(), tempMaskIdx, 2, false);
-                maskMap.insertBatch(idxs, hashes, w);
 
 
                 if (tIdx == 0) gTimer.setTimePoint("online.recv.sendMask");
 
                 // all masks have been merged
-
-
                 // this is the intersection that will be computed by this thread,
                 // this will be merged into the overall list at the end.
                 std::vector<u64> localIntersection;
@@ -500,7 +414,7 @@ namespace osuCrypto
 
                 for (u64 i = maskStart; i < maskEnd; )
                 {
-                    u64 curStepSize = std::min(tempMaskBuff.size(), maskEnd - i);
+                    u64 curStepSize = std::min(recvMasks.size(), maskEnd - i);
 
                     for (u64 j = 0; j < curStepSize; ++j, ++i)
                     {
@@ -541,7 +455,8 @@ namespace osuCrypto
                 }
                 if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
 
-
+#endif
+#pragma endregion
                 //if (!tIdx)
                 //    gTimer.setTimePoint("sendInput.done");
             });

@@ -2,6 +2,7 @@
 
 #include "Crypto/Commit.h"
 #include "Common/Log.h"
+#include "Common/Log1.h"
 #include "Common/Timer.h"
 #include "Base/naor-pinkas.h"
 #include "TwoChooseOne/IknpOtExtReceiver.h"
@@ -161,7 +162,6 @@ namespace osuCrypto
     void OPPRFSender::sendInput(std::vector<block>& inputs, const std::vector<Channel*>& chls)
     {
 
-#if 0
         if (inputs.size() != mN)
             throw std::runtime_error(LOCATION);
 
@@ -173,13 +173,13 @@ namespace osuCrypto
             throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
 
-        std::vector<std::thread>  thrds(chls.size());
-        //std::vector<std::thread>  thrds(1);        
+        //std::vector<std::thread>  thrds(chls.size());
+        std::vector<std::thread>  thrds(1);        
 
-        std::atomic<u32> remaining((u32)thrds.size()), remainingMasks((u32)thrds.size());
-        std::promise<void> doneProm, maskProm;
-        std::shared_future<void>
-            doneFuture(doneProm.get_future()),
+		std::atomic<u32> remaining((u32)thrds.size()), remainingMasks((u32)thrds.size());
+		std::promise<void> doneProm , maskProm;
+		std::shared_future<void>
+			doneFuture(doneProm.get_future()),
             maskFuture(maskProm.get_future());
 
         std::mutex mtx;
@@ -251,8 +251,9 @@ namespace osuCrypto
                 //ArrayView<block> itemRange(
                 //    inputs.begin() + startIdx,
                 //    inputs.begin() + endIdx);
-
+#pragma region Hashing				
                 std::vector<AES> ncoInputHasher(mNcoInputBlkSize);
+				Log::out << "mHashingSeed: " << mHashingSeed << Log::endl;
                 for (u64 i = 0; i < ncoInputHasher.size(); ++i)
                     ncoInputHasher[i].setKey(_mm_set1_epi64x(i) ^ mHashingSeed);
 
@@ -274,21 +275,38 @@ namespace osuCrypto
                     // as where each item should be hashed.
                     for (u64 j = 0; j < currentStepSize; ++j)
                     {
-                        block& item = ncoInputBuff[0][i + j];
-                        u64 addr = *(u64*)&item % mBins.mBinCount;
+						ArrayView<u64> hashes(3);
+						for (u64 k = 0; k < 3; ++k)
+						{
+							block& item = ncoInputBuff[k][i + j];
+							u64 addr = *(u64*)&item % mBins.mBinCount;
 
-                        // implements phase. Note that we are doing very course phasing. 
-                        // At the byte level. This is good enough for use. Since we just 
-                        // need things tp be smaller than 76 bits.
-                        if(phaseShift == 3)
-                            ncoInputBuff[0][i + j] = _mm_srli_si128(item, 3);
-                        else// if (phaseShift <= 2)
-                            ncoInputBuff[0][i + j] = _mm_srli_si128(item, 2);
+							// implements phase. Note that we are doing very course phasing. 
+							// At the byte level. This is good enough for use. Since we just 
+							// need things tp be smaller than 76 bits.
+						//	if (phaseShift == 3)
+						//		ncoInputBuff[0][i + j] = _mm_srli_si128(item, 3);
+						//	else// if (phaseShift <= 2)
+						//		ncoInputBuff[0][i + j] = _mm_srli_si128(item, 2);
 
-                        std::lock_guard<std::mutex> lock(mBins.mMtx[addr]);
-                        mBins.mBins[addr].emplace_back(i + j);
+							std::lock_guard<std::mutex> lock(mBins.mMtx[addr]);
+							mBins.mBins[addr].emplace_back(i + j);
+						//	std::cout << j<<"-" << k <<": " << *(u64*)&item << "\n";
+
+							hashes[k] = *(u64*)&item;
+							
+						}
+
+						//std::cout << j << ": " << hashes[0] << " " << hashes[1] << " " << hashes[2] << "\n";
+
+						//if (j <2)
+						//{
+							
+						//}
+
                     }
                 }
+
                 //<< IoStream::lock << "Sender"<< std::endl;
                 //mBins.insertItemsWithPhasing(range, mStatSecParam, inputs.size());
 
@@ -299,6 +317,14 @@ namespace osuCrypto
                 else
                     doneProm.set_value();
 
+
+
+				//mBins.print();
+#pragma endregion
+
+
+#pragma region maskCompute
+#if 1
                 if (tIdx == 0) gTimer.setTimePoint("online.send.insert");
 
                 const u64 stepSize = 16;
@@ -333,7 +359,7 @@ namespace osuCrypto
 
                     u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
 
-                    otSend.recvCorrection(chl, currentStepSize * mBins.mMaxBinSize);
+                    otSend.recvCorrection(chl, currentStepSize);
 
                     for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
                     {
@@ -363,9 +389,7 @@ namespace osuCrypto
                                     ncoInput,
                                     sendMask);
 
-                                sendMask = sendMask ^ recvMasks[inputIdx];
-
-                                // truncate the block size mask down to "maskSize" bytes
+                            // truncate the block size mask down to "maskSize" bytes
                                 // and store it in the maskView matrix at row maskIdx
                                 memcpy(
                                     maskView[baseMaskIdx + l].data(),
@@ -379,7 +403,7 @@ namespace osuCrypto
                             ++maskIdx;
                         }
 
-                        otIdx += mBins.mMaxBinSize;
+                        otIdx += 1;
                     }
 
                 }
@@ -403,8 +427,8 @@ namespace osuCrypto
                     chl.asyncSend(std::move(sendMaskBuff));
 
                 if (tIdx == 0) gTimer.setTimePoint("online.send.finalMask");
-
-
+#endif
+#pragma endregion
 
             });
         }
@@ -413,7 +437,7 @@ namespace osuCrypto
             thrd.join();
 
         permThrd.join();
-#endif
+
 
     }
 
