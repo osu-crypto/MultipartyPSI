@@ -7,9 +7,7 @@
 *.sln.docstates
 copySourceToLinux*
 
-libPSI/
-libPSI_Tests/
-libPSI_TestsVS/
+
 TestResults/
 linuxFrontend/
 
