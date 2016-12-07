@@ -261,7 +261,7 @@ namespace osuCrypto
                 for (u64 i = 0; i < ncoInputHasher.size(); ++i)
                     ncoInputHasher[i].setKey(_mm_set1_epi64x(i) ^ mHashingSeed);
 
-				Log::out << "mHashingSeed: " << mHashingSeed << Log::endl;
+				//Log::out << "mHashingSeed: " << mHashingSeed << Log::endl;
 
                 u64 phaseShift = log2ceil(mN) / 8;
 
@@ -290,6 +290,7 @@ namespace osuCrypto
 							hashes[k] = *(u64*)&item;
 						//	memcpy(&tempMaskBuff[i]+k, ncoInputBuff[k].data() + i, sizeof(u64));
 						}					
+					//	std::lock_guard<std::mutex> lock(mBins.mMtx[addr]);
 						mBins.insert(i + j, hashes);
                     					
 					}

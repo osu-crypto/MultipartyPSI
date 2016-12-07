@@ -124,7 +124,7 @@ void otBinSend()
 
               sendPSIs.sendInput(sendSet, sendChls);
 
-			  sendPSIs.mBins.print();
+			//  sendPSIs.mBins.print();
 
                 u64 dataSent = 0;
                 for (u64 g = 0; g < sendChls.size(); ++g)
@@ -210,7 +210,7 @@ void otBinRecv()
             {
 
                 //u64 repeatCount = 1;
-                PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+                PRNG prng(_mm_set_epi32(42553465, 343452565, 2364435, 23923587));
 
 
                 std::vector<block> recvSet(setSize);
@@ -220,8 +220,18 @@ void otBinRecv()
 
                 for (u64 i = 0; i < setSize; ++i)
                 {
-					  recvSet[i]= sendSet[i];// = prng.get<block>();
+					  recvSet[i] = prng.get<block>();
+						 // sendSet[i];// = prng.get<block>();
                 }
+				for (u64 i = 1; i < 3; ++i)
+				{
+					recvSet[i] = sendSet[i];
+				}
+
+				for (u64 i = setSize-3; i < setSize; ++i)
+				{
+					recvSet[i] = sendSet[i];
+				}
 
 				std::cout << "s\n";
 				std::cout << recvSet[5] << std::endl;
@@ -245,9 +255,9 @@ void otBinRecv()
                 auto start = timer.setTimePoint("start");
                 recvPSIs.init(setSize, psiSecParam,128,  recvChls, otRecv, ZeroBlock);
 
-				std::cout << "r\n";
+				/*std::cout << "r\n";
 				std::cout << otRecv.mGens[5][0].mSeed << std::endl;
-				std::cout << otRecv.mGens[5][1].mSeed << std::endl;
+				std::cout << otRecv.mGens[5][1].mSeed << std::endl;*/
 
                 //return;
 
@@ -288,7 +298,7 @@ void otBinRecv()
                 time /= 1000;
                 auto Mbps = dataSent * 8 / time / (1 << 20);
 
-                //std::cout << setSize << "  " << offlineTime << "  " << onlineTime << "        " << Mbps << " Mbps      " << (dataSent / std::pow(2.0, 20)) << " MB" << std::endl;
+                std::cout << setSize << "  " << offlineTime << "  " << onlineTime << "        " << Mbps << " Mbps      " << (dataSent / std::pow(2.0, 20)) << " MB" << std::endl;
 
                 for (u64 g = 0; g < recvChls.size(); ++g)
                     recvChls[g]->resetStats();

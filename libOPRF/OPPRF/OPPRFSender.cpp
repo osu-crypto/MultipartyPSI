@@ -134,7 +134,7 @@ namespace osuCrypto
             *thrdIter++ = std::thread([&, i, chlIter]()
             {
                 //std::cout << IoStream::lock << "s sendOt " << l << "  " << (**chlIter).getName() << std::endl << IoStream::unlock;
-                sendRoutine(i+1, numThreads, *mOtSends[i+1], **chlIter);
+                sendRoutine(i+1, numThreads+1, *mOtSends[i+1], **chlIter);
             });
             ++chlIter;
         }
@@ -195,35 +195,35 @@ namespace osuCrypto
         std::promise<void> permProm;
         std::shared_future<void> permDone(permProm.get_future());
 
-        auto permThrd = std::thread([&]() {
-            PRNG prng(permSeed);
-			std::vector<u64> maskPerm(mBins.mMaxBinSize);
-            for (u64 i = 0; i < maskPerm.size(); ++i)
-                maskPerm[i] = i;
-//TODO:
-//   std::shuffle(maskPerm.begin(), maskPerm.end(), prng);
-            //u64 l, u32Max = (u32(-1));
-            //for (l = maskPerm.size(); l > u32Max; --l)
-            //{
-            //    u64 d = prng.get<u64>() % l;
-
-            //    u64 pi = maskPerm[l];
-            //    maskPerm[l] = maskPerm[d];
-            //    maskPerm[d] = pi;
-            //}
-            //for (l = maskPerm.size(); l > 1; --l)
-            //{
-
-            //    u32 d = prng.get<u32>() % l;
-
-            //    u64 pi = maskPerm[l];
-            //    maskPerm[l] = maskPerm[d];
-            //    maskPerm[d] = pi;
-            //}
-            permProm.set_value();
-        });
-
-
+//        auto permThrd = std::thread([&]() {
+//            PRNG prng(permSeed);
+//			std::vector<u64> maskPerm(mBins.mMaxBinSize);
+//            for (u64 i = 0; i < maskPerm.size(); ++i)
+//                maskPerm[i] = i;
+////TODO:
+////   std::shuffle(maskPerm.begin(), maskPerm.end(), prng);
+//            //u64 l, u32Max = (u32(-1));
+//            //for (l = maskPerm.size(); l > u32Max; --l)
+//            //{
+//            //    u64 d = prng.get<u64>() % l;
+//
+//            //    u64 pi = maskPerm[l];
+//            //    maskPerm[l] = maskPerm[d];
+//            //    maskPerm[d] = pi;
+//            //}
+//            //for (l = maskPerm.size(); l > 1; --l)
+//            //{
+//
+//            //    u32 d = prng.get<u32>() % l;
+//
+//            //    u64 pi = maskPerm[l];
+//            //    maskPerm[l] = maskPerm[d];
+//            //    maskPerm[d] = pi;
+//            //}
+//            permProm.set_value();
+//        });
+//
+//
         
        
         
@@ -250,7 +250,7 @@ namespace osuCrypto
                 //    inputs.begin() + endIdx);
 #pragma region Hashing				
                 std::vector<AES> ncoInputHasher(mNcoInputBlkSize);
-				Log::out << "mHashingSeed: " << mHashingSeed << Log::endl;
+				//Log::out << "mHashingSeed: " << mHashingSeed << Log::endl;
                 for (u64 i = 0; i < ncoInputHasher.size(); ++i)
                     ncoInputHasher[i].setKey(_mm_set1_epi64x(i) ^ mHashingSeed);
 
@@ -357,9 +357,8 @@ namespace osuCrypto
                 Buff buff;
                 otIdx = 0;
 
-                if (tIdx == 0) gTimer.setTimePoint("online.send.recvMask");
-                permDone.get();
-                if (tIdx == 0) gTimer.setTimePoint("online.send.permPromDone");
+              //  permDone.get();
+                if (tIdx == 0) gTimer.setTimePoint("online.send.OT");
 
 
                 for (u64 bIdx = binStart; bIdx < binEnd;)
@@ -455,7 +454,7 @@ namespace osuCrypto
         for (auto& thrd : thrds)
             thrd.join();
 
-        permThrd.join();
+    //    permThrd.join();
 
 
     }
