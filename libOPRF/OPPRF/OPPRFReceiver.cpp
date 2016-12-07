@@ -89,6 +89,7 @@ namespace osuCrypto
         // this SimpleHasher1 class knows how to hash things into bins. But first we need 
         // to compute how many bins we need, the max size of bins, etc.
         mBins.init(n, mHashingSeed, statSecParam, false);
+		mTheirBins.init(n, inputBitSize, mHashingSeed, statSecParam);
 
         // figure out how many OTs we need in total.
         u64 perBinOtCount = 1;
@@ -131,19 +132,10 @@ namespace osuCrypto
 
 
 
-
-        auto sendOtRoutine = [&](u64 tIdx, u64 total, NcoOtExtSender& ots, Channel& chl)
-        {
-            auto start = (tIdx     * mBins.mBinCount / total) * mBins.mMaxBinSize;
-            auto end = ((tIdx + 1) * mBins.mBinCount / total) * mBins.mMaxBinSize;
-
-            ots.init(end - start);
-        };
-
         auto recvOtRoutine = [&](u64 tIdx, u64 total, NcoOtExtReceiver& ots, Channel& chl)
         {
-            auto start = (tIdx     * mBins.mBinCount / total) * mBins.mMaxBinSize;
-            auto end = ((tIdx + 1) * mBins.mBinCount / total) * mBins.mMaxBinSize;
+            auto start = (tIdx     * mBins.mBinCount / total) ;
+            auto end = ((tIdx + 1) * mBins.mBinCount / total) ;
 
             ots.init(end - start);
         };
@@ -151,10 +143,8 @@ namespace osuCrypto
 
         // compute how amny threads we want to do for each direction.
         // the current thread will do one of the OT receives so -1 for that.
-        u64 numThreads = chls.size() - 1;
-        u64 numRecvThreads = numThreads / 2;
-        u64 numSendThreads = numThreads - numRecvThreads;
-
+        u64 numThreads = chls.size()-1;
+        
         // where we will store the threads that are doing the extension
         std::vector<std::thread> thrds(numThreads);
 
@@ -165,14 +155,14 @@ namespace osuCrypto
         mOtRecvs.resize(chls.size());
 
         // now make the threads that will to the extension
-        for (u64 i = 0; i < numRecvThreads; ++i)
+        for (u64 i = 0; i < numThreads; ++i)
         {
-            mOtRecvs[i + 1] = std::move(otRecv.split());
+            mOtRecvs[i+1] = std::move(otRecv.split());
 
             // spawn the thread and call the routine.
             *thrdIter++ = std::thread([&, i, chlIter]()
             {
-                recvOtRoutine(i + 1, numRecvThreads + 1,*mOtRecvs[i+1],**chlIter);
+                recvOtRoutine(i+1, numThreads+1,*mOtRecvs[i+1],**chlIter);
             });
 
             ++chlIter;
@@ -182,7 +172,7 @@ namespace osuCrypto
         mOtRecvs[0] = std::move(otRecv.split());
 
         // now use this thread to do a recv routine.
-        recvOtRoutine(0, numRecvThreads + 1, *mOtRecvs[0],  chl0);
+        recvOtRoutine(0, numThreads + 1, *mOtRecvs[0],  chl0);
 
         // join any threads that we created.
         for (auto& thrd : thrds)
@@ -211,14 +201,15 @@ namespace osuCrypto
 
         
         std::vector<block> recvMasks(mN);
-        u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		u64 maskSize = 7;// = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+
 
         if (maskSize > sizeof(block))
             throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
 
-       // std::vector<std::thread>  thrds(chls.size());
-        std::vector<std::thread>  thrds(1);
+        std::vector<std::thread>  thrds(chls.size());
+      //  std::vector<std::thread>  thrds(1);
 
         // since we are going to do this in parallel, these objects will
         // be used for synchronization. specifically, when all threads are 
@@ -234,7 +225,7 @@ namespace osuCrypto
 
         std::promise<MatrixView<u8>> maskProm;
        std::shared_future<MatrixView<u8>> maskFuture(maskProm.get_future());
-        ByteStream maskBuffer;
+       // ByteStream maskBuffer;
 
 
       //  CuckooHasher1 maskMap;
@@ -292,6 +283,7 @@ namespace osuCrypto
 					
                     // since we are using random codes, lets just use the first part of the code 
                     // as where each item should be hashed.
+				//	std::vector<block> tempMaskBuff(currentStepSize);
                     for (u64 j = 0; j < currentStepSize; ++j)
                     {
 						ArrayView<u64> hashes(3);
@@ -299,9 +291,17 @@ namespace osuCrypto
 						{
 							block& item = ncoInputBuff[k][i + j];
 							hashes[k] = *(u64*)&item;
-						}
+						//	memcpy(&tempMaskBuff[i]+k, ncoInputBuff[k].data() + i, sizeof(u64));
+						}					
 						mBins.insert(i + j, hashes);
-                    }
+                    					
+					}
+					/*std::cout << tempMaskBuff[5]<<"\n";
+					std::cout << tempMaskBuff[5];
+*/
+				//	std::vector<u64> idxs(i, i+ currentStepSize);
+				//	CuckooHasher1::Workspace w(currentStepSize);
+
                 }
 
                 // block until all items have been inserted. the last to finish will set the promise...
@@ -309,6 +309,16 @@ namespace osuCrypto
                     insertFuture.get();
                 else
                     insertProm.set_value();
+
+				for (u64 i = 0; i < mBins.mBinCount; ++i)
+				{
+					if (i < 3 || (i < mN && i > mN - 2)) {
+						
+							std::cout << "r-Bin" << i << ": " << mBins.mBins[i].idx();
+					
+						std::cout << std::endl;
+					}
+				}
 
 			//	mBins.print();
 
@@ -325,7 +335,7 @@ namespace osuCrypto
                 auto otEnd = binEnd * 1;
 
                 PRNG prng(seed);
-
+				
                 u8 hashBuff[SHA1::HashSize];
                 //if (!tIdx)
                     //gTimer.setTimePoint("sendInput.PSI");
@@ -359,16 +369,18 @@ namespace osuCrypto
                                 ncoInput[j] = ncoInputBuff[j][inputIdx];
 							
                             otRecv.encode(
-                                otIdx,      // input
+								bIdx,      // input
                                 ncoInput,             // input
                                 recvMasks[inputIdx]); // output
+
+							/*if (bIdx < 3 || (bIdx < mN && bIdx > mN-2))
+								std::cout << "r-" << bIdx << ", " << inputIdx << ": " << recvMasks[inputIdx] << std::endl;*/
                         }
 						else
                         {
-                            otRecv.zeroEncode(otIdx);      
+                            otRecv.zeroEncode(bIdx);
                         }
-
-                        otIdx += 1;
+						
 
                     }
 
@@ -386,71 +398,61 @@ namespace osuCrypto
                 // all masks have been merged
                 // this is the intersection that will be computed by this thread,
                 // this will be merged into the overall list at the end.
-                std::vector<u64> localIntersection;
-                localIntersection.reserve(mBins.mMaxBinSize);
+                u64 localIntersection=-1;
 
-                MatrixView<u8> maskView;
-                if (tIdx == 0)
-                {
+				for (u64 bIdx = binStart; bIdx < binEnd;)
+				{
+                    u64 curStepSize = std::min(stepSize, binEnd - bIdx);
 
-                    u64 numMasks = mN * mBins.mMaxBinSize;
+					MatrixView<u8> maskView;
+					ByteStream maskBuffer;
+					chl.recv(maskBuffer);
+					maskView = maskBuffer.getMatrixView<u8>(maskSize);
+					u64 numMasks = curStepSize * mTheirBins.mMaxBinSize;
 
-                    // make a buffer for the pseudo-code we need to send
-                    chl.recv(maskBuffer);
-                    maskView = maskBuffer.getMatrixView<u8>(maskSize);
+					//if (maskView.size()[0] != numMasks)
+					//	throw std::runtime_error("size not expedted");
 
-                    if (maskView.size()[0] != numMasks)
-                        throw std::runtime_error("size not expedted");
+					for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
+					{
 
-                    maskProm.set_value(maskView);
-                }
-                else
-                {
-                    maskView = maskFuture.get();
-                }
+						auto& bin = mBins.mBins[bIdx];
+						u64 baseMaskIdx = stepIdx*mTheirBins.mMaxBinSize;
 
-                auto maskStart = tIdx     * maskView.size()[0] / thrds.size();
-                auto maskEnd = (tIdx + 1) * maskView.size()[0] / thrds.size();
+						if (!bin.isEmpty())
+						{
+							u64 inputIdx = bin.idx();
+							auto myMask = recvMasks[inputIdx];
+							
+							for (u64 i = 0; i < mTheirBins.mMaxBinSize; ++i)
+							{
+								
+								auto mask = maskView[baseMaskIdx + i];
+								auto theirMask = ZeroBlock;
+								memcpy(&theirMask, mask.data(), maskSize);
 
-                for (u64 i = maskStart; i < maskEnd; )
-                {
-                    u64 curStepSize = std::min(recvMasks.size(), maskEnd - i);
+								
+								//if (bIdx < 3 || (bIdx < mN && bIdx > mN - 2))
+									//Log::out << theirMask << " "<< Log::endl;
+								if (!memcmp((u8*)&myMask, &theirMask, maskSize))
+								{
+									Log::out << "inputIdx: " << inputIdx << Log::endl;
+									Log::out << "myMask: " << myMask << Log::endl;
+									Log::out << "theirMask: " << theirMask << " "<< Log::endl;
+									localIntersection=inputIdx;
 
-                    for (u64 j = 0; j < curStepSize; ++j, ++i)
-                    {
-                        auto mask = maskView[i];
-                        tempMaskBuff[j] = ZeroBlock;
-                        memcpy(&tempMaskBuff[j], mask.data(), maskSize);
-                    }
-
-                    mAesFixedKey.ecbEncBlocks(tempMaskBuff.data(), curStepSize, tempMaskBuff.data());
-
-                    MatrixView<u64> hashes((u64*)tempMaskBuff.data(), curStepSize, 2, false);
-                    maskMap.findBatch(hashes, tempIdxBuff, w);
-
-                    for (u64 j = 0; j < curStepSize; ++j)
-                    {
-                        //u64 idx = maskMap.find(ArrayView<u64>((u64*)&tempMaskBuff[j], 2));
-                        if (tempIdxBuff[j] != u64(-1))
-                        {
-                            localIntersection.push_back(tempIdxBuff[j] / mBins.mMaxBinSize);
-                        }
-                    }
+								}
+							}
+						}
+					}
                 }
 
-                if (localIntersection.size())
+                if (localIntersection!=-1)
                 {
                     std::lock_guard<std::mutex> lock(mInsertMtx);
                     if (mIntersection.size())
                     {
-                        mIntersection.insert(
-                            mIntersection.end(), 
-                            localIntersection.begin(), 
-                            localIntersection.end());
-                    }
-                    else
-                    {
-                        mIntersection = std::move(localIntersection);
+                        mIntersection.push_back(localIntersection);
                     }
                 }
                 if (tIdx == 0) gTimer.setTimePoint("online.recv.done");

@@ -4,6 +4,7 @@
 #include "Network/Channel.h"
 #include "NChooseOne/NcoOtExt.h"
 #include "Hashing/CuckooHasher1.h"
+#include "Hashing/SimpleHasher1.h"
 
 namespace osuCrypto
 {
@@ -25,6 +26,7 @@ namespace osuCrypto
         std::vector<std::unique_ptr<NcoOtExtReceiver>> mOtRecvs;
 
         CuckooHasher1 mBins;
+		SimpleHasher1 mTheirBins;
         PRNG mPrng;
 
         void init(u64 n, u64 statSecParam, u64 inputBitSize, Channel& chl0, NcoOtExtReceiver& otRecv, block seed);

@@ -72,7 +72,7 @@ namespace osuCrypto
         mInputBitSize = numBits;
 
         double best = (999999999999999.0);
-
+#if 0
         for (u64 maxBin = 15; maxBin < 40; maxBin++)
         {
             u64 binsHigh = n * 2;
@@ -117,10 +117,12 @@ namespace osuCrypto
 
             }
         }
+#endif
+		mMaxBinSize = 40;
 		mBinCount = 1.2*n;
         mMtx.reset(new std::mutex[mBinCount]);
         mBins.resize(mBinCount);
-        mRepSize = mInputBitSize - (u32)std::log2(mBinCount);
+       // mRepSize = mInputBitSize - (u32)std::log2(mBinCount);
     }
 
     //void SimpleHasher1::preHashedInsertItems(ArrayView<block> mySet, u64 itemIdx)
