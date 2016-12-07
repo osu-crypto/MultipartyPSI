@@ -144,16 +144,16 @@ void OPPRF_EmptrySet_Test_Impl()
 
         send.init(setSize, psiSecParam, bitSize, sendChl, otSend, prng.get<block>());
         send.sendInput(sendSet, sendChl);
-		Log::out << sendSet[0] << Log::endl;
-		send.mBins.print();
+		//Log::out << sendSet[0] << Log::endl;
+	//	send.mBins.print();
 		
 
     });
 
     recv.init(setSize, psiSecParam, bitSize, recvChl, otRecv, ZeroBlock);
     recv.sendInput(recvSet, recvChl);
-	Log::out << recvSet[0] << Log::endl;
-	recv.mBins.print();
+	//Log::out << recvSet[0] << Log::endl;
+	//recv.mBins.print();
 
 
     thrd.join();
