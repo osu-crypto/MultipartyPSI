@@ -111,7 +111,7 @@ namespace osuCrypto
 
             IknpOtExtSender IknpSend;
             IknpSend.setBaseOts(IknpSendBase, choices);
-            std::vector<std::array<block, 2>> sendBaseMsg(baseOtCount + gOtExtBaseOtCount);
+            std::vector<std::array<block, 2>> sendBaseMsg(baseOtCount);
             IknpSend.send(sendBaseMsg, prng, chl0);
 
 
@@ -119,9 +119,6 @@ namespace osuCrypto
             ArrayView<std::array<block, 2>> kcoRecvBase(
                 sendBaseMsg.begin(),
                 sendBaseMsg.begin() + baseOtCount);
-            ArrayView<std::array<block, 2>> kosRecvBase(
-                sendBaseMsg.begin() + baseOtCount,
-                sendBaseMsg.end());
 
             // now set these ~800 OTs as the base of our N choose 1 OTs.
             otRecv.setBaseOts(kcoRecvBase);

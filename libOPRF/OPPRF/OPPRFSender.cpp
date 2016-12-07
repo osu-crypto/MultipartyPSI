@@ -89,8 +89,8 @@ namespace osuCrypto
 
 
             // now extend these to enough recv OTs to seed the send Kco and the send Kos ot extension
-            BitVector recvChoice(baseOtCount + gOtExtBaseOtCount); recvChoice.randomize(mPrng);
-            std::vector<block> recvBaseMsg(baseOtCount + gOtExtBaseOtCount);
+            BitVector recvChoice(baseOtCount); recvChoice.randomize(mPrng);
+            std::vector<block> recvBaseMsg(baseOtCount);
 			IknpOtExtReceiver IknpRecv;
             IknpRecv.setBaseOts(baseMsg);
             IknpRecv.receive(recvChoice, recvBaseMsg, mPrng, chl0);

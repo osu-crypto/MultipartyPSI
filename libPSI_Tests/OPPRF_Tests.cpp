@@ -94,7 +94,7 @@ void OPPRF_EmptrySet_Test_Impl()
 		recvSet[i] = prng.get<block>();
 		//recvSet[i] = sendSet[i];
     }
-	for (u64 i = 5; i < 10; ++i)
+	for (u64 i = 1; i < 3; ++i)
 	{
 		recvSet[i] = sendSet[i];
 	}
