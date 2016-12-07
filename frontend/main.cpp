@@ -73,6 +73,9 @@ int main(int argc, char** argv)
     }
     else
     {
+#if 0
+		 OPPRF_EmptrySet_Test_Impl1();
+#else
         auto thrd = std::thread([]() {
 
             //DktRecv();
@@ -94,6 +97,7 @@ int main(int argc, char** argv)
         //bf(3);
         //KosTest();
         //run_all();
+#endif
     }
 
     return 0;

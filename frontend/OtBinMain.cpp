@@ -332,3 +332,87 @@ void otBinRecv()
     ios.stop();
 }
 
+
+void OPPRF_EmptrySet_Test_Impl1()
+{
+	u64 setSize = 2 << 8, psiSecParam = 40, bitSize = 128;
+	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+
+	std::vector<block> sendSet(setSize), recvSet(setSize);
+	for (u64 i = 0; i < setSize; ++i)
+	{
+		sendSet[i] = prng.get<block>();
+		recvSet[i] = prng.get<block>();
+		//recvSet[i] = sendSet[i];
+	}
+	for (u64 i = 1; i < 3; ++i)
+	{
+		recvSet[i] = sendSet[i];
+	}
+
+	std::string name("psi");
+
+	BtIOService ios(0);
+	BtEndpoint ep0(ios, "localhost", 1212, true, name);
+	BtEndpoint ep1(ios, "localhost", 1212, false, name);
+
+
+	std::vector<Channel*> recvChl{ &ep1.addChannel(name, name) };
+	std::vector<Channel*> sendChl{ &ep0.addChannel(name, name) };
+
+	KkrtNcoOtReceiver otRecv;
+	KkrtNcoOtSender otSend;
+
+
+	//u64 baseCount = 128 * 4;
+	//std::vector<std::array<block, 2>> sendBlks(baseCount);
+	//std::vector<block> recvBlks(baseCount);
+	//BitVector choices(baseCount);
+	//choices.randomize(prng);
+
+	//for (u64 i = 0; i < baseCount; ++i)
+	//{
+	//    sendBlks[i][0] = prng.get<block>();
+	//    sendBlks[i][1] = prng.get<block>();
+	//    recvBlks[i] = sendBlks[i][choices[i]];
+	//}
+
+	//otRecv.setBaseOts(sendBlks);
+	//otSend.setBaseOts(recvBlks, choices);
+
+	//for (u64 i = 0; i < baseCount; ++i)
+	//{
+	//    sendBlks[i][0] = prng.get<block>();
+	//    sendBlks[i][1] = prng.get<block>();
+	//    recvBlks[i] = sendBlks[i][choices[i]];
+	//}
+
+
+	OPPRFSender send;
+	OPPRFReceiver recv;
+	std::thread thrd([&]() {
+
+
+		send.init(setSize, psiSecParam, bitSize, sendChl, otSend, prng.get<block>());
+		send.sendInput(sendSet, sendChl);
+		//Log::out << sendSet[0] << Log::endl;
+		//	send.mBins.print();
+
+
+	});
+
+	recv.init(setSize, psiSecParam, bitSize, recvChl, otRecv, ZeroBlock);
+	recv.sendInput(recvSet, recvChl);
+	//Log::out << recvSet[0] << Log::endl;
+	//recv.mBins.print();
+
+
+	thrd.join();
+
+	sendChl[0]->close();
+	recvChl[0]->close();
+
+	ep0.stop();
+	ep1.stop();
+	ios.stop();
+}

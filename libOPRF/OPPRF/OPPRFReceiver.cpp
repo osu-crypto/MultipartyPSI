@@ -89,7 +89,7 @@ namespace osuCrypto
         // this SimpleHasher1 class knows how to hash things into bins. But first we need 
         // to compute how many bins we need, the max size of bins, etc.
         mBins.init(n, mHashingSeed, statSecParam, false);
-		mTheirBins.init(n, inputBitSize, mHashingSeed, statSecParam);
+		//mTheirBins.init(n, inputBitSize, mHashingSeed, statSecParam);
 
         // figure out how many OTs we need in total.
         u64 perBinOtCount = 1;
@@ -396,7 +396,7 @@ namespace osuCrypto
                 // this is the intersection that will be computed by this thread,
                 // this will be merged into the overall list at the end.
                 u64 localIntersection=-1;
-
+				u64 mTheirBins_mMaxBinSize = 40;
 				for (u64 bIdx = binStart; bIdx < binEnd;)
 				{
                     u64 curStepSize = std::min(stepSize, binEnd - bIdx);
@@ -405,7 +405,7 @@ namespace osuCrypto
 					ByteStream maskBuffer;
 					chl.recv(maskBuffer);
 					maskView = maskBuffer.getMatrixView<u8>(maskSize);
-					u64 numMasks = curStepSize * mTheirBins.mMaxBinSize;
+					u64 numMasks = curStepSize * mTheirBins_mMaxBinSize;
 
 					//if (maskView.size()[0] != numMasks)
 					//	throw std::runtime_error("size not expedted");
@@ -414,14 +414,14 @@ namespace osuCrypto
 					{
 
 						auto& bin = mBins.mBins[bIdx];
-						u64 baseMaskIdx = stepIdx*mTheirBins.mMaxBinSize;
+						u64 baseMaskIdx = stepIdx*mTheirBins_mMaxBinSize;
 
 						if (!bin.isEmpty())
 						{
 							u64 inputIdx = bin.idx();
 							auto myMask = recvMasks[inputIdx];
 							
-							for (u64 i = 0; i < mTheirBins.mMaxBinSize; ++i)
+							for (u64 i = 0; i < mTheirBins_mMaxBinSize; ++i)
 							{
 								
 								auto mask = maskView[baseMaskIdx + i];
