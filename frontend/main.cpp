@@ -12,6 +12,7 @@ using namespace osuCrypto;
 #include "dcwMain.h"
 #include "dktMain.h"
 #include "OtBinMain.h"
+#include "bitPosition.h"
 
 #include "TwoChooseOne/KosOtExtReceiver.h"
 #include "TwoChooseOne/KosOtExtSender.h"
@@ -73,8 +74,9 @@ int main(int argc, char** argv)
     }
     else
     {
-#if 0
-		 OPPRF_EmptrySet_Test_Impl1();
+#if 1
+		Bit_Position_Test();
+	//	 OPPRF_EmptrySet_Test_Impl1();
 #else
         auto thrd = std::thread([]() {
 

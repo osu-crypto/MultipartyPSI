@@ -15,13 +15,36 @@
 #include "NChooseOne/Oos/OosNcoOtSender.h"
 
 #include "Hashing/CuckooHasher1.h"
+#include "Hashing/BitPosition.h"
 #include "Common/Log.h"
 #include "Common/Log1.h"
 #include <array>
 
 using namespace osuCrypto;
 
+void Bit_Position_Test_Impl()
+{
+	u64 setSize = 2<<4;
+	std::vector<block> testSet(setSize);
+	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 
+	for (u64 i = 0; i < setSize; ++i)
+	{
+		testSet[i] = prng.get<block>();
+	}
+
+	BitPosition b;
+	b.init(setSize);
+	std::cout << b.mSize << std::endl;
+	std::vector<u8> masks(b.mSize);
+	b.findPos(testSet, masks);
+
+	for (u8 i = 0; i < masks.size(); i++)
+	{
+		//std::cout << static_cast<int16_t>(masks[i]) << std::endl;
+	}
+
+}
 
 
 void OPPRF_CuckooHasher_Test_Impl()

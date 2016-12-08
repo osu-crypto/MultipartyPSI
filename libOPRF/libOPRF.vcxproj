@@ -73,12 +73,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Hashing\BitPosition.cpp" />
     <ClCompile Include="Hashing\CuckooHasher1.cpp" />
     <ClCompile Include="Hashing\SimpleHasher1.cpp" />
     <ClCompile Include="OPPRF\OPPRFReceiver.cpp" />
     <ClCompile Include="OPPRF\OPPRFSender.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Hashing\BitPosition.h" />
     <ClInclude Include="Hashing\CuckooHasher1.h" />
     <ClInclude Include="Hashing\SimpleHasher1.h" />
     <ClInclude Include="OPPRF\OPPRFReceiver.h" />

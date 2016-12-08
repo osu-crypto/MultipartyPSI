@@ -81,6 +81,9 @@
     <ClCompile Include="Hashing\SimpleHasher1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Hashing\BitPosition.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OPPRF\OPPRFReceiver.h">
@@ -93,6 +96,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Hashing\SimpleHasher1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Hashing\BitPosition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

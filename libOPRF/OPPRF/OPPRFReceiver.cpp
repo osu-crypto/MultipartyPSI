@@ -228,7 +228,9 @@ namespace osuCrypto
       //  CuckooHasher1 maskMap;
         //maskMap.init(mN * mBins.mMaxBinSize, mStatSecParam, chls.size() > 1);
 
-
+		// this mutex is used to guard inserting things into the bin
+	   std::mutex mInsertBin;
+	   
         // this mutex is used to guard inserting things into the intersection vector.
         std::mutex mInsertMtx;
 
@@ -281,19 +283,27 @@ namespace osuCrypto
                     // since we are using random codes, lets just use the first part of the code 
                     // as where each item should be hashed.
 				//	std::vector<block> tempMaskBuff(currentStepSize);
+
+					std::vector<block> tempMaskBuff(currentStepSize);
+					std::vector<u64> tempIdxBuff(currentStepSize); 
+					CuckooHasher1::Workspace w(tempMaskBuff.size());
+					MatrixView<u64> hashes(currentStepSize,mBins.mParams.mNumHashes);
+
                     for (u64 j = 0; j < currentStepSize; ++j)
                     {
-						ArrayView<u64> hashes(3);
-						for (u64 k = 0; k < 3; ++k)
+						tempIdxBuff[j] = i + j;
+						for (u64 k = 0; k <mBins.mParams.mNumHashes; ++k)
 						{
-							block& item = ncoInputBuff[k][i + j];
-							hashes[k] = *(u64*)&item;
-						//	memcpy(&tempMaskBuff[i]+k, ncoInputBuff[k].data() + i, sizeof(u64));
-						}					
+							hashes[j][k] = *(u64*)&ncoInputBuff[k][i + j];
+						}		
 					//	std::lock_guard<std::mutex> lock(mBins.mMtx[addr]);
-						mBins.insert(i + j, hashes);
-                    					
+					//	mBins.insert(i + j, hashes);                    					
 					}
+
+
+					std::lock_guard<std::mutex> lock(mInsertBin);
+					mBins.insertBatch(tempIdxBuff, hashes, w);
+
 					/*std::cout << tempMaskBuff[5]<<"\n";
 					std::cout << tempMaskBuff[5];
 */

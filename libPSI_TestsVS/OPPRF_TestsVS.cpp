@@ -37,10 +37,10 @@ namespace WeGarbleTests
 
  
 
-        //TEST_METHOD(OtBinPsi_SingltonSet_serial_Test)
-        //{
-        //    InitDebugPrinting();
-        //    OtBinPsi_SingltonSet_serial_Test_Impl();
-        //}
+        TEST_METHOD(Bit_Position_Test)
+        {
+            InitDebugPrinting();
+			Bit_Position_Test_Impl();
+        }
     };
 }
