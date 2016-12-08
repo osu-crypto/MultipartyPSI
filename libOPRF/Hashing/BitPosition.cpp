@@ -37,7 +37,7 @@ namespace osuCrypto
 		masks.clear();
 		std::set<u8>::iterator it;
 		std::pair<std::set<u8>::iterator, bool> ret;
-		
+		std::pair<std::set<u8>::iterator, bool> retMask;
 
 		mNumTrial = 0;
 		while (!isDone) {
@@ -53,14 +53,14 @@ namespace osuCrypto
 		//	std::cout << "\n\n ";
 			//print();
 			isDone = true;	
-			std::set<u8> masks1;
+			//std::set<u8> masks1;
 
-			std::pair<std::set<u8>::iterator, bool> retMask;
+			
 			for (u8 i = 0; i < codewords.size(); i++)
 			{
 				auto m = map(codewords[i]);
-				//std::cout << static_cast<int16_t>(m) << " ";
-				retMask = masks1.insert(m);
+				std::cout << static_cast<int16_t>(m) << " ";
+				retMask = masks.insert(m);
 				if (retMask.second == false) {
 					//std::cout << mNumTrial << std::endl;
 					isDone = false;
@@ -68,7 +68,7 @@ namespace osuCrypto
 					break;
 				}
 			}
-			//std::cout <<"\n-------\n";
+			std::cout <<"\n-------\n";
 		}
 		//std::cout << static_cast<int16_t>(masks[0]) << " ";
 	}
