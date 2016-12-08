@@ -8,6 +8,7 @@
 #include <atomic>
 #include <unordered_map>
 //#define THREAD_SAFE_CUCKOO
+#include <set>
 
 namespace osuCrypto
 {
@@ -20,12 +21,12 @@ namespace osuCrypto
 
     
         u64 mSize, mNumTrial;
-		std::unordered_map<u8,u8> mPos; //key: bit location; value: index of 
+		std::set<u8> mPos; //key: bit location; value: index of 
 		std::vector<u8> mMasks;
 
 		void print() const;
 		void init(u64 n);
-        void findPos(std::vector<block>& codewords, std::vector<u8>& masks);
+        void findPos(std::vector<block>& codewords, std::set<u8>& masks);
 		u8 map(block& codeword);
 /*		void findPos(std::vector<uint64_t>& codewords, std::vector<u8>& masks);
 		u8 map(uint64_t& codeword);

@@ -24,7 +24,7 @@ using namespace osuCrypto;
 
 void Bit_Position_Test_Impl()
 {
-	u64 setSize = 2<<4;
+	u64 setSize = 1<<4;
 	std::vector<block> testSet(setSize);
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 
@@ -33,11 +33,25 @@ void Bit_Position_Test_Impl()
 		testSet[i] = prng.get<block>();
 	}
 
+#if 0
+	block test = ZeroBlock;
+	test.m128i_i8[0] = 31;
 	BitPosition b;
-	b.init(setSize);
-	std::cout << b.mSize << std::endl;
-	std::vector<u8> masks(b.mSize);
-	b.findPos(testSet, masks);
+	b.init(5);
+	for (int i = 0; i < 3; ++i) b.mPos.insert(i);
+	b.mPos.insert(6);
+	b.mPos.insert(7);
+	std::cout << static_cast<int16_t>(b.map(test));
+#endif
+
+	BitPosition b2;
+	b2.init(setSize);
+	std::cout << "size: " << b2.mSize << std::endl;
+
+	std::set<u8> masks;
+	b2.findPos(testSet, masks);
+	std::cout << "\nmNumTrial: " << b2.mNumTrial << std::endl;
+	
 
 	for (u8 i = 0; i < masks.size(); i++)
 	{

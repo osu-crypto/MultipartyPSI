@@ -20,11 +20,11 @@ using namespace osuCrypto;
 #include "Crypto/PRNG.h"
 #include <numeric>
 #include "bitPosition.h"
-
+#include <set>
 
 void Bit_Position_Test()
 {
-	u64 setSize = 2<<5;
+	u64 setSize = 1<<5;
 	std::vector<block> testSet(setSize);
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 
@@ -36,7 +36,7 @@ void Bit_Position_Test()
 	BitPosition b;
 	b.init(setSize);
 	std::cout << b.mSize << std::endl;
-	std::vector<u8> masks(b.mSize);
+	std::set<u8> masks;
 	Timer timer;
 	auto start = timer.setTimePoint("start");
 	b.findPos(testSet, masks);
@@ -46,9 +46,18 @@ void Bit_Position_Test()
 	std::cout << "time: " << time << " ms";
 	std::cout << "\ntrial: " << b.mNumTrial;
 
-	for (u8 i = 0; i < masks.size(); i++)
+	//auto start1 = timer.setTimePoint("start1");
+	//b.findPos1(testSet, masks);
+	//auto end1 = timer.setTimePoint("done");
+	//auto time1 = std::chrono::duration_cast<std::chrono::milliseconds>(end1 - start1).count();
+	////time = time / 100;
+	//std::cout << "\ntime: " << time1 << " ms";
+	//std::cout << "\ntrial: " << b.mNumTrial;
+
+
+	for (auto it = masks.begin(); it != masks.end(); ++it)
 	{
-		std::cout << static_cast<int16_t>(masks[i]) << std::endl;
+		std::cout << *it << "  ";
 	}
 
 }
