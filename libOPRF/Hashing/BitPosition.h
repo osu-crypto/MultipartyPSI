@@ -32,6 +32,12 @@ namespace osuCrypto
 		u8 map(uint64_t& codeword);
 		void findPos(std::vector<int32_t>& codewords, std::vector<u8>& masks);
 		u8 map(int32_t& codeword*/
+
+		int isSet(block& codeword, int pos);
+		void setBit(block& codeword, int pos);
+		bool TestBitN(__m128i value, int N);
+		int midIdx(std::vector<block>& codewords, int length, std::set<int>& rs);
+		void getIdxs(std::vector<block>& codewords, int length, std::set<int>& rs, int size);
     };
 
 }

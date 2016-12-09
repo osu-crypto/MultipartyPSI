@@ -19,3 +19,4 @@ add_executable(frontend.exe ${SRC_FRONTEND})
 #############################################
 target_link_libraries(frontend.exe libPSI_Tests)
 target_link_libraries(frontend.exe libPSI)
+target_link_libraries(frontend.exe libOPRF)

@@ -61,6 +61,76 @@ void Bit_Position_Test_Impl()
 }
 
 
+
+void Bit_Position_Recursive_Test_Impl()
+{
+	u64 setSize = 1 << 4;
+	std::vector<block> testSet(setSize);
+	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+
+	for (u64 i = 0; i < setSize; ++i)
+	{
+		testSet[i] = prng.get<block>();
+	}
+	for (u64 i = 0; i < setSize; ++i)
+	{
+		//testSet[i].m128i_u8[i/8] = 1 << (i%8);
+	}
+	
+	BitPosition b;
+
+#if 0
+	block test = ZeroBlock;
+	//test.m128i_i8[0] = 126;
+	
+	BitPosition b;
+	b.init(5);
+	for (int i = 0; i < 3; ++i) b.mPos.insert(i);
+	b.mPos.insert(6);
+	b.mPos.insert(7);
+	for (size_t i = 0; i < 8; i++)
+	{
+		b.setBit(test, i);
+		std::cout << b.isSet(testSet[10], i) << " ";
+	}
+	/*std::vector<int> cnt(128);
+	int idx = 0;
+	int mid = setSize / 2;
+	for (size_t j = 0; j < 128; j++)
+	{
+	cnt[j] = 0;
+	for (size_t i = 0; i < setSize; i++)
+	{
+	if (b.TestBitN(testSet[i], j))
+	cnt[j]++;
+	}
+	if (cnt[j] < setSize / 2 && mid < cnt[j])
+	{
+	mid = cnt[j];
+	idx = j;
+	}
+	std::cout << j << ": " << cnt[j] << std::endl;
+	}*/
+	//auto const it = std::lower_bound(cnt.begin(), cnt.end(), mid);
+	//if (it == cnt.end())
+	//{
+	//	idx = 1;
+	//}
+	//else
+	//	idx = *(it);
+#endif
+	std::set<int> rs;
+	b.init(setSize);
+	b.getIdxs(testSet, 128,rs,b.mSize);
+
+	std::set<int>::iterator iter;
+	for (iter = rs.begin(); iter != rs.end(); ++iter) {
+		std::cout<<(*iter) <<" "<< std::endl;
+	}
+}
+
+
+
 void OPPRF_CuckooHasher_Test_Impl()
 {
 #if 0

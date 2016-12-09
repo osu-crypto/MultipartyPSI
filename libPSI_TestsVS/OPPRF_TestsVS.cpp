@@ -42,5 +42,15 @@ namespace WeGarbleTests
             InitDebugPrinting();
 			Bit_Position_Test_Impl();
         }
+
+
+		TEST_METHOD(Bit_Position_Rec_Test)
+		{
+			InitDebugPrinting();
+			Bit_Position_Recursive_Test_Impl();
+		}
+
+		
+
     };
 }

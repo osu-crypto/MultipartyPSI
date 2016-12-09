@@ -97,6 +97,99 @@ namespace osuCrypto
 		return rs;
 	}
 
+	int BitPosition::isSet(block & v, int n)
+	{
+		__m128i chkmask = _mm_slli_epi16(_mm_set1_epi16(1), n & 0xF);
+		int     movemask = (1 << (n >> 3));
+		int     isSet = (((_mm_movemask_epi8(_mm_cmpeq_epi8(_mm_and_si128(chkmask, v), _mm_setzero_si128())) & movemask) ^ movemask));
+		return isSet;
+	}
+
+	void BitPosition::setBit(block & v, int pos)
+	{	
+		__m128i shuf = _mm_set_epi8(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
+		shuf = _mm_add_epi8(shuf, _mm_set1_epi8(16 - (pos >> 3)));
+		shuf = _mm_and_si128(shuf, _mm_set1_epi8(0x0F));
+		__m128i setmask = _mm_shuffle_epi8(_mm_cvtsi32_si128(1 << (pos & 0x7)), shuf);
+		v = _mm_or_si128(v, setmask);
+	}
+	bool BitPosition::TestBitN(__m128i value, int N)
+	{
+		__m128i positioned = _mm_slli_epi64(value, 7 - (N & 7));
+		return (_mm_movemask_epi8(positioned) & (1 << (N / 8))) != 0;
+	}
+
+	int BitPosition::midIdx(std::vector<block>& codewords, int length, std::set<int>& rs)
+	{
+		int temp=0;
+		int idx = 0;
+		int mid = 0;
+		int cnt = 0;
+		//std::cout << "temp ";
+		for (size_t j = 0; j < length; j++)
+		{
+			temp = 0;
+
+			if (rs.find(j) == rs.end())
+			{
+				cnt++;
+				for (size_t i = 0; i < codewords.size(); i++)
+				{
+					if (TestBitN(codewords[i], j))
+						temp++;
+				}
+				//std::cout << j << "," << temp << " ";
+				if (temp < codewords.size() / 2 && mid < temp)
+				{
+					mid = temp;
+					idx = j;
+				}
+			}
+		}
+		std::cout  << idx << " - " << mid << " - " << codewords.size() << " - " << cnt << std::endl;
+		return idx;
+	}
+	std::set<int>::iterator it;
+	std::pair<std::set<int>::iterator, bool> ret;
+	void BitPosition::getIdxs(std::vector<block>& codewords, int length, std::set<int>& rs, int size )
+	{
+		int setSize = codewords.size();
+		std::vector<block> testSet1;
+		std::vector<block> testSet2;
+		
+		if (rs.size() < size){
+			int idx = midIdx(codewords, length, rs);
+			ret = rs.insert(idx);
+			if (ret.second == false)
+			{ 
+				//rs.insert(-1);
+				std::cout << "------ "  << std::endl;
+				it = ret.first;
+			}
+			else
+			{
+					for (size_t i = 0; i < setSize; i++)
+
+						if (TestBitN(codewords[i], idx))
+						{
+							//std::cout << "TestBitN=1: " << i << std::endl;
+							testSet1.push_back(codewords[i]);
+						}
+						else
+						{
+							//std::cout << "TestBitN=0: " << i << std::endl;
+							testSet2.push_back(codewords[i]);
+						}
+					//std::cout <<"testSet1 " <<  testSet1.size() << std::endl;
+					//std::cout <<"testSet2 "<< testSet2.size() << std::endl;
+					getIdxs(testSet1, length, rs, size);
+					getIdxs(testSet2, length, rs, size);
+				}
+		}
+		//getIdxs(testSet2, length, rs, size);
+	}
+
+
 #if 0
 	u8 BitPosition::map(block& codeword) {
 		u8 rs = 0;
@@ -187,5 +280,6 @@ namespace osuCrypto
 	}
 #endif
 
+	
 }
 
