@@ -22,18 +22,58 @@
 
 using namespace osuCrypto;
 
+void testPointer(std::vector<block>* test)
+{
+	//int length = test->size();
+	//std::cout << length << std::endl;
+	
+
+	AES ncoInputHasher;
+	
+		ncoInputHasher.setKey(_mm_set1_epi64x(112434));
+		ncoInputHasher.ecbEncBlocks((*test).data() , test->size() - 1, (*test).data() );
+	//Log::out << "mHashingSeed: " << mHashingSeed << Log::endl;
+
+
+
+
+}
+void testPointer2(block * test, int size)
+{
+	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+	auto myHashSeed = prng.get<block>();
+
+	AES ncoInputHasher;
+	ncoInputHasher.setKey(myHashSeed);
+//	for (u64 i = 0; i < size-1; i++)
+//	{
+		ncoInputHasher.ecbEncBlocks(test, size-1,test);
+//	}
+
+}
+
 void Bit_Position_Test_Impl()
 {
 	u64 setSize = 1<<4;
 	std::vector<block> testSet(setSize);
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+	
 
 	for (u64 i = 0; i < setSize; ++i)
 	{
 		testSet[i] = prng.get<block>();
 	}
-
-#if 1
+	for (u64 i = 0; i < setSize; ++i)
+	{
+		std::cout << testSet[i] << std::endl;
+	}
+	std::cout << std::endl;
+	testPointer(&testSet);
+	for (u64 i = 0; i < setSize; ++i)
+	{
+		std::cout << testSet[i] << std::endl;
+	}
+#if 0
 	block test = ZeroBlock;
 	test.m128i_i8[0] = 31;
 	BitPosition b;
@@ -43,7 +83,7 @@ void Bit_Position_Test_Impl()
 	b.mPos.insert(7);
 	std::cout << static_cast<int16_t>(b.map(test)) <<std::endl;
 	std::cout << static_cast<int16_t>(b.map2(test));
-#endif
+
 
 	BitPosition b2;
 	b2.init(setSize);
@@ -58,7 +98,7 @@ void Bit_Position_Test_Impl()
 	{
 		//std::cout << static_cast<int16_t>(masks[i]) << std::endl;
 	}
-
+#endif
 }
 
 
@@ -251,7 +291,7 @@ void OPPRF_EmptrySet_Test_Impl()
 
 
         send.init(setSize, psiSecParam, bitSize, sendChl, otSend, prng.get<block>());
-        send.sendInput(sendSet, sendChl);
+        send.sendInput(sendSet.data(), sendSet.size(), sendChl);
 		//Log::out << sendSet[0] << Log::endl;
 	//	send.mBins.print();
 		
@@ -259,10 +299,10 @@ void OPPRF_EmptrySet_Test_Impl()
     });
 
     recv.init(setSize, psiSecParam, bitSize, recvChl, otRecv, ZeroBlock);
-    recv.sendInput(recvSet, recvChl);
+    recv.sendInput(recvSet.data(), recvSet.size(), recvChl);
 	//Log::out << recvSet[0] << Log::endl;
 	//recv.mBins.print();
-	recv.mBins.print();
+	//recv.mBins.print();
 
 
     thrd.join();

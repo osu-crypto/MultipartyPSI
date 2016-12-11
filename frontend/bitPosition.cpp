@@ -64,7 +64,7 @@ void Bit_Position_Test()
 
 void Bit_Position_Map_Test()
 {
-	u64 setSize = 1 << 8;
+	u64 setSize = 1 << 7;
 	std::vector<block> testSet(setSize);
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 

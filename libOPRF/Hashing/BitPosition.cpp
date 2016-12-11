@@ -79,18 +79,18 @@ namespace osuCrypto
 		u8 idx = 0;
 		for (auto it = mPos.begin(); it != mPos.end(); ++it)
 		{
-			int i = *it / 8; //index of a block of 8 bits
-			int r = *it % 8;		//get bit location in i
+		//	int i = *it / 8; //index of a block of 8 bits
+		//	int r = *it % 8;		//get bit location in i
 
-		//	std::cout << " " << i << ":" << r << std::endl;
-		//	__int8 c = codeword.m128i_i8[i];  //a block of 8 bits
+		////	std::cout << " " << i << ":" << r << std::endl;
+		////	__int8 c = codeword.m128i_i8[i];  //a block of 8 bits
 
-			//std::cout << static_cast<int16_t>(c) << std::endl;
-			u8 cq = ((codeword.m128i_i8[i] << (7 - r))); //shift to rightmost and left most to get only the single bit
-			cq = (cq >> 7) << idx; //then shift to location r
-			//std::cout << static_cast<int16_t>(cq) << std::endl;
-			rs = rs ^ cq; 
-			idx++;
+		//	//std::cout << static_cast<int16_t>(c) << std::endl;
+		//	u8 cq = ((codeword.m128i_i8[i] << (7 - r))); //shift to rightmost and left most to get only the single bit
+		//	cq = (cq >> 7) << idx; //then shift to location r
+		//	//std::cout << static_cast<int16_t>(cq) << std::endl;
+		//	rs = rs ^ cq; 
+		//	idx++;
 			//std::cout << std::endl;
 		}
 	//	std::cout << "rs: " << static_cast<int16_t>(rs) << std::endl;

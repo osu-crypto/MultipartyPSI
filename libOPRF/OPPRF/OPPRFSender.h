@@ -36,8 +36,8 @@ namespace osuCrypto
             NcoOtExtSender& ots,
             block seed);
 
-        void sendInput(std::vector<block>& inputs, Channel& chl);
-        void sendInput(std::vector<block>& inputs,const std::vector<Channel*>& chls);
+        void sendInput(block* inputs, int inputSize, Channel& chl);
+        void sendInput(block* inputs, int inputSize,const std::vector<Channel*>& chls);
 
     };
 

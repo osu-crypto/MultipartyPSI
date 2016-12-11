@@ -56,21 +56,15 @@ int main(int argc, char** argv)
     //return 0;
     if (argc == 2)
     {
-        //DktSend();
-        //DcwSend();
-        //DcwRSend();
-        //test(0);
-        otBinSend();
-        //bfSend();
+		//OPPRFSend();
+		BarkOPRSend();
+
+
     }
     else if (argc == 3)
     {
-        //DktRecv();
-        //DcwRecv();
-        //DcwRRecv();
-        //test(1);
-        otBinRecv();
-        //bfRecv();
+		BarkOPRFRecv();
+		//OPPRFRecv();
     }
     else
     {
@@ -82,19 +76,14 @@ int main(int argc, char** argv)
 #else
         auto thrd = std::thread([]() {
 
-            //DktRecv();
-            otBinRecv();
-            //test(0);
-            //bfRecv();
+			//OPPRFRecv();
+			BarkOPRFRecv();
         });
 
-        //DktSend();
-        otBinSend();
-        //test(1);
-        //bfSend();
+		//OPPRFSend();
+		BarkOPRSend();
 
         thrd.join();
-        //blogb();
         //otBin();
 
         //params();

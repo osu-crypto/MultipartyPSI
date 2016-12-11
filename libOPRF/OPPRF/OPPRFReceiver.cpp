@@ -180,19 +180,19 @@ namespace osuCrypto
     }
 
 
-    void OPPRFReceiver::sendInput(std::vector<block>& inputs, Channel & chl)
+    void OPPRFReceiver::sendInput(block* inputs, int inputSize, Channel & chl)
     {
-        sendInput(inputs, { &chl });
+        sendInput(inputs, inputSize,{ &chl });
     }
 
-    void OPPRFReceiver::sendInput(std::vector<block>& inputs, const std::vector<Channel*>& chls)
+    void OPPRFReceiver::sendInput(block* inputs, int inputSize, const std::vector<Channel*>& chls)
     {
 #if 1
         // this is the online phase.
         gTimer.setTimePoint("online.recv.start");
 
         // check that the number of inputs is as expected.
-        if (inputs.size() != mN)
+        if (inputSize != mN)
             throw std::runtime_error(LOCATION);
 
 
@@ -237,7 +237,7 @@ namespace osuCrypto
         std::vector<std::vector<block>> ncoInputBuff(mNcoInputBlkSize);
 
         for (u64 hashIdx = 0; hashIdx < ncoInputBuff.size(); ++hashIdx)
-            ncoInputBuff[hashIdx].resize(inputs.size());
+            ncoInputBuff[hashIdx].resize(inputSize);
 
 
         // fr each thread, spawn it.
@@ -269,12 +269,12 @@ namespace osuCrypto
 
                 for (u64 i = startIdx; i < endIdx; i += 128)
                 {
-                    auto currentStepSize = std::min(u64(128), inputs.size() - i);
+                    auto currentStepSize = std::min(u64(128), inputSize - i);
 
                     for (u64 hashIdx = 0; hashIdx < ncoInputHasher.size(); ++hashIdx)
                     {
                         ncoInputHasher[hashIdx].ecbEncBlocks(
-                            inputs.data() + i,
+                            inputs + i,
                             currentStepSize,
                             ncoInputBuff[hashIdx].data() + i);
                     }
@@ -318,7 +318,7 @@ namespace osuCrypto
                 else
                     insertProm.set_value();
 
-				for (u64 i = 0; i < mBins.mBinCount; ++i)
+				/*for (u64 i = 0; i < mBins.mBinCount; ++i)
 				{
 					if (i < 3 || (i < mN && i > mN - 2)) {
 						
@@ -326,7 +326,7 @@ namespace osuCrypto
 					
 						std::cout << std::endl;
 					}
-				}
+				}*/
 
 			//	mBins.print();
 

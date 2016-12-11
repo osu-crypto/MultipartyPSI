@@ -151,15 +151,15 @@ namespace osuCrypto
     }
 
 
-    void OPPRFSender::sendInput(std::vector<block>& inputs, Channel & chl)
+    void OPPRFSender::sendInput(block* inputs, int inputSize, Channel & chl)
     {
-        sendInput(inputs, { &chl });
+        sendInput(inputs, inputSize,{ &chl });
     }
 
-    void OPPRFSender::sendInput(std::vector<block>& inputs, const std::vector<Channel*>& chls)
+    void OPPRFSender::sendInput(block* inputs, int inputSize, const std::vector<Channel*>& chls)
     {
 
-        if (inputs.size() != mN)
+        if (inputSize != mN)
             throw std::runtime_error(LOCATION);
 
 
@@ -185,7 +185,7 @@ namespace osuCrypto
         std::vector<block> recvMasks(mN);
 
         for (u64 hashIdx = 0; hashIdx < ncoInputBuff.size(); ++hashIdx)
-            ncoInputBuff[hashIdx].resize(inputs.size());
+            ncoInputBuff[hashIdx].resize(inputSize);
 
 
         std::vector<u64> maskPerm(mBins.mMaxBinSize);
@@ -258,12 +258,12 @@ namespace osuCrypto
 
                 for (u64 i = startIdx; i < endIdx; i += 128)
                 {
-                    auto currentStepSize = std::min(u64(128), inputs.size() - i);
+                    auto currentStepSize = std::min(u64(128), inputSize - i);
 
                     for (u64 hashIdx = 0; hashIdx < ncoInputHasher.size(); ++hashIdx)
                     {
                         ncoInputHasher[hashIdx].ecbEncBlocks(
-                            inputs.data() + i,
+                            inputs + i,
                             currentStepSize,
                             ncoInputBuff[hashIdx].data() + i);
                     }
