@@ -28,6 +28,7 @@ namespace osuCrypto
 		void init(u64 n);
         void findPos(std::vector<block>& codewords, std::set<u8>& masks);
 		u8 map(block& codeword);
+		u8 map2(block& codeword);
 /*		void findPos(std::vector<uint64_t>& codewords, std::vector<u8>& masks);
 		u8 map(uint64_t& codeword);
 		void findPos(std::vector<int32_t>& codewords, std::vector<u8>& masks);

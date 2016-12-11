@@ -33,7 +33,7 @@ void Bit_Position_Test_Impl()
 		testSet[i] = prng.get<block>();
 	}
 
-#if 0
+#if 1
 	block test = ZeroBlock;
 	test.m128i_i8[0] = 31;
 	BitPosition b;
@@ -41,16 +41,17 @@ void Bit_Position_Test_Impl()
 	for (int i = 0; i < 3; ++i) b.mPos.insert(i);
 	b.mPos.insert(6);
 	b.mPos.insert(7);
-	std::cout << static_cast<int16_t>(b.map(test));
+	std::cout << static_cast<int16_t>(b.map(test)) <<std::endl;
+	std::cout << static_cast<int16_t>(b.map2(test));
 #endif
 
 	BitPosition b2;
 	b2.init(setSize);
-	std::cout << "size: " << b2.mSize << std::endl;
+	//std::cout << "size: " << b2.mSize << std::endl;
 
 	std::set<u8> masks;
-	b2.findPos(testSet, masks);
-	std::cout << "\nmNumTrial: " << b2.mNumTrial << std::endl;
+//	b2.findPos(testSet, masks);
+	//std::cout << "\nmNumTrial: " << b2.mNumTrial << std::endl;
 	
 
 	for (u8 i = 0; i < masks.size(); i++)
@@ -261,6 +262,7 @@ void OPPRF_EmptrySet_Test_Impl()
     recv.sendInput(recvSet, recvChl);
 	//Log::out << recvSet[0] << Log::endl;
 	//recv.mBins.print();
+	recv.mBins.print();
 
 
     thrd.join();

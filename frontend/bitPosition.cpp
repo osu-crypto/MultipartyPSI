@@ -62,6 +62,64 @@ void Bit_Position_Test()
 
 }
 
+void Bit_Position_Map_Test()
+{
+	u64 setSize = 1 << 8;
+	std::vector<block> testSet(setSize);
+	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+
+	for (u64 i = 0; i < setSize; ++i)
+	{
+		testSet[i] = prng.get<block>();
+	}
+
+	BitPosition b;
+	b.init(setSize);
+	b.mSize = 7;
+	std::set<u8>::iterator it;
+	std::pair<std::set<u8>::iterator, bool> ret;
+
+	for (u8 i = 0; i < b.mSize; i++)
+	{
+		u64 rand = std::rand() % 128; //choose randome bit location
+		ret = b.mPos.insert(rand);
+		if (ret.second == false)
+			it = ret.first;
+	}
+
+	//for (u8 i = 0; i < setSize; i++)
+	//{
+	//	//u8 map1 = b.map(testSet[i]);
+	//	//u8 map2 = b.map2(testSet[i]);
+	//	//if (map1 != map2)
+	//	{
+	//		//std::cout << "map1!=map2" << std::endl;
+	//		//std::cout << "map1: " << static_cast<int16_t>(map1) << std::endl;
+	//		//std::cout << "map2: " << static_cast<int16_t>(map2) << std::endl;
+	//	}
+	//	
+	//}
+	Timer timer;
+	auto start = timer.setTimePoint("start");
+	for (u8 i = 0; i < setSize; i++)
+	{
+		u8 map2 = b.map2(testSet[i]);
+	}
+	auto end = timer.setTimePoint("done");
+	auto time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << "time1: " << time << " ms\n";
+
+	start = timer.setTimePoint("start");
+	for (u8 i = 0; i < setSize; i++)
+	{
+		u8 map1 = b.map(testSet[i]);
+	}
+	 end = timer.setTimePoint("done");
+	time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	std::cout << "time2: " << time << " ms\n";
+
+}
+
 void Bit_Position_Recursive_Test()
 {
 	u64 setSize = 1 << 6;

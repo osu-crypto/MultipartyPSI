@@ -274,7 +274,7 @@ void otBinRecv()
 
 
                 recvPSIs.sendInput(recvSet, recvChls);
-			//	recvPSIs.mBins.print();
+				recvPSIs.mBins.print();
 
 
                 auto end = timer.setTimePoint("done");

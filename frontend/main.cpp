@@ -74,9 +74,10 @@ int main(int argc, char** argv)
     }
     else
     {
-#if 1
+#if 0
+		Bit_Position_Map_Test();
 		//Bit_Position_Test();
-		Bit_Position_Recursive_Test();
+		//Bit_Position_Recursive_Test();
 	//	 OPPRF_EmptrySet_Test_Impl1();
 #else
         auto thrd = std::thread([]() {

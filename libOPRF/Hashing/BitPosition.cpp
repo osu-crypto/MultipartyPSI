@@ -93,10 +93,25 @@ namespace osuCrypto
 			idx++;
 			//std::cout << std::endl;
 		}
-		//std::cout << "rs: " << static_cast<int16_t>(rs) << std::endl;
+	//	std::cout << "rs: " << static_cast<int16_t>(rs) << std::endl;
 		return rs;
 	}
 
+	u8 BitPosition::map2(block& codeword) {
+		u8 rs = 0;
+		u8 idx = 1;
+		for (auto it = mPos.begin(); it != mPos.end(); ++it)
+		{
+			if (TestBitN(codeword, *it))
+
+			{
+				rs = rs^idx;
+				//std::cout << static_cast<int16_t>(idx) << std::endl;
+			}
+			idx=idx << 1;
+		}
+		return rs;
+	}
 	int BitPosition::isSet(block & v, int n)
 	{
 		__m128i chkmask = _mm_slli_epi16(_mm_set1_epi16(1), n & 0xF);
@@ -151,6 +166,7 @@ namespace osuCrypto
 	}
 	std::set<int>::iterator it;
 	std::pair<std::set<int>::iterator, bool> ret;
+	std::pair<std::set<int>::iterator, bool> ret3sa;
 	void BitPosition::getIdxs(std::vector<block>& codewords, int length, std::set<int>& rs, int size )
 	{
 		int setSize = codewords.size();
