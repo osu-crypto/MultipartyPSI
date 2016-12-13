@@ -76,11 +76,11 @@ namespace osuCrypto
 		Log::out << "Cuckoo Hasher  " << Log::endl;
 
 		// for (u64 i = 0; i < 10; ++i)
-        for (u64 i = 0; i < 0; ++i)
+        for (u64 i = 0; i < mBins.size(); ++i)
         {
 			//Log::out << " contains 0 elements\n";
           //  std::cout << "Bin #" << i;
-			Log::out << "Bin #" << i;
+			Log::out << "Bin #" << i << Log::endl;
 
             if (mBins[i].isEmpty())
             {
@@ -91,7 +91,11 @@ namespace osuCrypto
             else
             {
               //  std::cout << "    c_idx=" << mBins[i].idx() << "  hIdx=" << mBins[i].hashIdx() << std::endl;
-				Log::out << "    c_idx=" << mBins[i].idx() << "  hIdx=" << mBins[i].hashIdx() << Log::endl;
+				Log::out << "    c_idx=" << mBins[i].idx();
+			//	Log::out << "    hIdx=" << mBins[i].hashIdx();
+				Log::out << "    c_OPRF=" << mBins[i].mValOPRF;
+				Log::out << "    c_Map="<< static_cast<int16_t>(mBins[i].mValMap);
+				Log::out << Log::endl;
 
             }
 

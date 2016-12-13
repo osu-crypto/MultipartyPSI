@@ -11,8 +11,8 @@
 
 #include "TwoChooseOne/IknpOtExtReceiver.h"
 #include "TwoChooseOne/IknpOtExtSender.h"
-
-
+#include "Hashing/BitPosition.h"
+//#define PRINT
 namespace osuCrypto
 {
     OPPRFReceiver::OPPRFReceiver()
@@ -180,25 +180,25 @@ namespace osuCrypto
     }
 
 
-    void OPPRFReceiver::sendInput(block* inputs, int inputSize, Channel & chl)
+	void OPPRFReceiver::sendInput(std::vector<block>& inputs, Channel & chl)
     {
-        sendInput(inputs, inputSize,{ &chl });
+       sendInput(inputs,{ &chl });
     }
 
-    void OPPRFReceiver::sendInput(block* inputs, int inputSize, const std::vector<Channel*>& chls)
+	void OPPRFReceiver::sendInput(std::vector<block>& inputs, const std::vector<Channel*>& chls)
     {
 #if 1
         // this is the online phase.
         gTimer.setTimePoint("online.recv.start");
 
         // check that the number of inputs is as expected.
-        if (inputSize != mN)
+        if (inputs.size() != mN)
             throw std::runtime_error(LOCATION);
 
 
         
-        std::vector<block> recvMasks(mN);
-		u64 maskSize = 7;// = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+        std::vector<block> valOPRF(mN);
+		u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 
 
         if (maskSize > sizeof(block))
@@ -231,13 +231,12 @@ namespace osuCrypto
 		// this mutex is used to guard inserting things into the bin
 	   std::mutex mInsertBin;
 	   
-        // this mutex is used to guard inserting things into the intersection vector.
-        std::mutex mInsertMtx;
+      
 
         std::vector<std::vector<block>> ncoInputBuff(mNcoInputBlkSize);
 
         for (u64 hashIdx = 0; hashIdx < ncoInputBuff.size(); ++hashIdx)
-            ncoInputBuff[hashIdx].resize(inputSize);
+            ncoInputBuff[hashIdx].resize(mN);
 
 
         // fr each thread, spawn it.
@@ -269,12 +268,12 @@ namespace osuCrypto
 
                 for (u64 i = startIdx; i < endIdx; i += 128)
                 {
-                    auto currentStepSize = std::min(u64(128), inputSize - i);
+                    auto currentStepSize = std::min(u64(128), mN - i);
 
                     for (u64 hashIdx = 0; hashIdx < ncoInputHasher.size(); ++hashIdx)
                     {
                         ncoInputHasher[hashIdx].ecbEncBlocks(
-                            inputs + i,
+							inputs.data() + i,
                             currentStepSize,
                             ncoInputBuff[hashIdx].data() + i);
                     }
@@ -332,7 +331,7 @@ namespace osuCrypto
 
 #pragma endregion
 
-#pragma region PSI
+#pragma region compute Bark-OPRF
 #if 1
                 if (tIdx == 0) gTimer.setTimePoint("online.recv.insertDone");
 
@@ -344,7 +343,6 @@ namespace osuCrypto
 
                 PRNG prng(seed);
 				
-                u8 hashBuff[SHA1::HashSize];
                 //if (!tIdx)
                     //gTimer.setTimePoint("sendInput.PSI");
 
@@ -379,16 +377,15 @@ namespace osuCrypto
                             otRecv.encode(
 								bIdx,      // input
                                 ncoInput,             // input
-                                recvMasks[inputIdx]); // output
+                                bin.mValOPRF); // output
 
 							/*if (bIdx < 3 || (bIdx < mN && bIdx > mN-2))
-								std::cout << "r-" << bIdx << ", " << inputIdx << ": " << recvMasks[inputIdx] << std::endl;*/
+								std::cout << "r-" << bIdx << ", " << inputIdx << ": " << valOPRF[inputIdx] << std::endl;*/
                         }
 						else
                         {
                             otRecv.zeroEncode(bIdx);
-                        }
-						
+                        }					
 
                     }
 
@@ -396,79 +393,11 @@ namespace osuCrypto
                 }
 
 
-                if (tIdx == 0) gTimer.setTimePoint("online.recv.recvMask");
-
-                otRecv.check(chl);
-
-
-                if (tIdx == 0) gTimer.setTimePoint("online.recv.sendMask");
-
-                // all masks have been merged
-                // this is the intersection that will be computed by this thread,
-                // this will be merged into the overall list at the end.
-                u64 localIntersection=-1;
-				u64 mTheirBins_mMaxBinSize = 40;
-				for (u64 bIdx = binStart; bIdx < binEnd;)
-				{
-                    u64 curStepSize = std::min(stepSize, binEnd - bIdx);
-
-					MatrixView<u8> maskView;
-					ByteStream maskBuffer;
-					chl.recv(maskBuffer);
-					maskView = maskBuffer.getMatrixView<u8>(maskSize);
-					u64 numMasks = curStepSize * mTheirBins_mMaxBinSize;
-
-					//if (maskView.size()[0] != numMasks)
-					//	throw std::runtime_error("size not expedted");
-
-					for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
-					{
-
-						auto& bin = mBins.mBins[bIdx];
-						u64 baseMaskIdx = stepIdx*mTheirBins_mMaxBinSize;
-
-						if (!bin.isEmpty())
-						{
-							u64 inputIdx = bin.idx();
-							auto myMask = recvMasks[inputIdx];
-							
-							for (u64 i = 0; i < mTheirBins_mMaxBinSize; ++i)
-							{
-								
-								auto mask = maskView[baseMaskIdx + i];
-								auto theirMask = ZeroBlock;
-								memcpy(&theirMask, mask.data(), maskSize);
-
-								
-								//if (bIdx < 3 || (bIdx < mN && bIdx > mN - 2))
-									//Log::out << theirMask << " "<< Log::endl;
-								if (!memcmp((u8*)&myMask, &theirMask, maskSize))
-								{
-									Log::out << "inputIdx: " << inputIdx << Log::endl;
-									Log::out << "myMask: " << myMask << Log::endl;
-									Log::out << "theirMask: " << theirMask << " "<< Log::endl;
-									localIntersection=inputIdx;
-
-								}
-							}
-						}
-					}
-                }
-
-                if (localIntersection!=-1)
-                {
-                    std::lock_guard<std::mutex> lock(mInsertMtx);
-                    if (mIntersection.size())
-                    {
-                        mIntersection.push_back(localIntersection);
-                    }
-                }
-                if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
+              //  if (tIdx == 0) gTimer.setTimePoint("online.recv.recvMask");
+              otRecv.check(chl);			
 
 #endif
 #pragma endregion
-                //if (!tIdx)
-                //    gTimer.setTimePoint("sendInput.done");
             });
         }
 
@@ -478,7 +407,147 @@ namespace osuCrypto
 
         gTimer.setTimePoint("online.recv.exit");
 
+		
         //std::cout << gTimer;
 #endif
     }
+
+	void OPPRFReceiver::decrypt(std::vector<block>& plaintexts, Channel & chl)
+	{
+		return decrypt(plaintexts, { &chl });
+	}
+
+	void OPPRFReceiver::decrypt(std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
+	{
+
+		// this is the online phase.
+		gTimer.setTimePoint("online.recv.start");
+
+		u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+
+
+		if (maskSize > sizeof(block))
+			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
+
+
+		std::vector<std::thread>  thrds(chls.size());
+		// this mutex is used to guard inserting things into the intersection vector.
+		std::mutex mInsertMtx;
+
+		// fr each thread, spawn it.
+		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+		{
+			auto seed = mPrng.get<block>();
+			thrds[tIdx] = std::thread([&, tIdx, seed]()
+			{
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
+
+				auto& otRecv = *mOtRecvs[tIdx];
+
+				auto& chl = *chls[tIdx];
+
+				auto startIdx = tIdx     * mN / thrds.size();
+				auto endIdx = (tIdx + 1) * mN / thrds.size();
+
+				auto binStart = tIdx       * mBins.mBinCount / thrds.size();
+				auto binEnd = (tIdx + 1) * mBins.mBinCount / thrds.size();
+				const u64 stepSize = 16;
+								
+
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.sendMask");
+
+				// all masks have been merged
+				// this is the intersection that will be computed by this thread,
+				// this will be merged into the overall list at the end.
+				u64 localIntersection = -1;
+				u64 mTheirBins_mMaxBinSize = 32;
+				u64 mTheirBins_mNumBits = 5;
+
+				for (u64 bIdx = binStart; bIdx < binEnd;)
+				{
+					u64 curStepSize = std::min(stepSize, binEnd - bIdx);
+
+					MatrixView<u8> maskView;
+					ByteStream maskBuffer;
+					chl.recv(maskBuffer);
+					//maskView = maskBuffer.getMatrixView<u8>(mTheirBins_mMaxBinSize * maskSize + mTheirBins_mNumBits * sizeof(u8));
+					maskView = maskBuffer.getMatrixView<u8>(mTheirBins_mMaxBinSize * maskSize + mTheirBins_mNumBits * sizeof(u8));
+					if (maskView.size()[0] != curStepSize)
+						throw std::runtime_error("size not expedted");
+
+					for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
+					{
+
+						auto& bin = mBins.mBins[bIdx];
+						if (!bin.isEmpty())
+						{
+							u64 baseMaskIdx = stepIdx;
+							auto mask = maskView[baseMaskIdx];
+							BitPosition b;
+							b.mMaxBitSize = mTheirBins_mNumBits;
+							for (u64 i = 0; i < b.mMaxBitSize; i++)
+							{
+								int idxPos = 0;
+								memcpy(&idxPos, maskView[baseMaskIdx].data()+i, sizeof(u8));
+								b.mPos.push_back(idxPos);
+							}
+#ifdef PRINT
+							Log::out << "RBin #" << bIdx << Log::endl;
+							Log::out << "    cc_mPos= ";
+							for (u64 idxPos = 0; idxPos < b.mPos.size(); idxPos++)
+							{
+								Log::out << static_cast<int16_t>(b.mPos[idxPos]) << " ";
+							}
+							Log::out << Log::endl;
+#endif
+							u64 inputIdx = bin.idx();
+							auto myMask = bin.mValOPRF;
+						//	u8 myMaskPos = 0;
+							b.getMask(myMask, bin.mValMap);
+
+							u64	MaskIdx = bin.mValMap*maskSize + mTheirBins_mNumBits;
+
+								auto theirMask = ZeroBlock;
+								memcpy(&theirMask, maskView[baseMaskIdx].data() + MaskIdx, maskSize);
+
+								//if (!memcmp((u8*)&myMask, &theirMask, maskSize))
+								//{
+									//Log::out << "inputIdx: " << inputIdx << Log::endl;
+								//	Log::out << "myMask: " << myMask << Log::endl;
+									//Log::out << "theirMask: " << theirMask << " " << Log::endl;
+									plaintexts[inputIdx] = myMask^theirMask;
+
+									localIntersection = inputIdx;
+
+								//}
+						}
+					}
+			
+					if (localIntersection != -1)
+					{
+						std::lock_guard<std::mutex> lock(mInsertMtx);
+						if (mIntersection.size())
+						{
+							mIntersection.push_back(localIntersection);
+						}
+					}
+				}				
+
+			});
+		//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
+		}
+		// join the threads.
+		for (auto& thrd : thrds)
+			thrd.join();
+		
+		// check that the number of inputs is as expected.
+		if (plaintexts.size() != mN)
+			throw std::runtime_error(LOCATION);
+
+		
+
+	}
+
+
+
 }

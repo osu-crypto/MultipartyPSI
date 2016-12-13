@@ -7,6 +7,8 @@
 #include "Base/naor-pinkas.h"
 #include "TwoChooseOne/IknpOtExtReceiver.h"
 #include "TwoChooseOne/IknpOtExtReceiver.h"
+
+//#define PRINT
 namespace osuCrypto
 {
 
@@ -151,27 +153,28 @@ namespace osuCrypto
     }
 
 
-    void OPPRFSender::sendInput(block* inputs, int inputSize, Channel & chl)
+	void OPPRFSender::sendInput(std::vector<block>& inputs, Channel & chl)
     {
-        sendInput(inputs, inputSize,{ &chl });
+        sendInput(inputs,{ &chl });
     }
 
-    void OPPRFSender::sendInput(block* inputs, int inputSize, const std::vector<Channel*>& chls)
+	void  OPPRFSender::sendInput(std::vector<block>& inputs, const std::vector<Channel*>& chls)
     {
 
-        if (inputSize != mN)
+        if (inputs.size() != mN)
             throw std::runtime_error(LOCATION);
 
 
 		//TODO: double check
-       // u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-		u64 maskSize = 7;
-        if (maskSize > sizeof(block))
+        u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		
+		if (maskSize > sizeof(block))
             throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
 
-        std::vector<std::thread>  thrds(chls.size());
-       // std::vector<std::thread>  thrds(1);        
+
+        //std::vector<std::thread>  thrds(chls.size());
+        std::vector<std::thread>  thrds(1);        
 
 		std::atomic<u32> remaining((u32)thrds.size()), remainingMasks((u32)thrds.size());
 		std::promise<void> doneProm , maskProm;
@@ -182,10 +185,10 @@ namespace osuCrypto
         std::mutex mtx;
 
         std::vector<std::vector<block>> ncoInputBuff(mNcoInputBlkSize);
-        std::vector<block> recvMasks(mN);
+        std::vector<block> valOPRF(mN*mBins.mNumHashes);
 
         for (u64 hashIdx = 0; hashIdx < ncoInputBuff.size(); ++hashIdx)
-            ncoInputBuff[hashIdx].resize(inputSize);
+            ncoInputBuff[hashIdx].resize(mN);
 
 
         std::vector<u64> maskPerm(mBins.mMaxBinSize);
@@ -258,12 +261,12 @@ namespace osuCrypto
 
                 for (u64 i = startIdx; i < endIdx; i += 128)
                 {
-                    auto currentStepSize = std::min(u64(128), inputSize - i);
+                    auto currentStepSize = std::min(u64(128), mN - i);
 
                     for (u64 hashIdx = 0; hashIdx < ncoInputHasher.size(); ++hashIdx)
                     {
                         ncoInputHasher[hashIdx].ecbEncBlocks(
-                            inputs + i,
+							inputs.data() + i,
                             currentStepSize,
                             ncoInputBuff[hashIdx].data() + i);
                     }
@@ -272,11 +275,15 @@ namespace osuCrypto
                     // as where each item should be hashed.
                     for (u64 j = 0; j < currentStepSize; ++j)
                     {
-						ArrayView<u64> hashes(3);
-						for (u64 k = 0; k < 3; ++k)
+						ArrayView<u64> hashes(mBins.mNumHashes);
+						for (u64 k = 0; k < mBins.mNumHashes; ++k)
 						{
 							block& item = ncoInputBuff[k][i + j];
+
 							u64 addr = *(u64*)&item % mBins.mBinCount;
+
+						/*	if(addr==27)
+								std::cout << i << "---"<<j<<"---" << k <<": " << *(block*)&item << "\n";*/
 
 							// implements phase. Note that we are doing very course phasing. 
 							// At the byte level. This is good enough for use. Since we just 
@@ -287,7 +294,10 @@ namespace osuCrypto
 						//		ncoInputBuff[0][i + j] = _mm_srli_si128(item, 2);
 
 							std::lock_guard<std::mutex> lock(mBins.mMtx[addr]);
-							mBins.mBins[addr].emplace_back(i + j);
+							if (std::find(mBins.mBins[addr].mIdx.begin(), mBins.mBins[addr].mIdx.end(), i + j) == mBins.mBins[addr].mIdx.end()) {
+								mBins.mBins[addr].mIdx.emplace_back(i + j);
+							}
+							
 						//	std::cout << j<<"-" << k <<": " << *(u64*)&item << "\n";
 
 							hashes[k] = *(u64*)&item;
@@ -327,11 +337,10 @@ namespace osuCrypto
 					}
 				}*/
 
-				//mBins.print();
 #pragma endregion
 
 
-#pragma region maskCompute
+#pragma region compute Bark-OPRF
 #if 1
                 if (tIdx == 0) gTimer.setTimePoint("online.send.insert");
 
@@ -382,69 +391,43 @@ namespace osuCrypto
 						std::vector<u64> maskPerm(mBins.mMaxBinSize);
 						for (u64 i = 0; i < maskPerm.size(); ++i)
 							maskPerm[i] = i;
-
-                        for (u64 i = 0; i < bin.size(); ++i)
+						
+						bin.mValOPRF.resize(bin.mIdx.size());
+                        
+						for (u64 i = 0; i < bin.mIdx.size(); ++i)
                         {
 
-                            u64 inputIdx = bin[i];
-							
-
+                            u64 inputIdx = bin.mIdx[i];
                          
                                 for (u64 j = 0; j < mNcoInputBlkSize; ++j)
                                 {
                                     ncoInput[j] = ncoInputBuff[j][inputIdx];
                                 }
 
-                                block sendMask;
+                            //    block sendMask;
 
                                 otSend.encode(
 									bIdx, //each bin has 1 OT
                                     ncoInput,
-                                    sendMask);
-
-                                memcpy(
-                                    maskView[baseMaskIdx + maskPerm[i]].data(),
-                                    (u8*)&sendMask,
-                                    maskSize);
+									bin.mValOPRF[i]);                            
 								
-								if (bIdx < 3 || (bIdx < mN && bIdx > mN - 2))
-									std::cout << "s-"<<bIdx <<", "<< inputIdx << ": " << sendMask << std::endl;
+								/*if (bIdx < 3 || (bIdx < mN && bIdx > mN - 2))
+									std::cout << "s-"<<bIdx <<", "<< inputIdx << ": " << sendMask << std::endl;*/
                             }
 
-					//	dummy mask
-						for (u64 i = bin.size(); i < mBins.mMaxBinSize ; ++i)
-						{
-							memcpy(
-								maskView[baseMaskIdx + maskPerm[i]].data(),
-								(u8*)&ZeroBlock, //make randome
-								maskSize);
-						}
+						//#####################
+						//######Finding bit locations
+						//#####################
 
-						//if (tIdx == 0)
+						bin.mBits.init(bin.mIdx.size(),mBins.mNumBits);
+						bin.mBits.getPos(bin.mValOPRF, 128);
+						bin.mBits.getMasks(bin.mValOPRF);
 							
                     }
-					chl.asyncSend(std::move(sendMaskBuff));
                 }
-                if (tIdx == 0) gTimer.setTimePoint("online.send.sendMask");
-
-
-               
-                otSend.check(chl);
-
-                // block until all masks are computed. the last to finish will set the promise...
-                if (--remainingMasks)
-                {
-                    maskFuture.get();
-                }
-                else
-                {
-                    maskProm.set_value();
-                }
-
-               /* if (tIdx == 0)
-                    chl.asyncSend(std::move(sendMaskBuff));*/
 
                 if (tIdx == 0) gTimer.setTimePoint("online.send.finalMask");
+				otSend.check(chl);
 #endif
 #pragma endregion
 
@@ -453,11 +436,201 @@ namespace osuCrypto
 
         for (auto& thrd : thrds)
             thrd.join();
-
-    //    permThrd.join();
-
-
     }
+
+	void OPPRFSender::sendEnc(std::vector<block>& plaintexts, Channel & chl)
+	{
+		sendEnc(plaintexts,{ &chl });
+	}
+
+	void OPPRFSender::sendEnc(std::vector<block>& plaintexts,const std::vector<Channel*>& chls)
+	{
+		if (plaintexts.size() != mN)
+			throw std::runtime_error(LOCATION);
+
+
+		//TODO: double check
+		u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		//u64 maskSize = 7;
+		if (maskSize > sizeof(block))
+			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
+
+
+
+		std::vector<std::thread>  thrds(chls.size());
+		// std::vector<std::thread>  thrds(1);        
+
+		std::atomic<u32> remainingMasks((u32)thrds.size());
+		std::promise<void> maskProm;
+		std::shared_future<void>
+			maskFuture(maskProm.get_future());
+
+		std::mutex mtx;
+
+
+		gTimer.setTimePoint("online.send.spaw");
+
+		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+		{
+			auto seed = mPrng.get<block>();
+			thrds[tIdx] = std::thread([&, tIdx, seed]() {
+
+				PRNG prng(seed);
+
+				if (tIdx == 0) gTimer.setTimePoint("online.send.thrdStart");
+
+				auto& otSend = *mOtSends[tIdx];
+
+				auto& chl = *chls[tIdx];
+				auto startIdx = tIdx       * mN / thrds.size();
+				auto endIdx = (tIdx + 1) * mN / thrds.size();
+
+				// compute the region of inputs this thread should insert.
+				//ArrayView<block> itemRange(
+				//    inputs.begin() + startIdx,
+				//    inputs.begin() + endIdx);
+
+
+#pragma region compute encryption
+#if 1
+				if (tIdx == 0) gTimer.setTimePoint("online.send.insert");
+
+				const u64 stepSize = 16;
+
+				auto binStart = tIdx       * mBins.mBinCount / thrds.size();
+				auto binEnd = (tIdx + 1) * mBins.mBinCount / thrds.size();
+				
+				if (tIdx == 0) gTimer.setTimePoint("online.send.OT");
+
+				for (u64 bIdx = binStart; bIdx < binEnd;)
+				{
+					u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
+					uPtr<Buff> sendMaskBuff(new Buff);
+					sendMaskBuff->resize(currentStepSize * (mBins.mMaxBinSize * maskSize+ mBins.mNumBits * sizeof(u8)));
+					auto maskView = sendMaskBuff->getMatrixView<u8>(mBins.mMaxBinSize * maskSize + mBins.mNumBits * sizeof(u8));
+
+					for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
+					{
+
+						auto& bin = mBins.mBins[bIdx];
+						u64 baseMaskIdx = stepIdx;
+						
+						std::vector<u8> dummyPos;
+
+						//copy bit locations in which all OPRF values are distinct
+						int MaskIdx = 0;
+						/*Log::out << "BBin #" << bIdx << Log::endl;
+						Log::out << "    c_mPos= " ;*/
+
+						if (bin.mBits.mPos.size() != mBins.mNumBits)
+						{
+							throw std::runtime_error("bin.mBits.mPos.size()!= mBins.mNumBits");
+							Log::out << "bin.mBits.mPos.size()!= mBins.mNumBits" << Log::endl;
+						}
+
+						for (u64 idxPos = 0; idxPos < bin.mBits.mPos.size(); idxPos++)
+						{
+						//	Log::out << static_cast<int16_t>(bin.mBits.mPos[idxPos]) << " ";
+								memcpy(
+									maskView[baseMaskIdx].data()+ idxPos,
+									(u8*)&bin.mBits.mPos[idxPos], sizeof(u8));
+						}
+						//Log::out << Log::endl;
+
+					
+						for (u64 i = 0; i < bin.mIdx.size(); ++i)
+						{
+							u64 inputIdx = bin.mIdx[i];
+							block encr = bin.mValOPRF[i] ^ plaintexts[inputIdx];
+
+							//Log::out << "    c_idx=" << inputIdx;
+							//Log::out << "    c_OPRF=" << encr;
+							//Log::out << "    c_Map=" << static_cast<int16_t>(bin.mBits.mMaps[i]);
+
+							MaskIdx = bin.mBits.mMaps[i]* maskSize+ mBins.mNumBits;
+
+							memcpy(
+								maskView[baseMaskIdx].data()+ MaskIdx,
+								(u8*)&encr,
+								maskSize);
+
+						//	Log::out << Log::endl;
+						}
+
+						//#####################
+						//######Filling dummy mask
+						//#####################
+							
+						for (u64 i = 0; i < mBins.mMaxBinSize ; ++i)
+						{
+							if (std::find(bin.mBits.mMaps.begin(), bin.mBits.mMaps.end(), i) == bin.mBits.mMaps.end())
+							{
+								MaskIdx = i* maskSize+ mBins.mNumBits;
+							//	Log::out << "    cc_Map=" << i << Log::endl;
+								memcpy(
+									maskView[baseMaskIdx].data() + MaskIdx,
+									(u8*)&ZeroBlock,  //make randome
+									maskSize);
+							}
+						}
+
+					}
+					
+#ifdef PRINT
+					Log::out << "maskSize: ";
+					for (size_t i = 0; i < maskView.size()[0]; i++)
+					{
+						for (size_t j = 0; j < mBins.mNumBits; j++)
+						{
+							Log::out << static_cast<int16_t>(maskView[i][j]) << " ";
+						}
+						Log::out << Log::endl;
+
+						for (size_t j = 0; j < mBins.mMaxBinSize; j++) {
+							auto theirMask = ZeroBlock;
+							memcpy(&theirMask, maskView[i].data()+j*maskSize+ mBins.mNumBits, maskSize);
+							if (theirMask != ZeroBlock)
+							{
+								Log::out << theirMask << " " << Log::endl;
+							}
+						}
+					}
+#endif
+						chl.asyncSend(std::move(sendMaskBuff));
+
+				}
+				if (tIdx == 0) gTimer.setTimePoint("online.send.sendMask");
+
+			//	otSend.check(chl);
+
+				// block until all masks are computed. the last to finish will set the promise...
+				if (--remainingMasks)
+				{
+					maskFuture.get();
+				}
+				else
+				{
+					maskProm.set_value();
+				}
+
+				/* if (tIdx == 0)
+				chl.asyncSend(std::move(sendMaskBuff));*/
+
+				if (tIdx == 0) gTimer.setTimePoint("online.send.finalMask");
+#endif
+#pragma endregion
+
+			});
+		}
+
+		for (auto& thrd : thrds)
+			thrd.join();
+
+		//    permThrd.join();
+
+
+
+	}
 
 }
 

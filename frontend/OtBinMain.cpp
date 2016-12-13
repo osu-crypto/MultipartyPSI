@@ -439,7 +439,8 @@ void OPPRFSend()
 				sendChls[0]->recv(dummy, 1);
 				//std::cout << "sender init done" << std::endl;
 
-				sendPSIs.sendInput(sendSet.data(), sendSet.size(), sendChls);
+				//sendPSIs.sendInput(sendSet.data(), sendSet.size(), sendChls);
+				sendPSIs.sendInput(sendSet, sendChls);
 
 				//  sendPSIs.mBins.print();
 
@@ -590,7 +591,8 @@ void OPPRFRecv()
 				auto mid = timer.setTimePoint("init");
 
 
-				recvPSIs.sendInput(recvSet.data(), recvSet.size(), recvChls);
+			//	recvPSIs.sendInput(recvSet.data(), recvSet.size(), recvChls);
+				recvPSIs.sendInput(recvSet, recvChls);
 				//recvPSIs.mBins.print();
 
 

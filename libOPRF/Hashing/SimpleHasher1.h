@@ -2,7 +2,7 @@
 #include "Common/Defines.h"
 #include "Common/BitVector.h"
 #include "Common/ArrayView.h"
-
+#include "Hashing/BitPosition.h"
 namespace osuCrypto
 {
     //// a list of {{set size, bit size}}
@@ -21,13 +21,18 @@ namespace osuCrypto
         SimpleHasher1();
         ~SimpleHasher1();
 
-        typedef std::vector<u64> MtBin;
+        //typedef std::vector<u64,block> MtBin;
         //typedef std::vector<std::pair<u64, block>> MtBin;
-
-        u64 mBinCount , mMaxBinSize, mRepSize, mInputBitSize, mN;
+		struct Bin
+		{
+			std::vector<u64> mIdx;
+			BitPosition mBits;
+			std::vector<block> mValOPRF;
+		};
+        u64 mBinCount , mMaxBinSize, mRepSize, mInputBitSize, mN, mNumHashes, mNumBits;
 
         std::unique_ptr<std::mutex[]> mMtx;
-        std::vector<MtBin> mBins;
+        std::vector<Bin> mBins;
         block mHashSeed;
 
         void print() const;

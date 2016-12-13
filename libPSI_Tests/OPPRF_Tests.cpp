@@ -38,42 +38,37 @@ void testPointer(std::vector<block>* test)
 
 
 }
-void testPointer2(block * test, int size)
+void testPointer2(std::vector<block>&  test)
 {
-	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
-	auto myHashSeed = prng.get<block>();
-
 	AES ncoInputHasher;
-	ncoInputHasher.setKey(myHashSeed);
-//	for (u64 i = 0; i < size-1; i++)
-//	{
-		ncoInputHasher.ecbEncBlocks(test, size-1,test);
-//	}
+
+	ncoInputHasher.setKey(_mm_set1_epi64x(112434));
+	ncoInputHasher.ecbEncBlocks(test.data(), test.size() - 1, test.data());
+	
+
 
 }
 
 void Bit_Position_Test_Impl()
 {
+	std::cout << sizeof(u8) << std::endl;
+
+#if 0
 	u64 setSize = 1<<4;
 	std::vector<block> testSet(setSize);
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
-	
 
 	for (u64 i = 0; i < setSize; ++i)
 	{
 		testSet[i] = prng.get<block>();
-	}
-	for (u64 i = 0; i < setSize; ++i)
-	{
 		std::cout << testSet[i] << std::endl;
 	}
-	std::cout << std::endl;
-	testPointer(&testSet);
+	testPointer2(testSet);
 	for (u64 i = 0; i < setSize; ++i)
 	{
-		std::cout << testSet[i] << std::endl;
+		std::cout <<testSet[i] << std::endl;
 	}
-#if 0
+
 	block test = ZeroBlock;
 	test.m128i_i8[0] = 31;
 	BitPosition b;
@@ -81,8 +76,8 @@ void Bit_Position_Test_Impl()
 	for (int i = 0; i < 3; ++i) b.mPos.insert(i);
 	b.mPos.insert(6);
 	b.mPos.insert(7);
-	std::cout << static_cast<int16_t>(b.map(test)) <<std::endl;
-	std::cout << static_cast<int16_t>(b.map2(test));
+	//std::cout << static_cast<int16_t>(b.map(test)) <<std::endl;
+	//std::cout << static_cast<int16_t>(b.map2(test));
 
 
 	BitPosition b2;
@@ -111,11 +106,11 @@ void Bit_Position_Recursive_Test_Impl()
 
 	for (u64 i = 0; i < setSize; ++i)
 	{
-		testSet[i] = prng.get<block>();
+		testSet[i] = ZeroBlock;//prng.get<block>();
 	}
 	for (u64 i = 0; i < setSize; ++i)
 	{
-		//testSet[i].m128i_u8[i/8] = 1 << (i%8);
+		testSet[i].m128i_u8[i/8] = 1 << (i%8);
 	}
 	
 	BitPosition b;
@@ -161,13 +156,18 @@ void Bit_Position_Recursive_Test_Impl()
 	//	idx = *(it);
 #endif
 	std::set<int> rs;
-	b.init(setSize);
-	b.getIdxs(testSet, 128,rs,b.mSize);
+	b.init(setSize,5);
+	b.getPos(testSet, 128);
+	b.getMasks(testSet);
 
-	std::set<int>::iterator iter;
-	for (iter = rs.begin(); iter != rs.end(); ++iter) {
-		std::cout<<(*iter) <<" "<< std::endl;
+	/*std::set<u8>::iterator iter;
+	for (iter = b.mPos.begin(); iter != b.mPos.end(); ++iter) {
+		std::cout << static_cast<int16_t>((*iter)) << " ";
 	}
+	std::cout <<  std::endl;
+	for (iter = b.mMasks.begin(); iter != b.mMasks.end(); ++iter) {
+		std::cout<< static_cast<int16_t>((*iter)) <<" "<< std::endl;
+	}*/
 }
 
 
@@ -232,20 +232,23 @@ void OPPRF_CuckooHasher_Test_Impl()
 
 void OPPRF_EmptrySet_Test_Impl()
 {
-    u64 setSize = 2<<8, psiSecParam = 40, bitSize = 128;
+    u64 setSize = 1<<5, psiSecParam = 40, bitSize = 128;
     PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 
     std::vector<block> sendSet(setSize), recvSet(setSize);
+	std::vector<block> sendPayLoads(setSize), recvPayLoads(setSize);
+
     for (u64 i = 0; i < setSize; ++i)
     {
         sendSet[i] = prng.get<block>();
-		recvSet[i] = prng.get<block>();
-		//recvSet[i] = sendSet[i];
-    }
-	for (u64 i = 1; i < 3; ++i)
-	{
+		sendPayLoads[i]= prng.get<block>();
+		//recvSet[i] = prng.get<block>();
 		recvSet[i] = sendSet[i];
-	}
+    }
+	//for (u64 i = 1; i < 3; ++i)
+	//{
+	//	recvSet[i] = sendSet[i];
+	//}
 
     std::string name("psi");
 
@@ -259,51 +262,44 @@ void OPPRF_EmptrySet_Test_Impl()
 
     KkrtNcoOtReceiver otRecv;
     KkrtNcoOtSender otSend;
-
-
-    //u64 baseCount = 128 * 4;
-    //std::vector<std::array<block, 2>> sendBlks(baseCount);
-    //std::vector<block> recvBlks(baseCount);
-    //BitVector choices(baseCount);
-    //choices.randomize(prng);
-
-    //for (u64 i = 0; i < baseCount; ++i)
-    //{
-    //    sendBlks[i][0] = prng.get<block>();
-    //    sendBlks[i][1] = prng.get<block>();
-    //    recvBlks[i] = sendBlks[i][choices[i]];
-    //}
-
-    //otRecv.setBaseOts(sendBlks);
-    //otSend.setBaseOts(recvBlks, choices);
-
-    //for (u64 i = 0; i < baseCount; ++i)
-    //{
-    //    sendBlks[i][0] = prng.get<block>();
-    //    sendBlks[i][1] = prng.get<block>();
-    //    recvBlks[i] = sendBlks[i][choices[i]];
-    //}
-
-
+	
     OPPRFSender send;
 	OPPRFReceiver recv;
     std::thread thrd([&]() {
 
 
         send.init(setSize, psiSecParam, bitSize, sendChl, otSend, prng.get<block>());
-        send.sendInput(sendSet.data(), sendSet.size(), sendChl);
-		//Log::out << sendSet[0] << Log::endl;
-	//	send.mBins.print();
-		
+		send.sendInput(sendSet, sendChl);
+		send.sendEnc(sendPayLoads, sendChl);
+		send.mBins.print();
+
+		//for (u64 i = 1; i < 3; ++i)
+		//{
+		//	Log::out << "Sender Bin#: " << i << " ";
+		//	for (u64 j = 1; j < send.mBins.mBins[i].mIdx.size(); ++j)
+		//	{
+		//		Log::out << send.mBins.mBins[i].mIdx[j] << " - ";
+		//		Log::out << send.mBins.mBins[i].mValOPRF[j] << Log::endl;
+		//	}
+		//}
+		//
+		//
 
     });
 
     recv.init(setSize, psiSecParam, bitSize, recvChl, otRecv, ZeroBlock);
-    recv.sendInput(recvSet.data(), recvSet.size(), recvChl);
-	//Log::out << recvSet[0] << Log::endl;
-	//recv.mBins.print();
-	//recv.mBins.print();
+	recv.sendInput(recvSet, recvChl);
+	recv.decrypt(recvPayLoads, recvChl);
+	recv.mBins.print();
 
+	std::cout << IoStream::lock;
+	for (u64 i = 1; i < recvPayLoads.size(); ++i)
+	{
+			Log::out << recvPayLoads[i] << Log::endl;
+			Log::out << sendPayLoads[i] << Log::endl;
+		}
+	
+	std::cout << IoStream::unlock;
 
     thrd.join();
 

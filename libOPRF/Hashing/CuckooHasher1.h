@@ -4,6 +4,7 @@
 #include "Common/BitVector.h"
 #include "Common/ArrayView.h"
 #include "Common/MatrixView.h"
+#include "Hashing/BitPosition.h"
 //#include <mutex>
 #include <atomic>
 
@@ -44,6 +45,10 @@ namespace osuCrypto
             Bin(const Bin& b) : mVal(b.mVal) {}
             Bin(Bin&& b) : mVal(b.mVal) {}
             u64 mVal;
+			block mValOPRF;
+			u8 mValMap;
+
+			
 #endif
         };
         struct Workspace

@@ -287,7 +287,7 @@ namespace osuCrypto
 						//		ncoInputBuff[0][i + j] = _mm_srli_si128(item, 2);
 
 							std::lock_guard<std::mutex> lock(mBins.mMtx[addr]);
-							mBins.mBins[addr].emplace_back(i + j);
+							mBins.mBins[addr].mIdx.emplace_back(i + j);
 						//	std::cout << j<<"-" << k <<": " << *(u64*)&item << "\n";
 
 							hashes[k] = *(u64*)&item;
@@ -383,10 +383,10 @@ namespace osuCrypto
 						for (u64 i = 0; i < maskPerm.size(); ++i)
 							maskPerm[i] = i;
 
-                        for (u64 i = 0; i < bin.size(); ++i)
+                        for (u64 i = 0; i < bin.mIdx.size(); ++i)
                         {
 
-                            u64 inputIdx = bin[i];
+                            u64 inputIdx = bin.mIdx[i];
 							
 
                          
@@ -412,7 +412,7 @@ namespace osuCrypto
                             }
 
 					//	dummy mask
-						for (u64 i = bin.size(); i < mBins.mMaxBinSize ; ++i)
+						for (u64 i = bin.mIdx.size(); i < mBins.mMaxBinSize ; ++i)
 						{
 							memcpy(
 								maskView[baseMaskIdx + maskPerm[i]].data(),

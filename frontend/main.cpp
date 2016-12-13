@@ -76,12 +76,12 @@ int main(int argc, char** argv)
 #else
         auto thrd = std::thread([]() {
 
-			//OPPRFRecv();
-			BarkOPRFRecv();
+			OPPRFRecv();
+			//BarkOPRFRecv();
         });
 
-		//OPPRFSend();
-		BarkOPRSend();
+		OPPRFSend();
+		//BarkOPRSend();
 
         thrd.join();
         //otBin();

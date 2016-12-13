@@ -3,6 +3,7 @@
 #include "Network/Channel.h"
 #include "NChooseOne/NcoOtExt.h"
 #include "Hashing/SimpleHasher1.h"
+#include "Hashing/BitPosition.h"
 
 namespace osuCrypto
 {
@@ -36,8 +37,11 @@ namespace osuCrypto
             NcoOtExtSender& ots,
             block seed);
 
-        void sendInput(block* inputs, int inputSize, Channel& chl);
-        void sendInput(block* inputs, int inputSize,const std::vector<Channel*>& chls);
+		void sendInput(std::vector<block>& inputs, Channel& chl);
+		void sendInput(std::vector<block>& inputs,const std::vector<Channel*>& chls);
+
+		void sendEnc(std::vector<block>& plaintexts,  Channel& chl);
+		void sendEnc(std::vector<block>& plaintexts,  const std::vector<Channel*>& chls);
 
     };
 

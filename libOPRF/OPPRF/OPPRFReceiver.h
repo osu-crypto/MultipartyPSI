@@ -31,8 +31,13 @@ namespace osuCrypto
 
         void init(u64 n, u64 statSecParam, u64 inputBitSize, Channel& chl0, NcoOtExtReceiver& otRecv, block seed);
         void init(u64 n, u64 statSecParam, u64 inputBitSize, const std::vector<Channel*>& chls, NcoOtExtReceiver& ots, block seed);
-        void sendInput(block* inputs,int inputSize, Channel& chl);
-        void sendInput(block* inputs, int inputSize, const std::vector<Channel*>& chls);
+
+		void sendInput(std::vector<block>& inputs, Channel& chl);
+		void sendInput(std::vector<block>& inputs, const std::vector<Channel*>& chls);
+
+		void decrypt( std::vector<block>& plaintexts, Channel& chl);
+		void decrypt( std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+
 
     };
 
