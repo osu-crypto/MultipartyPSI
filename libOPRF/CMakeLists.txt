@@ -52,5 +52,5 @@ include_directories(${CMAKE_SOURCE_DIR}/libOPRF)
 
 add_library(libOPRF ${SRCS})
 
-target_link_libraries(libOPRF ${libOTe_LIB}  cryptoTools  ${NTL_LIB})
+target_link_libraries(libOPRF libOTe cryptoTools  ${NTL_LIB})
 

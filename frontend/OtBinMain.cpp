@@ -429,7 +429,7 @@ void OPPRFSend()
 				sendChls[0]->recv(dummy, 1);
 				u64 otIdx = 0;
 				//std::cout << "sender init" << std::endl;
-				sendPSIs.init(setSize, psiSecParam, 128, sendChls, otSend, prng.get<block>());
+			//	sendPSIs.init(setSize, psiSecParam, 128, sendChls, otSend, prng.get<block>());
 				//std::cout << "s\n";
 				//	std::cout << otSend.mGens[5].mSeed << std::endl;
 
@@ -440,7 +440,7 @@ void OPPRFSend()
 				//std::cout << "sender init done" << std::endl;
 
 				//sendPSIs.sendInput(sendSet.data(), sendSet.size(), sendChls);
-				sendPSIs.sendInput(sendSet, sendChls);
+			//	sendPSIs.sendInput(sendSet, sendChls);
 
 				//  sendPSIs.mBins.print();
 
@@ -571,7 +571,7 @@ void OPPRFRecv()
 
 				Timer timer;
 				auto start = timer.setTimePoint("start");
-				recvPSIs.init(setSize, psiSecParam, 128, recvChls, otRecv, ZeroBlock);
+			//	recvPSIs.init(setSize, psiSecParam, 128, recvChls, otRecv, ZeroBlock);
 
 				/*std::cout << "r\n";
 				std::cout << otRecv.mGens[5][0].mSeed << std::endl;
@@ -592,7 +592,7 @@ void OPPRFRecv()
 
 
 			//	recvPSIs.sendInput(recvSet.data(), recvSet.size(), recvChls);
-				recvPSIs.sendInput(recvSet, recvChls);
+			//	recvPSIs.sendInput(recvSet, recvChls);
 				//recvPSIs.mBins.print();
 
 

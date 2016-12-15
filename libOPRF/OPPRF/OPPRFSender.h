@@ -46,10 +46,10 @@ namespace osuCrypto
             NcoOtExtSender& ots,
 			NcoOtExtReceiver& otRecv,
             block seed);
-#if 0
-		void hash2Bins(std::vector<block>& inputs);
-		void hash2Bins(std::vector<block>& inputs);
 
+		void hash2Bins(std::vector<block>& inputs, Channel& chl);
+		void hash2Bins(std::vector<block>& inputs, const std::vector<Channel*>& chls);
+#if 0
 		void getOPRFKeys(std::vector<block>& inputs, Channel& chl);
 		void getOPRFKeys(std::vector<block>& inputs, const std::vector<Channel*>& chls);
 

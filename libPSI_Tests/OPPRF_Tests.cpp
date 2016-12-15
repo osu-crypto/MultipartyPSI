@@ -243,13 +243,13 @@ void OPPRF_EmptrySet_Test_Impl()
     {
         sendSet[i] = prng.get<block>();
 		sendPayLoads[i]= prng.get<block>();
-		//recvSet[i] = prng.get<block>();
+		recvSet[i] = prng.get<block>();
 		recvSet[i] = sendSet[i];
     }
-	//for (u64 i = 1; i < 3; ++i)
-	//{
-	//	recvSet[i] = sendSet[i];
-	//}
+	for (u64 i = 1; i < 3; ++i)
+	{
+		recvSet[i] = sendSet[i];
+	}
 
     std::string name("psi");
 
@@ -271,7 +271,12 @@ void OPPRF_EmptrySet_Test_Impl()
     std::thread thrd([&]() {
 
 
-		send.init(setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv0, prng.get<block>());
+		send.init(setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
+		send.hash2Bins(sendSet, sendChl);
+		Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
+		send.mSimpleBins.print(true, false, false,false);
+		Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
+		send.mCuckooBins.print(true, false, false);
 
 
 		//send.sendInput(sendSet, sendChl);
@@ -291,12 +296,32 @@ void OPPRF_EmptrySet_Test_Impl()
 		//
 
     });
-	recv.init(setSize, psiSecParam, bitSize, recvChl, otRecv1, otSend1, ZeroBlock);
+	recv.init(setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
+	recv.hash2Bins(recvSet, recvChl);
+	Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
+	recv.mCuckooBins.print(true, false, false);
+	Log::out << "recv.mSimpleBins.print(true, false, false,false);" << Log::endl;
+	recv.mSimpleBins.print(true, false, false,false);
 
 	/*recv.sendInput(recvSet, recvChl);
 	recv.decrypt(recvPayLoads, recvChl);
 	recv.mBins.print();
 */
+
+#ifdef PRINT
+	std::cout << IoStream::lock;
+	Log::out << otSend0.mT.size()[1] << Log::endl;
+	Log::out << otSend1.mT.size()[1] << Log::endl;
+	Log::out << otSend0.mGens[0].get<block>() << Log::endl;
+	Log::out << otRecv0.mGens[0][0].get<block>() << Log::endl;
+	Log::out << otRecv0.mGens[0][1].get<block>() << Log::endl;
+	Log::out << "------------" << Log::endl;
+	Log::out << otSend1.mGens[0].get<block>() << Log::endl;
+	Log::out << otRecv1.mGens[0][0].get<block>() << Log::endl;
+	Log::out << otRecv1.mGens[0][1].get<block>() << Log::endl;
+	std::cout << IoStream::unlock;
+
+#endif
 
 	thrd.join();
 
@@ -310,20 +335,7 @@ void OPPRF_EmptrySet_Test_Impl()
 	//std::cout << IoStream::unlock;
 
    
-#ifdef PRINT
-	//std::cout << IoStream::lock;
-	//Log::out << "otSend0.mT.size()[0]: " << otSend0.mT.size()[0] << Log::endl;
-	//Log::out << "otSend0.mT.size()[1]: " << otSend0.mT.size()[1] << Log::endl;
-	//Log::out << otSend0.mT[0][0] << Log::endl;
-	//Log::out << otRecv0.mT0[0][0] << Log::endl;
-	//Log::out << otRecv0.mT1[0][0] << Log::endl;
-	//Log::out << "------------" << Log::endl;
-	//Log::out << otSend1.mT[0][0] << Log::endl;
-	//Log::out << otRecv1.mT0[0][0] << Log::endl;
-	//Log::out << otRecv1.mT1[0][0] << Log::endl;
-	//std::cout << IoStream::unlock;
 
-#endif
 
 
     sendChl[0]->close();

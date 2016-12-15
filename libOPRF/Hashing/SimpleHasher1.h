@@ -35,9 +35,14 @@ namespace osuCrypto
         std::vector<Bin> mBins;
         block mHashSeed;
 
-        void print() const;
+        void print(bool isIdx, bool isOPRF, bool isMap, bool isPos) const;
 
         void init(u64 n, u64 numBits, block hashSeed, u64 secParam, bool isStash);
+
+		void insertBatch(
+			ArrayView<u64> inputIdxs,
+			MatrixView<u64> hashs,
+			u64 numHashFunc);
 
         //void preHashedInsertItems(ArrayView<block> items, u64 itemIdx);
         //void insertItemsWithPhasing(ArrayView<block> items, u64 itemIdx);

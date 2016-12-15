@@ -36,10 +36,10 @@ namespace osuCrypto
 
 		void init(u64 n, u64 statSecParam, u64 inputBitSize, Channel& chl0, NcoOtExtReceiver& otRecv, NcoOtExtSender& otSend, block seed);
 		void init(u64 n, u64 statSecParam, u64 inputBitSize, const std::vector<Channel*>& chls, NcoOtExtReceiver& ots, NcoOtExtSender& otSend, block seed);
-#if 0
+
 		void hash2Bins(std::vector<block>& inputs, Channel& chl);
 		void hash2Bins(std::vector<block>& inputs, const std::vector<Channel*>& chls);
-
+#if 0
 		void getOPRFkeys(std::vector<block>& inputs, Channel& chl);
 		void getOPRFkeys(std::vector<block>& inputs, const std::vector<Channel*>& chls);
 

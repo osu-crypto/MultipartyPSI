@@ -26,7 +26,7 @@ namespace osuCrypto
     { 30, 1.2, 3, 17 };
 
 	CuckooParam1 stashCuckooParam1
-	{ 0, 0.04, 2, 64 };
+	{ 0, 2.4, 2, 64 };
 
     CuckooHasher1::CuckooHasher1()
         :mTotalTries(0)
@@ -71,7 +71,7 @@ namespace osuCrypto
         return !(*this == cmp);
     }
 
-    void CuckooHasher1::print() const
+    void CuckooHasher1::print(bool isIdx, bool isOPRF, bool isMap) const
     {
 		std::cout << IoStream::lock;
 		//std::cout << "Cuckoo Hasher  " << std::endl;
@@ -93,18 +93,23 @@ namespace osuCrypto
             else
             {
               //  std::cout << "    c_idx=" << mBins[i].idx() << "  hIdx=" << mBins[i].hashIdx() << std::endl;
-				Log::out << "    c_idx=" << mBins[i].idx();
-			//	Log::out << "    hIdx=" << mBins[i].hashIdx();
-				Log::out << "    c_OPRF=" << mBins[i].mValOPRF;
-				Log::out << "    c_Map="<< static_cast<int16_t>(mBins[i].mValMap);
+				if(isIdx)
+					Log::out << "    c_idx=" << mBins[i].idx();
+			
+				//	Log::out << "    hIdx=" << mBins[i].hashIdx();
+				if(isOPRF)
+					Log::out << "    c_OPRF=" << mBins[i].mValOPRF;
+				
+				if(isMap)
+					Log::out << "    c_Map="<< static_cast<int16_t>(mBins[i].mValMap);
+				
 				Log::out << Log::endl;
-
             }
 
         }
 	//	 for (u64 i = 0; i < 0 && mStash[i].isEmpty() == false; ++i)
-			// for (u64 i = 0; i < mStash.size() && mStash[i].isEmpty() == false; ++i)
-				 for (u64 i = 0; i < mStashBins.size() ; ++i)
+			 for (u64 i = 0; i < mStashBins.size() && mStashBins[i].isEmpty() == false; ++i)
+				 //for (u64 i = 0; i < mStashBins.size() ; ++i)
         {
             //std::cout << "Bin #" << i;
 			Log::out << "SBin #" << i;
@@ -168,7 +173,8 @@ namespace osuCrypto
 			mStashBins.resize(mParams.mStashSize);
 		}
 		else{
-			mBins.resize(n*166);
+			u64 binCount = mParams.mBinScaler * n;
+			mBins.resize(binCount);
 		}
 
     }
@@ -188,7 +194,7 @@ namespace osuCrypto
     void CuckooHasher1::insertBatch(
         ArrayView<u64> inputIdxs,
         MatrixView<u64> hashs,
-        Workspace& w, bool isInit)
+        Workspace& w, bool isStash)
     {
 
         u64 width = mHashesView.size()[1];
@@ -276,7 +282,7 @@ namespace osuCrypto
             remaining = putIdx;
         }
 
-		if (isInit) {
+		if (isStash) {
 		/*	ArrayView<u64> stashIdxs(inputIdxs.begin(), inputIdxs.begin() + remaining, false);
 			MatrixView<u64> stashHashs(hashs.data(), remaining, mParams.mNumHashes, false);
 			CuckooHasher1::Workspace stashW(remaining);

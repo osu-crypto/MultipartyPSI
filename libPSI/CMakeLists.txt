@@ -36,10 +36,6 @@ endif()
 #############################################
 
 
-find_library(
-	libOTe_LIB
-	NAMES libOTe
-	HINTS "${libOTe_Dirs}/lib/")
 
 
 #############################################
@@ -52,5 +48,5 @@ include_directories(${CMAKE_SOURCE_DIR}/libPSI)
 
 add_library(libPSI ${SRCS})
 
-target_link_libraries(libPSI ${libOTe_LIB}  cryptoTools  ${NTL_LIB})
+target_link_libraries(libPSI libOTe cryptoTools ${NTL_LIB})
 

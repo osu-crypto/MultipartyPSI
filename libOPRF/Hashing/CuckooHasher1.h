@@ -81,13 +81,13 @@ namespace osuCrypto
         CuckooParam1 mParams;
 		block mHashSeed;
 		u64 mBinCount, mMaxBinSize, mRepSize, mInputBitSize, mN;
-        void print() const;
+        void print(bool isIdx, bool isOPRF, bool isMap) const;
 		void init(u64 n, block hashSeed, u64 statSecParam, bool multiThreaded, bool isStash);
         void insert(u64 IdxItem, ArrayView<u64> hashes);
         void insertHelper(u64 IdxItem, u64 hashIdx, u64 numTries);
 		void insertStashHelper(u64 IdxItem, u64 hashIdx, u64 numTries);
 
-        void insertBatch(ArrayView<u64> itemIdxs, MatrixView<u64> hashs, Workspace& workspace, bool isInit);
+        void insertBatch(ArrayView<u64> itemIdxs, MatrixView<u64> hashs, Workspace& workspace, bool isStash);
 
         u64 find(ArrayView<u64> hashes);
         u64 findBatch(MatrixView<u64> hashes, 

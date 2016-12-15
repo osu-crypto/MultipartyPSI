@@ -60,12 +60,23 @@ set(BOOST_ROOT "${CMAKE_SOURCE_DIR}/thirdparty/linux/boost/")
 add_subdirectory(cryptoTools)
 include_directories(cryptoTools)
 
+#############################################
+#               Build libOTe                #
+#############################################
+add_subdirectory(libOTe)
+include_directories(libOTe)
 
 #############################################
 #               Build libPSI                 #
 #############################################
 add_subdirectory(libPSI)
 include_directories(libPSI)
+
+#############################################
+#               Build libOPRF                 #
+#############################################
+add_subdirectory(libOPRF)
+include_directories(libOPRF)
 
 
 #############################################

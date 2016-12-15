@@ -48,7 +48,7 @@ namespace osuCrypto
 		u64 compSecParam = 128;
 
 		otSend.getParams(
-			true, // input, is malicious
+			false, // input, is malicious
 			compSecParam, statSec, inputBitSize, mN, //  input
 			mNcoInputBlkSize, baseOtCount); // output
 
@@ -74,12 +74,16 @@ namespace osuCrypto
 		gTimer.setTimePoint("init.send.hashSeed");
 
 
-		mSimpleBins.init(n, inputBitSize, mHashingSeed, statSec,true);
+		mSimpleBins.init(n, inputBitSize, mHashingSeed, statSec, false);
+		mSimpleStashBins.init(n, inputBitSize, mHashingSeed, statSec, true);
+		mCuckooBins.init(n, mHashingSeed, statSec, false, false);
+		mCuckooStashBins.init(10, mHashingSeed, statSec, false, true);
 
 		//mPsis.resize(mBins.mBinCount);
 
 		
-		u64 otCount = mSimpleBins.mBinCount;
+		u64 otCount = mSimpleBins.mBinCount;// +mSimpleBins.mBinCount;
+
 
 		gTimer.setTimePoint("init.send.baseStart");
 
@@ -205,13 +209,11 @@ namespace osuCrypto
 	}
 
 
-#if 0
-	void OPPRFSender::hash2Bins(std::vector<block>& inputs)
-    {
-		hash2Bins(inputs);
-    }
-
-	void  OPPRFSender::hash2Bins(std::vector<block>& inputs)
+	void OPPRFSender::hash2Bins(std::vector<block>& inputs, Channel & chl)
+	{
+		hash2Bins(inputs, { &chl });
+	}
+	void  OPPRFSender::hash2Bins(std::vector<block>& inputs, const std::vector<Channel*>& chls)
     {
 
         if (inputs.size() != mN)
@@ -225,8 +227,8 @@ namespace osuCrypto
 
 
 
-        //std::vector<std::thread>  thrds(chls.size());
-        std::vector<std::thread>  thrds(1);        
+        std::vector<std::thread>  thrds(chls.size());
+        //std::vector<std::thread>  thrds(1);        
 
 		std::atomic<u32> remaining((u32)thrds.size());
 		std::promise<void> doneProm ;
@@ -269,7 +271,7 @@ namespace osuCrypto
                 for (u64 i = 0; i < ncoInputHasher.size(); ++i)
                     ncoInputHasher[i].setKey(_mm_set1_epi64x(i) ^ mHashingSeed);
 
-                u64 phaseShift = log2ceil(mN) / 8;
+                
 
                 for (u64 i = startIdx; i < endIdx; i += 128)
                 {
@@ -285,47 +287,35 @@ namespace osuCrypto
 
                     // since we are using random codes, lets just use the first part of the code 
                     // as where each item should be hashed.
-                    for (u64 j = 0; j < currentStepSize; ++j)
-                    {
-						ArrayView<u64> hashes(mBins.mNumHashes);
-						for (u64 k = 0; k < mBins.mNumHashes; ++k)
+					std::vector<block> tempMaskBuff(currentStepSize);
+					std::vector<u64> tempIdxBuff(currentStepSize);
+					CuckooHasher1::Workspace w(tempMaskBuff.size());
+					MatrixView<u64> hashes(currentStepSize, mCuckooBins.mParams.mNumHashes);
+
+					for (u64 j = 0; j < currentStepSize; ++j)
+					{
+						tempIdxBuff[j] = i + j;
+						for (u64 k = 0; k <mCuckooBins.mParams.mNumHashes; ++k)
 						{
-							block& item = mNcoInputBuff[k][i + j];
-
-							u64 addr = *(u64*)&item % mBins.mBinCount;
-
-						/*	if(addr==27)
-								std::cout << i << "---"<<j<<"---" << k <<": " << *(block*)&item << "\n";*/
-
-							// implements phase. Note that we are doing very course phasing. 
-							// At the byte level. This is good enough for use. Since we just 
-							// need things tp be smaller than 76 bits.
-						//	if (phaseShift == 3)
-						//		ncoInputBuff[0][i + j] = _mm_srli_si128(item, 3);
-						//	else// if (phaseShift <= 2)
-						//		ncoInputBuff[0][i + j] = _mm_srli_si128(item, 2);
-
-							std::lock_guard<std::mutex> lock(mBins.mMtx[addr]);
-							if (std::find(mBins.mBins[addr].mIdx.begin(), mBins.mBins[addr].mIdx.end(), i + j) == mBins.mBins[addr].mIdx.end()) {
-								mBins.mBins[addr].mIdx.emplace_back(i + j);
-							}
-							
-						//	std::cout << j<<"-" << k <<": " << *(u64*)&item << "\n";
-
-							hashes[k] = *(u64*)&item;
-							
+							hashes[j][k] = *(u64*)&mNcoInputBuff[k][i + j];
 						}
+					}
+					mSimpleBins.insertBatch(tempIdxBuff, hashes, mSimpleBins.mNumHashes);
+					mSimpleStashBins.insertBatch(tempIdxBuff, hashes, mSimpleStashBins.mNumHashes);
+					mCuckooBins.insertBatch(tempIdxBuff, hashes, w, false);
+				}
 
-						//std::cout << j << ": " << hashes[0] << " " << hashes[1] << " " << hashes[2] << "\n";
+				CuckooHasher1::Workspace stashW(mCuckooStashBins.mStashIdxs.size());
+				MatrixView<u64> stashHashes(mCuckooStashBins.mStashIdxs.size(), mCuckooStashBins.mParams.mNumHashes);
 
-						//if (j <2)
-						//{
-							
-						//}
-
-						
-                    }
-                }
+				for (u64 j = 0; j < mCuckooStashBins.mStashIdxs.size(); ++j)
+				{
+					for (u64 k = 0; k <mCuckooStashBins.mParams.mNumHashes; ++k)
+					{
+						stashHashes[j][k] = *(u64*)&mNcoInputBuff[k][mCuckooStashBins.mStashIdxs[j]];
+					}
+				}
+				mCuckooStashBins.insertBatch(mCuckooStashBins.mStashIdxs, stashHashes, stashW, false);
 
                 //<< IoStream::lock << "Sender"<< std::endl;
                 //mBins.insertItemsWithPhasing(range, mStatSecParam, inputs.size());
@@ -357,7 +347,7 @@ namespace osuCrypto
         for (auto& thrd : thrds)
             thrd.join();
     }
-
+#if 0
 
 	void OPPRFSender::getOPRFKeys(std::vector<block>& inputs, Channel & chl)
 	{

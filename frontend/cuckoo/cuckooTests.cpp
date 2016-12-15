@@ -5,8 +5,8 @@ using namespace osuCrypto;
 #include "Hashing/CuckooHasher1.h"
 #include <fstream>
 
-#define powNs  { 5/*,24 */}
-#define powTrials {0/*,20*/}
+#define powNs  { 8/*,24 */}
+#define powTrials {10,20,30/*,20*/}
 //#define ee {1.1,1.2,1.5,2.0}
 #define ee {1.1/*, 1.14, 1.15,1.2*/}
 
@@ -24,7 +24,7 @@ void myCuckooTest_stash()
 			for (auto e : ee)
 			{
 				u64 n = 1 << powN;
-				u64 h = 2;
+				u64 h = 3;
 				u64 trials = 1 << powTrial;
 				u64 numThrds = 1;
 				std::vector<u64> maxStashSize(numThrds);

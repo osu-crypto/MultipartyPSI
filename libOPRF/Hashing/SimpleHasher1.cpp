@@ -21,7 +21,7 @@ namespace osuCrypto
 
 
 
-    void SimpleHasher1::print() const
+    void SimpleHasher1::print(bool isIdx, bool isOPRF, bool isMap, bool isPos) const
     {
 
         std::cout << IoStream::lock;
@@ -37,35 +37,39 @@ namespace osuCrypto
 			//std::cout << " contains " << mBins[i].size() << " elements" << std::endl;
 			//Log::out << " contains " << mBins[i].size() << " elements" << Log::endl;
 
-			if (mBins[i].mIdx.size() != mBins[i].mValOPRF.size())
+			if (mBins[i].mIdx.size() != mBins[i].mValOPRF.size() && isOPRF)
 			{
 				Log::out << "mBins[i].mIdx.size() != mBins[i].mValOPRF.size()" << Log::endl;
 			}
-			else if(mBins[i].mIdx.size() != mBins[i].mBits.mMaps.size()) {
+			else if(mBins[i].mIdx.size() != mBins[i].mBits.mMaps.size() && isMap) {
 				Log::out << "mBins[i].mIdx.size() != mBins[i].mMaps.size()" << Log::endl;
 			}
-			else if (mBins[i].mBits.mPos.size() != mNumBits)
+
+			else if (mBins[i].mBits.mPos.size() != mNumBits && isPos)
 				Log::out << "mBins[i].mBits.mPos.size() != mNumBits" << Log::endl;
+
 			else
 			{
-				Log::out << "    c_Pos= ";
-				for (u64 j = 0; j < mBins[i].mBits.mPos.size(); j++)
-				{
-					Log::out << static_cast<int16_t>(mBins[i].mBits.mPos[j]) << " ";
+				if (isPos) {
+					Log::out << "    c_Pos= ";
+					for (u64 j = 0; j < mBins[i].mBits.mPos.size(); j++)
+					{
+						Log::out << static_cast<int16_t>(mBins[i].mBits.mPos[j]) << " ";
+					}
+					Log::out << Log::endl;
 				}
-				Log::out << Log::endl;
+
 				for (u64 j = 0; j < mBins[i].mIdx.size(); ++j)
 				{
-					// std::cout
-					//     << "    " << mBins[i][j]  
-					//     /*<< "  " << mBins[i][j].second */<< std::endl;
-					 //Log::out
-					 //	<< "    " << mBins[i][j]
-					 //	/*<< "  " << mBins[i][j].second */ << Log::endl;
-
+					if (isIdx)
 					Log::out << "    c_idx=" << mBins[i].mIdx[j];
+
+					if (isOPRF)
 					Log::out << "    c_OPRF=" << mBins[i].mValOPRF[j];
+
+					if (isMap)
 					Log::out << "    c_Map=" << static_cast<int16_t>(mBins[i].mBits.mMaps[j]);
+
 					Log::out << Log::endl;
 					cnt++;
 				}
@@ -155,13 +159,34 @@ namespace osuCrypto
 		else
 		{
 			mMaxBinSize = 64;
-			mBinCount = 256*166;
+			mBinCount = 2.4*n;
 			mMtx.reset(new std::mutex[mBinCount]);
 			mBins.resize(mBinCount);
 			mNumHashes = 2;
 			mNumBits = 6;
 		}
     }
+
+	void SimpleHasher1::insertBatch(ArrayView<u64> inputIdxs, MatrixView<u64> hashs, u64 numHashFunc)
+	{
+		for (u64 j = 0; j < inputIdxs.size(); ++j)
+		{
+			for (u64 k = 0; k < numHashFunc; ++k)
+			{
+				u64 addr = *(u64*)&hashs[j][k] % mBinCount;
+				if(addr==0)
+					std::cout << "----"<<inputIdxs[j] <<"-" << addr << std::endl;
+
+
+				std::lock_guard<std::mutex> lock(mMtx[addr]);
+				if (std::find(mBins[addr].mIdx.begin(), mBins[addr].mIdx.end(), inputIdxs[j]) == mBins[addr].mIdx.end()) {
+					mBins[addr].mIdx.emplace_back(inputIdxs[j]);
+
+				}
+			}
+
+		}
+	}
 
     //void SimpleHasher1::preHashedInsertItems(ArrayView<block> mySet, u64 itemIdx)
     //{
