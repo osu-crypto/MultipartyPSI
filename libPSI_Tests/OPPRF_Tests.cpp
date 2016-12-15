@@ -244,7 +244,7 @@ void OPPRF_EmptrySet_Test_Impl()
         sendSet[i] = prng.get<block>();
 		sendPayLoads[i]= prng.get<block>();
 		recvSet[i] = prng.get<block>();
-		recvSet[i] = sendSet[i];
+		//recvSet[i] = sendSet[i];
     }
 	for (u64 i = 1; i < 3; ++i)
 	{
@@ -274,9 +274,10 @@ void OPPRF_EmptrySet_Test_Impl()
 		send.init(setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
 		send.hash2Bins(sendSet, sendChl);
 		Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
-		send.mSimpleBins.print(true, false, false,false);
-		Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
+		//send.mSimpleBins.print(true, false, false,false);
+		//Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
 		send.mCuckooBins.print(true, false, false);
+	
 
 
 		//send.sendInput(sendSet, sendChl);
@@ -299,7 +300,7 @@ void OPPRF_EmptrySet_Test_Impl()
 	recv.init(setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 	recv.hash2Bins(recvSet, recvChl);
 	Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
-	recv.mCuckooBins.print(true, false, false);
+	//recv.mCuckooBins.print(true, false, false);
 	Log::out << "recv.mSimpleBins.print(true, false, false,false);" << Log::endl;
 	recv.mSimpleBins.print(true, false, false,false);
 

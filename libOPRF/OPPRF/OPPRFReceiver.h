@@ -28,10 +28,7 @@ namespace osuCrypto
         std::vector<std::unique_ptr<NcoOtExtReceiver>> mOtRecvs;
 
 		CuckooHasher1 mCuckooBins;
-		CuckooHasher1 mCuckooStashBins;
-
 		SimpleHasher1 mSimpleBins;
-		SimpleHasher1 mSimpleStashBins;
         PRNG mPrng;
 
 		void init(u64 n, u64 statSecParam, u64 inputBitSize, Channel& chl0, NcoOtExtReceiver& otRecv, NcoOtExtSender& otSend, block seed);

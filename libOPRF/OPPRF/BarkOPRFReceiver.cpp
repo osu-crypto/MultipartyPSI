@@ -88,7 +88,7 @@ namespace osuCrypto
 
         // this SimpleHasher1 class knows how to hash things into bins. But first we need 
         // to compute how many bins we need, the max size of bins, etc.
-        mBins.init(n, mHashingSeed, statSecParam, false,true);
+        mBins.init(n, mHashingSeed, statSecParam, false);
 		//mTheirBins.init(n, inputBitSize, mHashingSeed, statSecParam);
 
         // figure out how many OTs we need in total.
@@ -302,7 +302,7 @@ namespace osuCrypto
 
 
 					std::lock_guard<std::mutex> lock(mInsertBin);
-					mBins.insertBatch(tempIdxBuff, hashes, w,true);
+					mBins.insertBatch(tempIdxBuff, hashes, w);
 
 					/*std::cout << tempMaskBuff[5]<<"\n";
 					std::cout << tempMaskBuff[5];

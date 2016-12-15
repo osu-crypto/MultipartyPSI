@@ -90,10 +90,8 @@ namespace osuCrypto
 
 		// this SimpleHasher class knows how to hash things into bins. But first we need 
 		// to compute how many bins we need, the max size of bins, etc.
-		mSimpleBins.init(n, inputBitSize, mHashingSeed, statSecParam, false);
-		mSimpleStashBins.init(n, inputBitSize, mHashingSeed, statSecParam, true);
-		mCuckooBins.init(n, mHashingSeed, statSecParam, false, false);
-		mCuckooStashBins.init(10, mHashingSeed, statSecParam, false, true);
+		mSimpleBins.init(n, inputBitSize, mHashingSeed, statSecParam);
+		mCuckooBins.init(n, mHashingSeed, statSecParam, false);
 
 		// figure out how many OTs we need in total.
 		u64 otCount = mSimpleBins.mBinCount;//+mSimpleBins.mBinCount;
@@ -336,24 +334,22 @@ namespace osuCrypto
 						}		                 					
 					}
 
-				//	std::lock_guard<std::mutex> lock(mInsertBin);
-					mSimpleBins.insertBatch(tempIdxBuff, hashes, mSimpleBins.mNumHashes);
-					mSimpleStashBins.insertBatch(tempIdxBuff, hashes, mSimpleStashBins.mNumHashes);
-					mCuckooBins.insertBatch(tempIdxBuff, hashes, w,false);
+					mSimpleBins.insertBatch(tempIdxBuff, hashes);
+					mCuckooBins.insertBatch(tempIdxBuff, hashes, w);
 				
                 }
 
-				CuckooHasher1::Workspace stashW(mCuckooStashBins.mStashIdxs.size());
-				MatrixView<u64> stashHashes(mCuckooStashBins.mStashIdxs.size(), mCuckooStashBins.mParams.mNumHashes);
+				CuckooHasher1::Workspace stashW(mCuckooBins.mStashIdxs.size());
+				MatrixView<u64> stashHashes(mCuckooBins.mStashIdxs.size(), mCuckooBins.mParams.mNumHashes);
 
-				for (u64 j = 0; j < mCuckooStashBins.mStashIdxs.size(); ++j)
+				for (u64 j = 0; j < mCuckooBins.mStashIdxs.size(); ++j)
 				{
-					for (u64 k = 0; k <mCuckooStashBins.mParams.mNumHashes; ++k)
+					for (u64 k = 0; k <mCuckooBins.mParams.mNumStashHashes; ++k)
 					{
-						stashHashes[j][k] = *(u64*)&mNcoInputBuff[k][mCuckooStashBins.mStashIdxs[j]];
+						stashHashes[j][k] = *(u64*)&mNcoInputBuff[k][mCuckooBins.mStashIdxs[j]];
 					}
 				}
-				mCuckooStashBins.insertBatch(mCuckooStashBins.mStashIdxs, stashHashes, stashW, false);
+				mCuckooBins.insertStashBatch(mCuckooBins.mStashIdxs, stashHashes, stashW);
 
                 // block until all items have been inserted. the last to finish will set the promise...
                 if (--insertRemaining)

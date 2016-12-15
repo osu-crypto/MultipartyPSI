@@ -10,23 +10,29 @@ namespace osuCrypto
 {
 
     // parameters for k=2 hash functions, 2^n items, and statistical security 40
+	//double mBinScaler;
+	//u64 mNumHashes;
+	//u64 mSenderBinSize;
+
+	//double mBinStashScaler;
+	//u64 mNumStashHashes;
+	//u64 mSenderBinStashSize;
+
     CuckooParam1 k2n24s40CuckooParam1
-    { 2, 1.2, 3, 21 };
+    { 1.2,3,32,0.3,3,64};
     CuckooParam1 k2n20s40CuckooParam1
-    { 2, 1.2, 3, 20 };
+	{ 1.2,3,32,0.3,3,64 };
     CuckooParam1 k2n16s40CuckooParam1
-    { 3, 1.2, 3, 19 };
+	{ 1.2,3,32,0.3,3,64 };
     CuckooParam1 k2n12s40CuckooParam1
-    { 5, 1.2, 3, 18 };
+	{ 1.2,3,32,0.3,3,64 };
     CuckooParam1 k2n08s40CuckooParam1
-    { 8, 1.2, 3, 17 };
+	{ 1.2,3,32,0.3,3,64 };
 
     // not sure if this needs a stash of 40, but should be safe enough.
     CuckooParam1 k2n07s40CuckooParam1
-    { 30, 1.2, 3, 17 };
+	{ 1.2,3,32,0.3,3,64 };
 
-	CuckooParam1 stashCuckooParam1
-	{ 0, 2.4, 2, 64 };
 
     CuckooHasher1::CuckooHasher1()
         :mTotalTries(0)
@@ -134,16 +140,14 @@ namespace osuCrypto
 		std::cout << IoStream::unlock;
 
     }
-    void CuckooHasher1::init(u64 n, block hashSeed, u64 statSecParam, bool multiThreaded, bool isStash)
+    void CuckooHasher1::init(u64 n, block hashSeed, u64 statSecParam, bool multiThreaded)
     {
 		mHashSeed = hashSeed;
-		mBinCount = 1.2*n;
-		mMaxBinSize = 1;
 
 
         if (statSecParam != 40) throw std::runtime_error("not implemented");
 
-		if (!isStash) {
+		
 			if (n <= 1 << 7)
 				mParams = k2n07s40CuckooParam1;
 			else if (n <= 1 << 8)
@@ -158,25 +162,18 @@ namespace osuCrypto
 				mParams = k2n24s40CuckooParam1;
 			else
 				throw std::runtime_error("not implemented");
-		}
-		else
-			mParams = stashCuckooParam1;
+		
 
         mHashes.resize(n * mParams.mNumHashes, u64(-1));
-
-
         mHashesView = MatrixView<u64>(mHashes.begin(), mHashes.end(), mParams.mNumHashes);
 
-		if (!isStash) {
-			u64 binCount = mParams.mBinScaler * n;
-			mBins.resize(binCount);
-			mStashBins.resize(mParams.mStashSize);
-		}
-		else{
-			u64 binCount = mParams.mBinScaler * n;
-			mBins.resize(binCount);
-		}
+		mStashHashes.resize(n * mParams.mNumStashHashes, u64(-1));
+		mStashHashesView = MatrixView<u64>(mStashHashes.begin(), mStashHashes.end(), mParams.mNumStashHashes);
 
+		mBinCount = (mParams.mBinScaler ) * n;
+		mBinStashCount= ( mParams.mBinStashScaler) * n;
+		
+			mBins.resize(mBinCount+ mBinStashCount);
     }
 
     void CuckooHasher1::insert(u64 inputIdx, ArrayView<u64> hashs)
@@ -194,9 +191,8 @@ namespace osuCrypto
     void CuckooHasher1::insertBatch(
         ArrayView<u64> inputIdxs,
         MatrixView<u64> hashs,
-        Workspace& w, bool isStash)
+        Workspace& w)
     {
-
         u64 width = mHashesView.size()[1];
         u64 remaining = inputIdxs.size();
         u64 tryCount = 0;
@@ -226,7 +222,7 @@ namespace osuCrypto
             for (u64 i = 0; i < remaining; ++i)
             {
                 //w.curAddrs[i] = mHashesView[inputIdxs[i]][w.curHashIdxs[i]] % mBins.size();
-                w.curAddrs[i] = (mHashesView.data() + inputIdxs[i] * width)[w.curHashIdxs[i]] % mBins.size();
+                w.curAddrs[i] = (mHashesView.data() + inputIdxs[i] * width)[w.curHashIdxs[i]] % mBinCount;
             }
 
             // same thing here, this fetch is slow. Do them in parallel.
@@ -282,20 +278,19 @@ namespace osuCrypto
             remaining = putIdx;
         }
 
-		if (isStash) {
+		
 		/*	ArrayView<u64> stashIdxs(inputIdxs.begin(), inputIdxs.begin() + remaining, false);
 			MatrixView<u64> stashHashs(hashs.data(), remaining, mParams.mNumHashes, false);
 			CuckooHasher1::Workspace stashW(remaining);
 			std::vector<Bin> mStashBins;*/
 			//mStashBins.insertBatch(stashIdxs, stashHashs, stashW, false);
-			for (u64 i = 0, j = 0; i < remaining; ++j)
+			for (u64 i = 0; i < remaining; ++i)
 			{
 				mStashIdxs.push_back(inputIdxs[i]);
 			}
-		}
-		else
-		{
-			for (u64 i = 0, j = 0; i < remaining; ++j)
+		
+		
+	/*		for (u64 i = 0, j = 0; i < remaining; ++j)
 			{
 				mStashBins[j].swap(inputIdxs[i], w.curHashIdxs[i]);
 
@@ -304,11 +299,105 @@ namespace osuCrypto
 
 				if (inputIdxs[i] == -1)
 					++i;
-			}
-		}
+			}*/
+		
 
     }
 
+	void CuckooHasher1::insertStashBatch(
+		ArrayView<u64> inputIdxs,
+		MatrixView<u64> hashs,
+		Workspace& w)
+	{
+
+		u64 width = mStashHashesView.size()[1];
+		u64 remaining = inputIdxs.size();
+		u64 tryCount = 0;
+
+#ifndef  NDEBUG
+		if (hashs.size()[1] != width)
+			throw std::runtime_error("" LOCATION);
+#endif // ! NDEBUG
+
+
+		for (u64 i = 0; i < inputIdxs.size(); ++i)
+		{
+			for (u64 j = 0; j < mParams.mNumStashHashes; ++j)
+			{
+				//mHashesView[inputIdxs[i]][j] = hashs[i][j];
+				(mStashHashesView.data() + inputIdxs[i] * width)[j] = (hashs.data() + i * width)[j];
+			}
+			w.curHashIdxs[i] = 0;
+		}
+
+
+		while (remaining && tryCount++ < 100)
+		{
+
+			// this data fetch can be slow (after the first loop). 
+			// As such, lets do several fetches in parallel.
+			for (u64 i = 0; i < remaining; ++i)
+			{
+				//w.curAddrs[i] = mHashesView[inputIdxs[i]][w.curHashIdxs[i]] % mBins.size();
+				w.curAddrs[i] = (mStashHashesView.data() + inputIdxs[i] * width)[w.curHashIdxs[i]] % mBinStashCount+ mBinCount;
+			}
+
+			// same thing here, this fetch is slow. Do them in parallel.
+			for (u64 i = 0; i < remaining; ++i)
+			{
+				u64 newVal = inputIdxs[i] | (w.curHashIdxs[i] << 56);
+#ifdef THREAD_SAFE_CUCKOO
+				w.oldVals[i] = mBins[w.curAddrs[i]].mVal.exchange(newVal, std::memory_order_relaxed);
+#else
+				w.oldVals[i] = mBins[w.curAddrs[i]].mVal;
+				mBins[w.curAddrs[i]].mVal = newVal;
+#endif
+			}
+
+			// this loop will update the items that were just evicted. The main
+			// idea of that our array looks like
+			//     |XW__Y____Z __|
+			// For X and W, which failed to be placed, lets write over them
+			// with the vaues that they evicted.
+			u64 putIdx = 0, getIdx = 0;
+			while (putIdx < remaining && w.oldVals[putIdx] != u64(-1))
+			{
+				inputIdxs[putIdx] = w.oldVals[putIdx] & (u64(-1) >> 8);
+				w.curHashIdxs[putIdx] = (1 + (w.oldVals[putIdx] >> 56)) % mParams.mNumStashHashes;
+				++putIdx;
+			}
+
+			getIdx = putIdx + 1;
+
+			// Now we want an array that looks like 
+			//  |ABCD___________| but currently have 
+			//  |AB__Y_____Z____| so lets move them 
+			// forward and replace Y, Z with the values
+			// they evicted.
+			while (getIdx < remaining)
+			{
+				while (getIdx < remaining &&
+					w.oldVals[getIdx] == u64(-1))
+					++getIdx;
+
+				if (getIdx >= remaining) break;
+
+				inputIdxs[putIdx] = w.oldVals[getIdx] & (u64(-1) >> 8);
+				w.curHashIdxs[putIdx] = (1 + (w.oldVals[getIdx] >> 56)) % mParams.mNumStashHashes;
+
+				// not needed. debug only
+				std::swap(w.oldVals[putIdx], w.oldVals[getIdx]);
+
+				++putIdx;
+				++getIdx;
+			}
+
+			remaining = putIdx;
+		}
+
+		if(remaining>0)
+			throw std::runtime_error("" LOCATION);
+	}
 
 
     void CuckooHasher1::insertHelper(u64 inputIdx, u64 hashIdx, u64 numTries)

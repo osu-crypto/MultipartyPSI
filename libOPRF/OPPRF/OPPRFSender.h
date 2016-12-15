@@ -23,11 +23,8 @@ namespace osuCrypto
 
         u64 mN, mStatSecParam, mNcoInputBlkSize,  mOtMsgBlkSize;
         block mHashingSeed;
-        SimpleHasher1 mSimpleBins;
-		SimpleHasher1 mSimpleStashBins;
-
+		SimpleHasher1 mSimpleBins;
 		CuckooHasher1 mCuckooBins;
-		CuckooHasher1 mCuckooStashBins;
 
         PRNG mPrng;
 

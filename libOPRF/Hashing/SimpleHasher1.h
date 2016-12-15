@@ -29,7 +29,8 @@ namespace osuCrypto
 			BitPosition mBits;
 			std::vector<block> mValOPRF;
 		};
-        u64 mBinCount , mMaxBinSize, mRepSize, mInputBitSize, mN, mNumHashes, mNumBits;
+		u64 mBinCount, mMaxBinSize, mRepSize, mInputBitSize, mN, mNumHashes, mNumBits;
+		u64 mBinStashCount , mMaxBinStashSize, mNumStashHashes, mNumStashBits;
 
         std::unique_ptr<std::mutex[]> mMtx;
         std::vector<Bin> mBins;
@@ -37,12 +38,11 @@ namespace osuCrypto
 
         void print(bool isIdx, bool isOPRF, bool isMap, bool isPos) const;
 
-        void init(u64 n, u64 numBits, block hashSeed, u64 secParam, bool isStash);
+        void init(u64 n, u64 numBits, block hashSeed, u64 secParam);
 
 		void insertBatch(
 			ArrayView<u64> inputIdxs,
-			MatrixView<u64> hashs,
-			u64 numHashFunc);
+			MatrixView<u64> hashs);
 
         //void preHashedInsertItems(ArrayView<block> items, u64 itemIdx);
         //void insertItemsWithPhasing(ArrayView<block> items, u64 itemIdx);

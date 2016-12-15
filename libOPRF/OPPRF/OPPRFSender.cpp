@@ -74,10 +74,8 @@ namespace osuCrypto
 		gTimer.setTimePoint("init.send.hashSeed");
 
 
-		mSimpleBins.init(n, inputBitSize, mHashingSeed, statSec, false);
-		mSimpleStashBins.init(n, inputBitSize, mHashingSeed, statSec, true);
-		mCuckooBins.init(n, mHashingSeed, statSec, false, false);
-		mCuckooStashBins.init(10, mHashingSeed, statSec, false, true);
+		mSimpleBins.init(n, inputBitSize, mHashingSeed, statSec);
+		mCuckooBins.init(n, mHashingSeed, statSec, false);
 
 		//mPsis.resize(mBins.mBinCount);
 
@@ -300,22 +298,21 @@ namespace osuCrypto
 							hashes[j][k] = *(u64*)&mNcoInputBuff[k][i + j];
 						}
 					}
-					mSimpleBins.insertBatch(tempIdxBuff, hashes, mSimpleBins.mNumHashes);
-					mSimpleStashBins.insertBatch(tempIdxBuff, hashes, mSimpleStashBins.mNumHashes);
-					mCuckooBins.insertBatch(tempIdxBuff, hashes, w, false);
+					mSimpleBins.insertBatch(tempIdxBuff, hashes);
+					mCuckooBins.insertBatch(tempIdxBuff, hashes, w);
 				}
 
-				CuckooHasher1::Workspace stashW(mCuckooStashBins.mStashIdxs.size());
-				MatrixView<u64> stashHashes(mCuckooStashBins.mStashIdxs.size(), mCuckooStashBins.mParams.mNumHashes);
+				CuckooHasher1::Workspace stashW(mCuckooBins.mStashIdxs.size());
+				MatrixView<u64> stashHashes(mCuckooBins.mStashIdxs.size(), mCuckooBins.mParams.mNumStashHashes);
 
-				for (u64 j = 0; j < mCuckooStashBins.mStashIdxs.size(); ++j)
+				for (u64 j = 0; j < mCuckooBins.mStashIdxs.size(); ++j)
 				{
-					for (u64 k = 0; k <mCuckooStashBins.mParams.mNumHashes; ++k)
+					for (u64 k = 0; k <mCuckooBins.mParams.mNumStashHashes; ++k)
 					{
-						stashHashes[j][k] = *(u64*)&mNcoInputBuff[k][mCuckooStashBins.mStashIdxs[j]];
+						stashHashes[j][k] = *(u64*)&mNcoInputBuff[k][mCuckooBins.mStashIdxs[j]];
 					}
 				}
-				mCuckooStashBins.insertBatch(mCuckooStashBins.mStashIdxs, stashHashes, stashW, false);
+				mCuckooBins.insertStashBatch(mCuckooBins.mStashIdxs, stashHashes, stashW);
 
                 //<< IoStream::lock << "Sender"<< std::endl;
                 //mBins.insertItemsWithPhasing(range, mStatSecParam, inputs.size());

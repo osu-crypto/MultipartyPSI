@@ -93,9 +93,9 @@ namespace osuCrypto
         return std::log(bins * std::pow(balls * exp(1) / (bins * k), k)) / std::log(2);
     }
 
-	void SimpleHasher1::init(u64 n, u64 numBits, block hashSeed, u64 secParam, bool isStash)
+	void SimpleHasher1::init(u64 n, u64 numBits, block hashSeed, u64 secParam)
 	{
-		if (!isStash) {
+		
 			mHashSeed = hashSeed;
 			mN = n;
 
@@ -150,37 +150,44 @@ namespace osuCrypto
 		}
 #endif
 			mMaxBinSize = 32;
+			mMaxBinStashSize = 64;
+
 			mBinCount = 1.2*n;
-			mMtx.reset(new std::mutex[mBinCount]);
-			mBins.resize(mBinCount);
+			mBinStashCount = 0.3*n;
+
+			mMtx.reset(new std::mutex[mBinCount+ mBinStashCount]);
+			mBins.resize(mBinCount + mBinStashCount);
 			mNumHashes = 3;
+			mNumStashHashes = 3;
 			mNumBits = 5;
-	}
-		else
-		{
-			mMaxBinSize = 64;
-			mBinCount = 2.4*n;
-			mMtx.reset(new std::mutex[mBinCount]);
-			mBins.resize(mBinCount);
-			mNumHashes = 2;
-			mNumBits = 6;
-		}
+			mNumStashBits = 6;
+	
     }
 
-	void SimpleHasher1::insertBatch(ArrayView<u64> inputIdxs, MatrixView<u64> hashs, u64 numHashFunc)
+	void SimpleHasher1::insertBatch(ArrayView<u64> inputIdxs, MatrixView<u64> hashs)
 	{
 		for (u64 j = 0; j < inputIdxs.size(); ++j)
 		{
-			for (u64 k = 0; k < numHashFunc; ++k)
+			for (u64 k = 0; k < mNumHashes; ++k)
 			{
 				u64 addr = *(u64*)&hashs[j][k] % mBinCount;
-				if(addr==0)
-					std::cout << "----"<<inputIdxs[j] <<"-" << addr << std::endl;
-
+				//if(addr==0)
+				//	std::cout << "----"<<inputIdxs[j] <<"-" << addr << std::endl;
 
 				std::lock_guard<std::mutex> lock(mMtx[addr]);
 				if (std::find(mBins[addr].mIdx.begin(), mBins[addr].mIdx.end(), inputIdxs[j]) == mBins[addr].mIdx.end()) {
 					mBins[addr].mIdx.emplace_back(inputIdxs[j]);
+				//		std::cout << "1----"<<inputIdxs[j] <<"-" << addr << std::endl;
+				}
+			}
+
+			for (u64 k = 0; k < mNumStashHashes; ++k)
+			{
+				u64 addrStash = *(u64*)&hashs[j][k] % mBinStashCount + mBinCount;
+				std::lock_guard<std::mutex> lock(mMtx[addrStash]);
+				if (std::find(mBins[addrStash].mIdx.begin(), mBins[addrStash].mIdx.end(), inputIdxs[j]) == mBins[addrStash].mIdx.end()) {
+					mBins[addrStash].mIdx.emplace_back(inputIdxs[j]);
+				//	std::cout << "2----" << inputIdxs[j] << "-" << addrStash << std::endl;
 
 				}
 			}

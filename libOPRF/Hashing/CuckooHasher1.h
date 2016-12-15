@@ -14,9 +14,13 @@ namespace osuCrypto
 {
     struct CuckooParam1
     {
-        u64 mStashSize;
         double mBinScaler;
-        u64 mNumHashes, mSenderBinSize;
+		u64 mNumHashes;
+		u64 mSenderBinSize;
+
+		double mBinStashScaler;
+		u64 mNumStashHashes;
+		u64 mSenderBinStashSize;
     };
 
 
@@ -80,14 +84,18 @@ namespace osuCrypto
 
         CuckooParam1 mParams;
 		block mHashSeed;
-		u64 mBinCount, mMaxBinSize, mRepSize, mInputBitSize, mN;
+		u64 mBinCount, mBinStashCount, mMaxBinSize, mRepSize, mInputBitSize, mN;
         void print(bool isIdx, bool isOPRF, bool isMap) const;
-		void init(u64 n, block hashSeed, u64 statSecParam, bool multiThreaded, bool isStash);
+		void init(u64 n, block hashSeed, u64 statSecParam, bool multiThreaded);
         void insert(u64 IdxItem, ArrayView<u64> hashes);
         void insertHelper(u64 IdxItem, u64 hashIdx, u64 numTries);
 		void insertStashHelper(u64 IdxItem, u64 hashIdx, u64 numTries);
 
-        void insertBatch(ArrayView<u64> itemIdxs, MatrixView<u64> hashs, Workspace& workspace, bool isStash);
+        void insertBatch(ArrayView<u64> itemIdxs, MatrixView<u64> hashs, Workspace& workspace);
+
+		
+			void insertStashBatch(ArrayView<u64> itemIdxs, MatrixView<u64> hashs, Workspace& workspace);
+
 
         u64 find(ArrayView<u64> hashes);
         u64 findBatch(MatrixView<u64> hashes, 
@@ -98,6 +106,9 @@ namespace osuCrypto
 
         std::vector<u64> mHashes;
         MatrixView<u64> mHashesView;
+
+		std::vector<u64> mStashHashes;
+		MatrixView<u64> mStashHashesView;
 
         std::vector<Bin> mBins;
         std::vector<Bin> mStashBins;
