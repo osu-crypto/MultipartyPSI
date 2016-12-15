@@ -25,6 +25,8 @@ namespace osuCrypto
     CuckooParam1 k2n07s40CuckooParam1
     { 30, 1.2, 3, 17 };
 
+	CuckooParam1 stashCuckooParam1
+	{ 0, 0.04, 2, 64 };
 
     CuckooHasher1::CuckooHasher1()
         :mTotalTries(0)
@@ -40,7 +42,7 @@ namespace osuCrypto
         if (mBins.size() != cmp.mBins.size())
             throw std::runtime_error("");
 
-        if (mStash.size() != cmp.mStash.size())
+        if (mStashBins.size() != cmp.mStashBins.size())
             throw std::runtime_error("");
 
 
@@ -53,9 +55,9 @@ namespace osuCrypto
             }
         }
 
-        for (u64 i = 0; i < mStash.size(); ++i)
+        for (u64 i = 0; i < mStashBins.size(); ++i)
         {
-            if (mStash[i].mVal != cmp.mStash[i].mVal)
+            if (mStashBins[i].mVal != cmp.mStashBins[i].mVal)
             {
                 return false;
             }
@@ -102,12 +104,12 @@ namespace osuCrypto
         }
 	//	 for (u64 i = 0; i < 0 && mStash[i].isEmpty() == false; ++i)
 			// for (u64 i = 0; i < mStash.size() && mStash[i].isEmpty() == false; ++i)
-				 for (u64 i = 0; i < mStash.size() ; ++i)
+				 for (u64 i = 0; i < mStashBins.size() ; ++i)
         {
             //std::cout << "Bin #" << i;
 			Log::out << "SBin #" << i;
 
-            if (mStash[i].isEmpty())
+            if (mStashBins[i].isEmpty())
             {
               //  std::cout << " - " << std::endl;
 				Log::out << " - " << Log::endl;
@@ -116,7 +118,7 @@ namespace osuCrypto
             else
             {
 			//	std::cout << "    c_idx=" << mStash[i].idx() << "  hIdx=" << mStash[i].hashIdx() << std::endl;
-				Log::out << "    c_idx=" << mStash[i].idx() << "  hIdx=" << mStash[i].hashIdx() << Log::endl;
+				Log::out << "    c_idx=" << mStashBins[i].idx() << "  hIdx=" << mStashBins[i].hashIdx() << Log::endl;
 
             }
 
@@ -127,7 +129,7 @@ namespace osuCrypto
 		std::cout << IoStream::unlock;
 
     }
-    void CuckooHasher1::init(u64 n, block hashSeed, u64 statSecParam, bool multiThreaded)
+    void CuckooHasher1::init(u64 n, block hashSeed, u64 statSecParam, bool multiThreaded, bool isStash)
     {
 		mHashSeed = hashSeed;
 		mBinCount = 1.2*n;
@@ -136,33 +138,39 @@ namespace osuCrypto
 
         if (statSecParam != 40) throw std::runtime_error("not implemented");
 
-
-        if (n <= 1 << 7)
-            mParams = k2n07s40CuckooParam1;
-        else if (n <= 1 << 8)
-            mParams = k2n08s40CuckooParam1;
-        else if (n <= 1 << 12)
-            mParams = k2n12s40CuckooParam1;
-        else if (n <= 1 << 16)
-            mParams = k2n16s40CuckooParam1;
-        else if (n <= 1 << 20)
-            mParams = k2n20s40CuckooParam1;
-        else if (n <= 1 << 24)
-            mParams = k2n24s40CuckooParam1;
-        else
-            throw std::runtime_error("not implemented");
-
-
+		if (!isStash) {
+			if (n <= 1 << 7)
+				mParams = k2n07s40CuckooParam1;
+			else if (n <= 1 << 8)
+				mParams = k2n08s40CuckooParam1;
+			else if (n <= 1 << 12)
+				mParams = k2n12s40CuckooParam1;
+			else if (n <= 1 << 16)
+				mParams = k2n16s40CuckooParam1;
+			else if (n <= 1 << 20)
+				mParams = k2n20s40CuckooParam1;
+			else if (n <= 1 << 24)
+				mParams = k2n24s40CuckooParam1;
+			else
+				throw std::runtime_error("not implemented");
+		}
+		else
+			mParams = stashCuckooParam1;
 
         mHashes.resize(n * mParams.mNumHashes, u64(-1));
 
 
         mHashesView = MatrixView<u64>(mHashes.begin(), mHashes.end(), mParams.mNumHashes);
 
-        u64 binCount = mParams.mBinScaler * n;
+		if (!isStash) {
+			u64 binCount = mParams.mBinScaler * n;
+			mBins.resize(binCount);
+			mStashBins.resize(mParams.mStashSize);
+		}
+		else{
+			mBins.resize(n*166);
+		}
 
-        mBins.resize(binCount);
-        mStash.resize(mParams.mStashSize);
     }
 
     void CuckooHasher1::insert(u64 inputIdx, ArrayView<u64> hashs)
@@ -180,7 +188,7 @@ namespace osuCrypto
     void CuckooHasher1::insertBatch(
         ArrayView<u64> inputIdxs,
         MatrixView<u64> hashs,
-        Workspace& w)
+        Workspace& w, bool isInit)
     {
 
         u64 width = mHashesView.size()[1];
@@ -268,14 +276,30 @@ namespace osuCrypto
             remaining = putIdx;
         }
 
-        // put any that remain in the stash.
-        for (u64 i = 0, j = 0; i < remaining; ++j)
-        {
-            mStash[j].swap(inputIdxs[i], w.curHashIdxs[i]);
+		if (isInit) {
+		/*	ArrayView<u64> stashIdxs(inputIdxs.begin(), inputIdxs.begin() + remaining, false);
+			MatrixView<u64> stashHashs(hashs.data(), remaining, mParams.mNumHashes, false);
+			CuckooHasher1::Workspace stashW(remaining);
+			std::vector<Bin> mStashBins;*/
+			//mStashBins.insertBatch(stashIdxs, stashHashs, stashW, false);
+			for (u64 i = 0, j = 0; i < remaining; ++j)
+			{
+				mStashIdxs.push_back(inputIdxs[i]);
+			}
+		}
+		else
+		{
+			for (u64 i = 0, j = 0; i < remaining; ++j)
+			{
+				mStashBins[j].swap(inputIdxs[i], w.curHashIdxs[i]);
 
-            if (inputIdxs[i] == -1)
-                ++i;
-        }
+
+				MatrixView<u64> hashs2;
+
+				if (inputIdxs[i] == -1)
+					++i;
+			}
+		}
 
     }
 
@@ -326,13 +350,67 @@ namespace osuCrypto
                 // put in stash
                 for (u64 i = 0; inputIdx != u64(-1); ++i)
                 {
-                    mStash[i].swap(inputIdx, hashIdx);
+                    mStashBins[i].swap(inputIdx, hashIdx);
                 }
 
             }
         }
 
     }
+
+	void CuckooHasher1::insertStashHelper(u64 inputIdx, u64 hashIdx, u64 numTries)
+	{
+		//++mTotalTries;
+
+		u64 xrHashVal = mHashesView[inputIdx][hashIdx];
+
+		auto addr = (xrHashVal) % mStashBins.size();
+
+		// replaces whatever was in this bin with our new item
+		//mBins[addr].swap(inputIdx, hashIdx);
+		{
+
+			u64 newVal = inputIdx | (hashIdx << 56);
+#ifdef THREAD_SAFE_CUCKOO
+			u64 oldVal = mBins[addr].mVal.exchange(newVal, std::memory_order_relaxed);
+#else
+			u64 oldVal = mStashBins[addr].mVal;
+			mStashBins[addr].mVal = newVal;
+#endif
+
+			if (oldVal == u64(-1))
+			{
+				inputIdx = u64(-1);
+			}
+			else
+			{
+				inputIdx = oldVal & (u64(-1) >> 8);
+				hashIdx = oldVal >> 56;
+			}
+		}
+
+		if (inputIdx != -1)
+		{
+
+			// if idxItem is anything but -1, then we just exicted something. 
+			if (numTries < 100)
+			{
+				// lets try to insert it into its next location
+				insertStashHelper(inputIdx, (hashIdx + 1) % mParams.mNumHashes, numTries + 1);
+			}
+			else
+			{
+				// put in stash
+				for (u64 i = 0; inputIdx != u64(-1); ++i)
+				{
+					mStashBins[i].swap(inputIdx, hashIdx);
+				}
+
+			}
+		}
+
+	}
+
 
 
 
@@ -380,12 +458,12 @@ namespace osuCrypto
             // stash
 
             i64 i = 0;
-            while (i < mStash.size() && mStash[i].isEmpty() == false)
+            while (i < mStashBins.size() && mStashBins[i].isEmpty() == false)
             {
 #ifdef THREAD_SAFE_CUCKOO
                 u64 val = mStash[i].mVal.load(std::memory_order::memory_order_relaxed);
 #else
-                u64 val = mStash[i].mVal;
+                u64 val = mStashBins[i].mVal;
 #endif
                 if (val != u64(-1))
                 {
@@ -438,12 +516,12 @@ namespace osuCrypto
             }
 
             i64 i = 0;
-            while (i < mStash.size() && mStash[i].isEmpty() == false)
+            while (i < mStashBins.size() && mStashBins[i].isEmpty() == false)
             {
 #ifdef THREAD_SAFE_CUCKOO
                 u64 val = mStash[i].mVal.load(std::memory_order::memory_order_relaxed);
 #else
-                u64 val = mStash[i].mVal;
+                u64 val = mStashBins[i].mVal;
 #endif
 
                 if (val != u64(-1))
@@ -527,12 +605,12 @@ namespace osuCrypto
             // stash
 
             i64 i = 0;
-            while (i < mStash.size() && mStash[i].isEmpty() == false)
+            while (i < mStashBins.size() && mStashBins[i].isEmpty() == false)
             {
 #ifdef THREAD_SAFE_CUCKOO
                 u64 val = mStash[i].mVal.load(std::memory_order::memory_order_relaxed);
 #else
-                u64 val = mStash[i].mVal;
+                u64 val = mStashBins[i].mVal;
 #endif
                 if (val != u64(-1))
                 {

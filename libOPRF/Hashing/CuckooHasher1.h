@@ -82,11 +82,12 @@ namespace osuCrypto
 		block mHashSeed;
 		u64 mBinCount, mMaxBinSize, mRepSize, mInputBitSize, mN;
         void print() const;
-		void init(u64 n, block hashSeed, u64 statSecParam, bool multiThreaded);
+		void init(u64 n, block hashSeed, u64 statSecParam, bool multiThreaded, bool isStash);
         void insert(u64 IdxItem, ArrayView<u64> hashes);
         void insertHelper(u64 IdxItem, u64 hashIdx, u64 numTries);
+		void insertStashHelper(u64 IdxItem, u64 hashIdx, u64 numTries);
 
-        void insertBatch(ArrayView<u64> itemIdxs, MatrixView<u64> hashs, Workspace& workspace);
+        void insertBatch(ArrayView<u64> itemIdxs, MatrixView<u64> hashs, Workspace& workspace, bool isInit);
 
         u64 find(ArrayView<u64> hashes);
         u64 findBatch(MatrixView<u64> hashes, 
@@ -99,7 +100,8 @@ namespace osuCrypto
         MatrixView<u64> mHashesView;
 
         std::vector<Bin> mBins;
-        std::vector<Bin> mStash;
+        std::vector<Bin> mStashBins;
+		std::vector<u64> mStashIdxs;
 
         //std::vector<Bin> mBins;
         //std::vector<Bin> mStash;

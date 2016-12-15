@@ -89,69 +89,78 @@ namespace osuCrypto
         return std::log(bins * std::pow(balls * exp(1) / (bins * k), k)) / std::log(2);
     }
 
-    void SimpleHasher1::init(u64 n, u64 numBits, block hashSeed, u64 secParam)
-    {
-        mHashSeed = hashSeed;
-        mN = n;
+	void SimpleHasher1::init(u64 n, u64 numBits, block hashSeed, u64 secParam, bool isStash)
+	{
+		if (!isStash) {
+			mHashSeed = hashSeed;
+			mN = n;
 
-        auto log2n = log2ceil(n);
+			auto log2n = log2ceil(n);
 
-        mInputBitSize = numBits;
+			mInputBitSize = numBits;
 
-        double best = (999999999999999.0);
 #if 0
-        for (u64 maxBin = 15; maxBin < 40; maxBin++)
-        {
-            u64 binsHigh = n * 2;
-            u64 binsLow = 1;
-            // finds the min number of bins needed to get max occ. to be maxBin
+			for (u64 maxBin = 15; maxBin < 64; maxBin++)
+			{
+				u64 binsHigh = n * 2;
+				u64 binsLow = 1;
+				// finds the min number of bins needed to get max occ. to be maxBin
 
-            if (-maxprob1(n, binsHigh, maxBin) < secParam)
-            {
-                // maxBins is too small, skip it.
-                continue;
-            }
+				if (-maxprob1(n, binsHigh, maxBin) < secParam)
+				{
+					// maxBins is too small, skip it.
+					continue;
+				}
 
 
-            while (binsHigh != binsLow && binsHigh - 1 != binsLow)
-            {
-                auto mid = (binsHigh + binsLow) / 2;
+				while (binsHigh != binsLow && binsHigh - 1 != binsLow)
+				{
+					auto mid = (binsHigh + binsLow) / 2;
 
-                if (-maxprob1(n, mid, maxBin) < secParam)
-                {
-                    binsLow = mid;
-                }
-                else
-                {
-                    binsHigh = mid;
-                }
-            }
+					if (-maxprob1(n, mid, maxBin) < secParam)
+					{
+						binsLow = mid;
+					}
+					else
+					{
+						binsHigh = mid;
+					}
+				}
 
-            u64 bins = binsHigh;
+				u64 bins = binsHigh;
 
-            u64 logBinCount = (u64)std::log2(bins);
+				u64 logBinCount = (u64)std::log2(bins);
 
-            double total = bins*(double)maxBin * (double)maxBin * ((double)mInputBitSize - logBinCount);
+				double total = bins*(double)maxBin * (double)maxBin * ((double)mInputBitSize - logBinCount);
 
-            if (total < best)
-            {
-                best = total;
-                mBinCount = bins;
-                mMaxBinSize = maxBin;
-                //std::cout << "##########################################################" << std::endl;
-                //std::cout << n << "  " << bins << "   " << maxBin << "    " << logBinCount << "     " << total << std::endl;
-                //std::cout << "##########################################################" << std::endl;
+				if (total < best)
+				{
+					best = total;
+					mBinCount = bins;
+					mMaxBinSize = maxBin;
+					//std::cout << "##########################################################" << std::endl;
+					//std::cout << n << "  " << bins << "   " << maxBin << "    " << logBinCount << "     " << total << std::endl;
+					//std::cout << "##########################################################" << std::endl;
 
-            }
-        }
+				}
+		}
 #endif
-		mMaxBinSize = 32;
-		mBinCount = 1.2*n;
-        mMtx.reset(new std::mutex[mBinCount]);
-        mBins.resize(mBinCount);
-		mNumHashes = 3;
-		mNumBits= 5;
-       // mRepSize = mInputBitSize - (u32)std::log2(mBinCount);
+			mMaxBinSize = 32;
+			mBinCount = 1.2*n;
+			mMtx.reset(new std::mutex[mBinCount]);
+			mBins.resize(mBinCount);
+			mNumHashes = 3;
+			mNumBits = 5;
+	}
+		else
+		{
+			mMaxBinSize = 64;
+			mBinCount = 256*166;
+			mMtx.reset(new std::mutex[mBinCount]);
+			mBins.resize(mBinCount);
+			mNumHashes = 2;
+			mNumBits = 6;
+		}
     }
 
     //void SimpleHasher1::preHashedInsertItems(ArrayView<block> mySet, u64 itemIdx)

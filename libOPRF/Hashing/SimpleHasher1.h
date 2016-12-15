@@ -37,7 +37,7 @@ namespace osuCrypto
 
         void print() const;
 
-        void init(u64 n, u64 numBits, block hashSeed, u64 secParam);
+        void init(u64 n, u64 numBits, block hashSeed, u64 secParam, bool isStash);
 
         //void preHashedInsertItems(ArrayView<block> items, u64 itemIdx);
         //void insertItemsWithPhasing(ArrayView<block> items, u64 itemIdx);

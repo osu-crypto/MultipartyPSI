@@ -22,22 +22,30 @@ namespace osuCrypto
         block mHashingSeed;
         std::vector<u64> mIntersection;
 
+		std::vector<std::vector<block>> mNcoInputBuff;
 
+		std::vector<std::unique_ptr<NcoOtExtSender>> mOtSends;
         std::vector<std::unique_ptr<NcoOtExtReceiver>> mOtRecvs;
 
-        CuckooHasher1 mBins;
-		//SimpleHasher1 mTheirBins;
+		CuckooHasher1 mCuckooBins;
+		CuckooHasher1 mCuckooStashBins;
+
+		SimpleHasher1 mSimpleBins;
+		SimpleHasher1 mSimpleStashBins;
         PRNG mPrng;
 
-        void init(u64 n, u64 statSecParam, u64 inputBitSize, Channel& chl0, NcoOtExtReceiver& otRecv, block seed);
-        void init(u64 n, u64 statSecParam, u64 inputBitSize, const std::vector<Channel*>& chls, NcoOtExtReceiver& ots, block seed);
+		void init(u64 n, u64 statSecParam, u64 inputBitSize, Channel& chl0, NcoOtExtReceiver& otRecv, NcoOtExtSender& otSend, block seed);
+		void init(u64 n, u64 statSecParam, u64 inputBitSize, const std::vector<Channel*>& chls, NcoOtExtReceiver& ots, NcoOtExtSender& otSend, block seed);
+#if 0
+		void hash2Bins(std::vector<block>& inputs, Channel& chl);
+		void hash2Bins(std::vector<block>& inputs, const std::vector<Channel*>& chls);
 
-		void sendInput(std::vector<block>& inputs, Channel& chl);
-		void sendInput(std::vector<block>& inputs, const std::vector<Channel*>& chls);
+		void getOPRFkeys(std::vector<block>& inputs, Channel& chl);
+		void getOPRFkeys(std::vector<block>& inputs, const std::vector<Channel*>& chls);
 
 		void decrypt( std::vector<block>& plaintexts, Channel& chl);
 		void decrypt( std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
-
+#endif
 
     };
 

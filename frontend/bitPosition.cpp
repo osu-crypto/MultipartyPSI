@@ -34,12 +34,12 @@ void Bit_Position_Test()
 	}
 
 	BitPosition b;
-	b.init(setSize);
-	std::cout << b.mSize << std::endl;
+	b.init(setSize, setSize);
+	std::cout << b.mRealBitSize << std::endl;
 	std::set<u8> masks;
 	Timer timer;
 	auto start = timer.setTimePoint("start");
-	b.findPos(testSet, masks);
+	b.getMasks(testSet);
 	auto end = timer.setTimePoint("done");
 	auto time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 	//time = time / 100;
@@ -74,17 +74,15 @@ void Bit_Position_Map_Test()
 	}
 
 	BitPosition b;
-	b.init(setSize);
-	b.mSize = 7;
-	std::set<u8>::iterator it;
-	std::pair<std::set<u8>::iterator, bool> ret;
+	b.init(setSize, setSize);
+	b.mRealBitSize= 7;
 
-	for (u8 i = 0; i < b.mSize; i++)
+	for (u8 i = 0; i < b.mRealBitSize; i++)
 	{
-		u64 rand = std::rand() % 128; //choose randome bit location
-		ret = b.mPos.insert(rand);
-		if (ret.second == false)
-			it = ret.first;
+		//u64 rand = std::rand() % 128; //choose randome bit location
+		//ret = b.mPos.push_back(rand);
+		//if (ret.second == false)
+		//	it = ret.first;
 	}
 
 	//for (u8 i = 0; i < setSize; i++)
@@ -103,7 +101,7 @@ void Bit_Position_Map_Test()
 	auto start = timer.setTimePoint("start");
 	for (u8 i = 0; i < setSize; i++)
 	{
-		u8 map2 = b.map2(testSet[i]);
+	//	u8 map2 = b.map2(testSet[i]);
 	}
 	auto end = timer.setTimePoint("done");
 	auto time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -112,7 +110,7 @@ void Bit_Position_Map_Test()
 	start = timer.setTimePoint("start");
 	for (u8 i = 0; i < setSize; i++)
 	{
-		u8 map1 = b.map(testSet[i]);
+	//	u8 map1 = b.map(testSet[i]);
 	}
 	 end = timer.setTimePoint("done");
 	time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
@@ -131,7 +129,7 @@ void Bit_Position_Recursive_Test()
 		testSet[i] = prng.get<block>();
 	}
 	BitPosition b;
-	b.init(setSize);
+	b.init(setSize, setSize);
 	std::set<int> rs;
 
 	Timer timer;
@@ -140,14 +138,14 @@ void Bit_Position_Recursive_Test()
 	rs.insert(0);
 	std::vector<block> testSet1;
 	std::vector<block> testSet2;
-	for (size_t i = 0; i < setSize; i++)
-		if (b.TestBitN(testSet[i], 0))
-			testSet1.push_back(testSet[i]);
-		else
-			testSet2.push_back(testSet[i]);
-	
-	b.getIdxs(testSet1, 128, rs, b.mSize);
-	b.getIdxs(testSet2, 128, rs, b.mSize);
+	//for (size_t i = 0; i < setSize; i++)
+	//	if (b.TestBitN(testSet[i], 0))
+	//		testSet1.push_back(testSet[i]);
+	//	else
+	//		testSet2.push_back(testSet[i]);
+	//
+	//b.getIdxs(testSet1, 128, rs, b.mSize);
+	//b.getIdxs(testSet2, 128, rs, b.mSize);
 
 
 	auto end = timer.setTimePoint("done");

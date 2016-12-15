@@ -21,6 +21,7 @@
 #include <array>
 
 using namespace osuCrypto;
+#define PRINT
 
 void testPointer(std::vector<block>* test)
 {
@@ -110,7 +111,7 @@ void Bit_Position_Recursive_Test_Impl()
 	}
 	for (u64 i = 0; i < setSize; ++i)
 	{
-		testSet[i].m128i_u8[i/8] = 1 << (i%8);
+		//testSet[i].m128i_u8[i/8] = 1 << (i%8);
 	}
 	
 	BitPosition b;
@@ -260,18 +261,22 @@ void OPPRF_EmptrySet_Test_Impl()
     std::vector<Channel*> recvChl{ &ep1.addChannel(name, name) };
     std::vector<Channel*> sendChl{ &ep0.addChannel(name, name) };
 
-    KkrtNcoOtReceiver otRecv;
-    KkrtNcoOtSender otSend;
+	KkrtNcoOtReceiver otRecv0, otRecv1;
+	KkrtNcoOtSender otSend0, otSend1;
+
+
 	
     OPPRFSender send;
 	OPPRFReceiver recv;
     std::thread thrd([&]() {
 
 
-        send.init(setSize, psiSecParam, bitSize, sendChl, otSend, prng.get<block>());
-		send.sendInput(sendSet, sendChl);
-		send.sendEnc(sendPayLoads, sendChl);
-		send.mBins.print();
+		send.init(setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv0, prng.get<block>());
+
+
+		//send.sendInput(sendSet, sendChl);
+		//send.sendEnc(sendPayLoads, sendChl);
+		//send.mBins.print();
 
 		//for (u64 i = 1; i < 3; ++i)
 		//{
@@ -286,22 +291,40 @@ void OPPRF_EmptrySet_Test_Impl()
 		//
 
     });
+	recv.init(setSize, psiSecParam, bitSize, recvChl, otRecv1, otSend1, ZeroBlock);
 
-    recv.init(setSize, psiSecParam, bitSize, recvChl, otRecv, ZeroBlock);
-	recv.sendInput(recvSet, recvChl);
+	/*recv.sendInput(recvSet, recvChl);
 	recv.decrypt(recvPayLoads, recvChl);
 	recv.mBins.print();
+*/
 
-	std::cout << IoStream::lock;
-	for (u64 i = 1; i < recvPayLoads.size(); ++i)
-	{
-			Log::out << recvPayLoads[i] << Log::endl;
-			Log::out << sendPayLoads[i] << Log::endl;
-		}
-	
-	std::cout << IoStream::unlock;
+	thrd.join();
 
-    thrd.join();
+	//std::cout << IoStream::lock;
+	//for (u64 i = 1; i < recvPayLoads.size(); ++i)
+	//{
+	//		Log::out << recvPayLoads[i] << Log::endl;
+	//		Log::out << sendPayLoads[i] << Log::endl;
+	//	}
+	//
+	//std::cout << IoStream::unlock;
+
+   
+#ifdef PRINT
+	//std::cout << IoStream::lock;
+	//Log::out << "otSend0.mT.size()[0]: " << otSend0.mT.size()[0] << Log::endl;
+	//Log::out << "otSend0.mT.size()[1]: " << otSend0.mT.size()[1] << Log::endl;
+	//Log::out << otSend0.mT[0][0] << Log::endl;
+	//Log::out << otRecv0.mT0[0][0] << Log::endl;
+	//Log::out << otRecv0.mT1[0][0] << Log::endl;
+	//Log::out << "------------" << Log::endl;
+	//Log::out << otSend1.mT[0][0] << Log::endl;
+	//Log::out << otRecv1.mT0[0][0] << Log::endl;
+	//Log::out << otRecv1.mT1[0][0] << Log::endl;
+	//std::cout << IoStream::unlock;
+
+#endif
+
 
     sendChl[0]->close();
     recvChl[0]->close();

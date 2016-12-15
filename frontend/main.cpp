@@ -24,9 +24,13 @@ int miraclTestMain();
 
 int main(int argc, char** argv)
 {
+	//tt();
+	std::cout << "myCuckooTest_stash" << std::endl;
+	myCuckooTest_stash();
 
-    //simpleTest(argc, argv);
-    //return 0;
+	std::cout << "myCuckooTest_bin" << std::endl;
+	//myCuckooTest_bin();
+    return 0;
 
     //LinearCode code;
     //code.loadBinFile(libOTe_DIR "/libPSI/Tools/bch511.bin");

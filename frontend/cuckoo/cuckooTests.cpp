@@ -2,8 +2,193 @@
 #include "SimpleCuckoo.h"
 using namespace osuCrypto;
 #include "CLP.h"
+#include "Hashing/CuckooHasher1.h"
 #include <fstream>
 
+#define powNs  { 5/*,24 */}
+#define powTrials {0/*,20*/}
+//#define ee {1.1,1.2,1.5,2.0}
+#define ee {1.1/*, 1.14, 1.15,1.2*/}
+
+//myCuckooTest_bin
+#define Ns  { /*8,12,16,*/256/*,24 */}
+#define powTrials_bin {20,25,30}
+#define ee_bin {/*2.4	,3.0,	4.0,	5.0,	6.0,	7.0,	8.0,	9.0,	10.0,	20.0,*/	100.0,200.0}
+
+void myCuckooTest_stash()
+{
+	for (auto powN : powNs)
+	{
+		for (auto powTrial : powTrials)
+		{
+			for (auto e : ee)
+			{
+				u64 n = 1 << powN;
+				u64 h = 2;
+				u64 trials = 1 << powTrial;
+				u64 numThrds = 1;
+				std::vector<u64> maxStashSize(numThrds);
+
+				auto routine = [trials, &maxStashSize, n, h, e, numThrds](u64 tIdx)
+				{
+
+					std::vector<u64> idxs(n);
+					std::vector<u64> hashs(n * h + 1);
+					MatrixView<u64> hashes(n, h);
+					SimpleCuckoo::Workspace ws(n, h);
+					maxStashSize[tIdx] = 0;
+
+					u64 startIdx = tIdx * trials / numThrds;
+					u64 endIdx = (tIdx + 1) * trials / numThrds;
+					for (u64 i = 0; i < endIdx - startIdx; ++i)
+					{
+						PRNG prng(_mm_set1_epi64x(tIdx) ^ _mm_set1_epi64x(i));
+						//prng.mAes.ecbEncCounterMode(prng.mBlockIdx, n * h / 2, (block*)hashs.data());
+						//MatrixView<u64> hashes((u64*)hashs.data(), n, h, false);
+
+						for (u64 i = 0; i < n; ++i)
+						{
+							idxs[i] = i;
+							for (u64 j = 0; j < h; ++j)
+							{
+								hashes[i][j] = prng.get<u64>();
+							}
+						}
+
+						SimpleCuckoo c;
+
+						c.mParams.mBinScaler = e;
+						c.mParams.mNumHashes = h;
+						c.mParams.mStashSize = n;
+						c.init(n, 40, false);
+
+						c.insertBatch(idxs, hashes, ws);
+						u64 stashSize = c.stashUtilization();
+						c.print();
+						if (maxStashSize[tIdx] < stashSize)
+							maxStashSize[tIdx] = stashSize;
+
+						//	std::cout << "stashSize: " << i << "  " << stashSize << std::endl;
+					}
+
+				};
+
+				std::vector<std::thread> thrds(numThrds);
+
+				for (u64 i = 0; i < numThrds; ++i)
+				{
+					thrds[i] = std::thread([&, i]() {routine(i); });
+				}
+
+
+				for (u64 i = 0; i < numThrds; ++i)
+				{
+					thrds[i].join();
+				}
+
+				u64 finalMaxStashSize = 0;
+
+				for (u64 i = 0; i < numThrds; ++i)
+				{
+					if (finalMaxStashSize < maxStashSize[i])
+						finalMaxStashSize = maxStashSize[i];
+				}
+				std::cout << "n=" << powN << "   trial=" << powTrial <<"   e=" <<e<<  "   maxStashSize=" << finalMaxStashSize << std::endl;
+
+			}
+		}
+	}
+	
+
+}
+
+
+void myCuckooTest_bin()
+{
+	for (auto n : Ns)
+	{
+		for (auto powTrial : powTrials_bin)
+		{
+			for (auto e : ee_bin)
+			{
+				//u64 n = 1 powN;
+				u64 h = 3;
+				u64 trials = 1 << powTrial;
+				u64 numThrds = 32;
+				std::vector<u64> maxStashSize(numThrds);
+
+				auto routine = [trials, &maxStashSize, n, h, e, numThrds](u64 tIdx)
+				{
+
+					std::vector<u64> idxs(n);
+					std::vector<u64> hashs(n * h + 1);
+					MatrixView<u64> hashes(n, h);
+					SimpleCuckoo::Workspace ws(n, h);
+					maxStashSize[tIdx] = 0;
+
+					u64 startIdx = tIdx * trials / numThrds;
+					u64 endIdx = (tIdx + 1) * trials / numThrds;
+					for (u64 i = 0; i < endIdx - startIdx; ++i)
+					{
+						PRNG prng(_mm_set1_epi64x(tIdx) ^ _mm_set1_epi64x(i));
+						//prng.mAes.ecbEncCounterMode(prng.mBlockIdx, n * h / 2, (block*)hashs.data());
+						//MatrixView<u64> hashes((u64*)hashs.data(), n, h, false);
+
+						for (u64 i = 0; i < n; ++i)
+						{
+							idxs[i] = i;
+							for (u64 j = 0; j < h; ++j)
+							{
+								hashes[i][j] = prng.get<u64>();
+							}
+						}
+
+						SimpleCuckoo c;
+
+						c.mParams.mBinScaler = e;
+						c.mParams.mNumHashes = h;
+						c.mParams.mStashSize = n;
+						c.init(n, 40, false);
+
+						c.insertBatch(idxs, hashes, ws);
+						u64 stashSize = c.stashUtilization();
+						//c.print();
+						if (maxStashSize[tIdx] < stashSize)
+							maxStashSize[tIdx] = stashSize;
+
+						//	std::cout << "stashSize: " << i << "  " << stashSize << std::endl;
+					}
+
+				};
+
+				std::vector<std::thread> thrds(numThrds);
+
+				for (u64 i = 0; i < numThrds; ++i)
+				{
+					thrds[i] = std::thread([&, i]() {routine(i); });
+				}
+
+
+				for (u64 i = 0; i < numThrds; ++i)
+				{
+					thrds[i].join();
+				}
+
+				u64 finalMaxStashSize = 0;
+
+				for (u64 i = 0; i < numThrds; ++i)
+				{
+					if (finalMaxStashSize < maxStashSize[i])
+						finalMaxStashSize = maxStashSize[i];
+				}
+				std::cout << "n=" << n << "   trial=" << powTrial << "   e=" << e << "   maxStashSize=" << finalMaxStashSize << std::endl;
+
+			}
+		}
+	}
+
+
+}
 
 void tt()
 {
@@ -16,6 +201,7 @@ void tt()
     MatrixView<u64> hashes(_hashes.begin(), _hashes.end(), h);
     PRNG prng(ZeroBlock);
 
+	
     for (u64 i = 0; i < hashes.size()[0]; ++i)
     {
         idx[i] = i;
@@ -31,11 +217,10 @@ void tt()
     hashMap1.mParams.mNumHashes = h;
     hashMap1.mParams.mStashSize = 400;
 
-
     hashMap1.init(n, 40, true);
 
-
     hashMap1.insertBatch(idx, hashes, w);
+	hashMap1.print();
 
     std::vector<u64> idxret(n);
 
@@ -50,8 +235,6 @@ void tt()
         }
     }
 }
-
-
 
 void simpleTest_find_e(int argc, char** argv)
 {
@@ -300,9 +483,6 @@ void simpleTest_find_e(int argc, char** argv)
 
 }
 
-
-
-
 void simpleTest(int argc, char** argv)
 {
     simpleTest_find_e(argc, argv);
@@ -483,8 +663,6 @@ void simpleTest(int argc, char** argv)
 
     }
 }
-
-
 
 void simpleTest_var_h(int argc, char** argv)
 {

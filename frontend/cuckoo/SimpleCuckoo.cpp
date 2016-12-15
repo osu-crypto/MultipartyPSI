@@ -82,7 +82,7 @@ namespace osuCrypto
         }
         for (u64 i = 0; i < mStash.size() && mStash[i].isEmpty() == false; ++i)
         {
-            std::cout << "Bin #" << i;
+            std::cout << "SBin #" << i;
 
             if (mStash[i].isEmpty())
             {
@@ -103,31 +103,9 @@ namespace osuCrypto
     {
         if (statSecParam != 40) throw std::runtime_error("not implemented");
 
-
-        //if (n <= 1 << 7)
-        //    mParams = k2n07s40CuckooParam;
-        //else if (n <= 1 << 8)
-        //    mParams = k2n08s40CuckooParam;
-        //else if (n <= 1 << 12)
-        //    mParams = k2n12s40CuckooParam;
-        //else if (n <= 1 << 16)
-        //    mParams = k2n16s40CuckooParam;
-        //else if (n <= 1 << 20)
-        //    mParams = k2n20s40CuckooParam;
-        //else if (n <= 1 << 24)
-        //    mParams = k2n24s40CuckooParam;
-        //else
-        //    throw std::runtime_error("not implemented");
-
-
-
         mHashes.resize(n * mParams.mNumHashes, 0);
-
-
         mHashesView = MatrixView<u64>(mHashes.begin(), mHashes.end(), mParams.mNumHashes);
-
         u64 binCount = mParams.mBinScaler * n;
-
         mBins.resize(binCount);
         mStash.resize(mParams.mStashSize);
     }
@@ -172,7 +150,7 @@ namespace osuCrypto
         }
 
 
-        while (remaining && tryCount++ < 100)
+        while (remaining && tryCount++ <100)
         {
 
             // this data fetch can be slow (after the first loop). 
@@ -257,13 +235,33 @@ namespace osuCrypto
         }
 
         // put any that remain in the stash.
-        for (u64 i = 0, j = 0; i < remaining; ++j)
-        {
-            mStash[j].swap(inputIdxs[i], w.curHashIdxs[i]);
 
-            if (inputIdxs[i] == -1)
-                ++i;
-        }
+		ArrayView<u64> inputIdxs2(inputIdxs.begin(), inputIdxs.begin() + remaining, false);
+		MatrixView<u64> hashs2(hashs.data(), remaining, mParams.mNumHashes, false);
+
+		/*for (u64 i = 0; i < remaining; ++i)
+		{
+			std::cout << "inputIdxs2 " << inputIdxs2[i] << std::endl;
+		}
+
+		for (u64 i = 0; i < remaining; ++i)
+		{
+			std::cout << "hashs2 " << hashs2[i][w.curHashIdxs[i]] << std::endl;
+		}*/
+
+		for (u64 i = 0, j = 0; i < remaining; ++j)
+		{
+		/*	std::cout << "inputIdxs[i] " << inputIdxs[i] << std::endl;
+			std::cout << "w.curHashIdxs[i] " << hashs[i][w.curHashIdxs[i]] << std::endl;*/
+
+			mStash[j].swap(inputIdxs[i], w.curHashIdxs[i]);
+
+			if (inputIdxs[i] == -1)
+			{
+				//std::cout << "total evicts " << evists << std::endl;
+				++i;
+			}
+		}
 
         //std::cout << "total evicts "<< evists << std::endl;
     }
@@ -463,6 +461,7 @@ namespace osuCrypto
 
     void SimpleCuckoo::Bin::swap(u64 & idx, u64 & hashIdx)
     {
+		
         u64 newVal = idx | (hashIdx << 56);
 #ifdef THREAD_SAFE_CUCKOO
         u64 oldVal = mVal.exchange(newVal, std::memory_order_relaxed);
@@ -477,6 +476,7 @@ namespace osuCrypto
         else
         {
             idx = oldVal & (u64(-1) >> 8);
+			std::cout << "iidx " << idx << std::endl;
             hashIdx = oldVal >> 56;
         }
     }
