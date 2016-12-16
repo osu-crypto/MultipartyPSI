@@ -77,7 +77,7 @@ namespace osuCrypto
         return !(*this == cmp);
     }
 
-    void CuckooHasher1::print(bool isIdx, bool isOPRF, bool isMap) const
+    void CuckooHasher1::print(u64 IdxP, bool isIdx, bool isOPRF, bool isMap) const
     {
 		std::cout << IoStream::lock;
 		//std::cout << "Cuckoo Hasher  " << std::endl;
@@ -104,10 +104,10 @@ namespace osuCrypto
 			
 				//	Log::out << "    hIdx=" << mBins[i].hashIdx();
 				if(isOPRF)
-					Log::out << "    c_OPRF=" << mBins[i].mValOPRF;
+					Log::out << "    c_OPRF=" << mBins[i].mValOPRF[IdxP];
 				
 				if(isMap)
-					Log::out << "    c_Map="<< static_cast<int16_t>(mBins[i].mValMap);
+					Log::out << "    c_Map="<< static_cast<int16_t>(mBins[i].mValMap[IdxP]);
 				
 				Log::out << Log::endl;
             }
@@ -140,7 +140,7 @@ namespace osuCrypto
 		std::cout << IoStream::unlock;
 
     }
-    void CuckooHasher1::init(u64 n, block hashSeed, u64 statSecParam, bool multiThreaded)
+    void CuckooHasher1::init(u64 numParties, u64 n, block hashSeed, u64 statSecParam, bool multiThreaded)
     {
 		mHashSeed = hashSeed;
 
@@ -174,6 +174,7 @@ namespace osuCrypto
 		mBinStashCount= ( mParams.mBinStashScaler) * n;
 		
 			mBins.resize(mBinCount+ mBinStashCount);
+			
     }
 
     void CuckooHasher1::insert(u64 inputIdx, ArrayView<u64> hashs)

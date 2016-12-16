@@ -23,7 +23,7 @@ namespace osuCrypto
     {
     }
 
-    void OPPRFReceiver::init(
+    void OPPRFReceiver::init(u64 numParties,
         u64 n,
         u64 statSec,
         u64 inputBitSize,
@@ -32,10 +32,10 @@ namespace osuCrypto
 		NcoOtExtSender& otSend,
         block seed)
     {
-        init(n, statSec, inputBitSize, { &chl0 }, ots, otSend, seed);
+        init(numParties,n, statSec, inputBitSize, { &chl0 }, ots, otSend, seed);
     }
 
-    void OPPRFReceiver::init(
+    void OPPRFReceiver::init(u64 numParties,
 			u64 n,
 			u64 statSecParam,
 			u64 inputBitSize,
@@ -47,7 +47,7 @@ namespace osuCrypto
 
 		// this is the offline function for doing binning and then performing the OtPsi* between the bins.
 
-
+		mParties = numParties;
 		mStatSecParam = statSecParam;
 		mN = n;
 
@@ -90,11 +90,13 @@ namespace osuCrypto
 
 		// this SimpleHasher class knows how to hash things into bins. But first we need 
 		// to compute how many bins we need, the max size of bins, etc.
-		mSimpleBins.init(n, inputBitSize, mHashingSeed, statSecParam);
-		mCuckooBins.init(n, mHashingSeed, statSecParam, false);
+		mSimpleBins.init(mParties,n, inputBitSize, mHashingSeed, statSecParam);
+		mCuckooBins.init(mParties,n, mHashingSeed, statSecParam, false);
 
 		// figure out how many OTs we need in total.
-		u64 otCount = mSimpleBins.mBinCount;//+mSimpleBins.mBinCount;
+		//u64 otCount = mSimpleBins.mBinCount;//+mSimpleBins.mBinCount;
+		u64 otCountSend = mSimpleBins.mBins.size();
+		u64 otCountRecv = mCuckooBins.mBins.size();
 
 
 		gTimer.setTimePoint("Init.recv.baseStart");
@@ -146,16 +148,16 @@ namespace osuCrypto
 
 		auto sendOtRoutine = [&](u64 tIdx, u64 total, NcoOtExtSender& ots, Channel& chl)
 		{
-			auto start = (tIdx     *otCount / total) ;
-			auto end = ((tIdx + 1) * otCount / total);
+			auto start = (tIdx     *otCountSend / total) ;
+			auto end = ((tIdx + 1) * otCountSend / total);
 
 			ots.init(end - start);
 		};
 
 		auto recvOtRoutine = [&](u64 tIdx, u64 total, NcoOtExtReceiver& ots, Channel& chl)
 		{
-			auto start = (tIdx     * otCount / total) ;
-			auto end = ((tIdx + 1) * otCount / total) ;
+			auto start = (tIdx     * otCountRecv / total) ;
+			auto end = ((tIdx + 1) * otCountRecv / total) ;
 
 			ots.init(end - start);
 		};
@@ -285,9 +287,6 @@ namespace osuCrypto
 
                 if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
-                auto& otRecv = *mOtRecvs[tIdx];
-
-
                 auto& chl = *chls[tIdx];
 
                 auto startIdx = tIdx     * mN / thrds.size();
@@ -372,9 +371,56 @@ namespace osuCrypto
 
 			//	mBins.print();
 
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
+
+#pragma region Init Bin
+#if 1
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.insertDone");
+
+
+				if (mCuckooBins.mBins.size() != mSimpleBins.mBins.size())
+					throw std::runtime_error("mCuckooBins.mBins.size()!= mSimpleBins.mBins.size()");
+
+				auto binCount = mCuckooBins.mBins.size();
+				// get the region of the base OTs that this thread should do.
+				auto binStart = tIdx       * binCount / thrds.size();
+				auto binEnd = (tIdx + 1) * binCount / thrds.size();
+
+				const u64 stepSize = 16;
+
+				for (u64 bIdx = binStart; bIdx < binEnd;)
+				{
+					u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
+
+					for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
+					{
+						auto& cbin = mCuckooBins.mBins[bIdx];
+						if (!cbin.isEmpty())
+						{
+							cbin.mValOPRF.resize(mParties);
+							cbin.mValMap.resize(mParties);
+						}
+						auto& sbin = mSimpleBins.mBins[bIdx];
+
+						if (sbin.mIdx.size()>0)
+						{
+							sbin.mValOPRF.resize(mParties);
+							sbin.mBits.resize(mParties);
+						}
+
+					}
+
+				}
+#endif
 #pragma endregion
-            });
-        }
+
+#pragma endregion
+            });      
+
+		
+		}
+
+
 
         // join the threads.
         for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
@@ -386,52 +432,25 @@ namespace osuCrypto
         //std::cout << gTimer;
 #endif
     }
-#if 0
-	void OPPRFReceiver::getOPRFkeys(std::vector<block>& inputs, Channel & chl)
+
+	void OPPRFReceiver::getOPRFkeys(u64 IdxParty, Channel & chl)
 	{
-		getOPRFkeys(inputs, { &chl });
+		getOPRFkeys( IdxParty,{ &chl });
 	}
 
-	void OPPRFReceiver::getOPRFkeys(std::vector<block>& inputs, const std::vector<Channel*>& chls)
+	void OPPRFReceiver::getOPRFkeys(u64 IdxP, const std::vector<Channel*>& chls)
 	{
 #if 1
 		// this is the online phase.
 		gTimer.setTimePoint("online.recv.start");
 
-		// check that the number of inputs is as expected.
-		if (inputs.size() != mN)
-			throw std::runtime_error(LOCATION);
-
-
-
-		std::vector<block> valOPRF(mN);
 		u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-
 
 		if (maskSize > sizeof(block))
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
-
 		std::vector<std::thread>  thrds(chls.size());
 		//  std::vector<std::thread>  thrds(1);
-
-		// since we are going to do this in parallel, these objects will
-		// be used for synchronization. specifically, when all threads are 
-		// done inserting items into the bins, the future will be fulfilled 
-		// and all threads will advance to performing the base OtPsi's
-
-		std::promise<void>  maskMergeProm;
-		std::shared_future<void>
-			maskMergeFuture(maskMergeProm.get_future());
-
-		std::promise<MatrixView<u8>> maskProm;
-		std::shared_future<MatrixView<u8>> maskFuture(maskProm.get_future());
-		// ByteStream maskBuffer;
-
-
-		//  CuckooHasher1 maskMap;
-		//maskMap.init(mN * mBins.mMaxBinSize, mStatSecParam, chls.size() > 1);
-
 
 		// fr each thread, spawn it.
 		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
@@ -443,39 +462,30 @@ namespace osuCrypto
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
 				auto& otRecv = *mOtRecvs[tIdx];
-
-
+				auto& otSend = *mOtSends[tIdx];
 				auto& chl = *chls[tIdx];
-
-				auto startIdx = tIdx     * mN / thrds.size();
-				auto endIdx = (tIdx + 1) * mN / thrds.size();
-
-#pragma region compute Bark-OPRF
-#if 1
+				
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.insertDone");
 
-				// get the region of the base OTs that this thread should do.
-				auto binStart = tIdx       * mBins.mBinCount / thrds.size();
-				auto binEnd = (tIdx + 1) * mBins.mBinCount / thrds.size();
-				auto otStart = binStart * 1;
-				auto otEnd = binEnd * 1;
+				const u64 stepSize = 16;
+				std::vector<block> ncoInput(mNcoInputBlkSize);
 
-				PRNG prng(seed);
+#pragma region compute Recv Bark-OPRF
+#if 1
+				//####################
+				//#######Recv role
+				//####################
+
+
+				auto otCountRecv = mCuckooBins.mBins.size();
+				// get the region of the base OTs that this thread should do.
+				auto binStart = tIdx       * otCountRecv / thrds.size();
+				auto binEnd = (tIdx + 1) * otCountRecv / thrds.size();
 
 				//if (!tIdx)
-				//gTimer.setTimePoint("sendInput.PSI");
+				//gTimer.setTimePoint("sendInput.PSI");			
 
-				std::vector<u16> perm(mBins.mMaxBinSize);
-				for (size_t i = 0; i < perm.size(); i++)
-					perm[i] = i;
-
-
-				const u64 stepSize = 16;
-
-
-				u64 otIdx = 0;
-
-				std::vector<block> ncoInput(mNcoInputBlkSize);
+				
 
 				for (u64 bIdx = binStart; bIdx < binEnd;)
 				{
@@ -484,7 +494,7 @@ namespace osuCrypto
 					for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
 					{
 
-						auto& bin = mBins.mBins[bIdx];
+						auto& bin = mCuckooBins.mBins[bIdx];
 
 						if (!bin.isEmpty())
 						{
@@ -496,7 +506,7 @@ namespace osuCrypto
 							otRecv.encode(
 								bIdx,      // input
 								ncoInput,             // input
-								bin.mValOPRF); // output
+								bin.mValOPRF[IdxP]); // output
 
 											   /*if (bIdx < 3 || (bIdx < mN && bIdx > mN-2))
 											   std::cout << "r-" << bIdx << ", " << inputIdx << ": " << valOPRF[inputIdx] << std::endl;*/
@@ -505,18 +515,93 @@ namespace osuCrypto
 						{
 							otRecv.zeroEncode(bIdx);
 						}
-
 					}
-
 					otRecv.sendCorrection(chl, currentStepSize);
 				}
 
+				  if (tIdx == 0) gTimer.setTimePoint("online.recv.otRecv.finalOPRF");
 
-				//  if (tIdx == 0) gTimer.setTimePoint("online.recv.recvMask");
-				otRecv.check(chl);
 
 #endif
 #pragma endregion
+
+#if 1
+#pragma region compute Send Bark-OPRF				
+				//####################
+				//#######Sender role
+				//####################
+
+				auto otCountSend = mSimpleBins.mBins.size();
+
+				 binStart = tIdx       * otCountSend / thrds.size();
+				 binEnd = (tIdx + 1) * otCountSend / thrds.size();
+
+
+				if (tIdx == 0) gTimer.setTimePoint("online.send.OT");
+
+				for (u64 bIdx = binStart; bIdx < binEnd;)
+				{
+					u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
+					otSend.recvCorrection(chl, currentStepSize);
+
+					for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
+					{
+
+						auto& bin = mSimpleBins.mBins[bIdx];
+
+						if (bin.mIdx.size() > 0)
+						{
+							bin.mValOPRF[IdxP].resize(bin.mIdx.size());
+
+							std::cout << "s-" << bIdx << ", ";
+							for (u64 i = 0; i < bin.mIdx.size(); ++i)
+							{
+
+								u64 inputIdx = bin.mIdx[i];
+
+								for (u64 j = 0; j < mNcoInputBlkSize; ++j)
+								{
+									ncoInput[j] = mNcoInputBuff[j][inputIdx];
+								}
+
+								//    block sendMask;
+
+								otSend.encode(
+									bIdx, //each bin has 1 OT
+									ncoInput,
+									bin.mValOPRF[IdxP][i]);
+
+								/*if (bIdx < 3 || (bIdx < mN && bIdx > mN - 2))
+								std::cout << "s-"<<bIdx <<", "<< inputIdx << ": " << sendMask << std::endl;*/
+							}
+
+							//#####################
+							//######Finding bit locations
+							//#####################
+
+							std::cout << bin.mValOPRF[IdxP][0];
+
+							//diff max bin size for first mSimpleBins.mBinCount and 
+							// mSimpleBins.mBinStashCount
+							if (bIdx < mSimpleBins.mBinCount)
+								bin.mBits[IdxP].init(bin.mIdx.size(), mSimpleBins.mNumBits);
+							else
+								bin.mBits[IdxP].init(bin.mIdx.size(), mSimpleBins.mNumStashBits);
+
+							bin.mBits[IdxP].getPos(bin.mValOPRF[IdxP], 128);
+							bin.mBits[IdxP].getMasks(bin.mValOPRF[IdxP]);
+							std::cout << ", "
+								<< static_cast<int16_t>(bin.mBits[IdxP].mMaps[0]) << std::endl;
+						}
+					}
+				}
+
+				if (tIdx == 0) gTimer.setTimePoint("online.send.otSend.finalOPRF");
+
+#pragma endregion
+#endif
+				otRecv.check(chl);
+				otSend.check(chl);
 			});
 		}
 
@@ -532,7 +617,7 @@ namespace osuCrypto
 	}
 
 
-
+#if 0
 	void OPPRFReceiver::decrypt(std::vector<block>& plaintexts, Channel & chl)
 	{
 		return decrypt(plaintexts, { &chl });

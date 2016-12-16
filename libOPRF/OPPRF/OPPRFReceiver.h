@@ -18,7 +18,7 @@ namespace osuCrypto
         //static const u64 CodeWordSize = 7;
         //static const u64 hasherStepSize;
 
-        u64 mN, mStatSecParam, mNcoInputBlkSize;// , mOtMsgBlkSize;
+        u64 mN, mParties, mStatSecParam, mNcoInputBlkSize;// , mOtMsgBlkSize;
         block mHashingSeed;
         std::vector<u64> mIntersection;
 
@@ -31,15 +31,15 @@ namespace osuCrypto
 		SimpleHasher1 mSimpleBins;
         PRNG mPrng;
 
-		void init(u64 n, u64 statSecParam, u64 inputBitSize, Channel& chl0, NcoOtExtReceiver& otRecv, NcoOtExtSender& otSend, block seed);
-		void init(u64 n, u64 statSecParam, u64 inputBitSize, const std::vector<Channel*>& chls, NcoOtExtReceiver& ots, NcoOtExtSender& otSend, block seed);
+		void init(u64 numParties, u64 n, u64 statSecParam, u64 inputBitSize, Channel& chl0, NcoOtExtReceiver& otRecv, NcoOtExtSender& otSend, block seed);
+		void init(u64 numParties, u64 n, u64 statSecParam, u64 inputBitSize, const std::vector<Channel*>& chls, NcoOtExtReceiver& ots, NcoOtExtSender& otSend, block seed);
 
 		void hash2Bins(std::vector<block>& inputs, Channel& chl);
 		void hash2Bins(std::vector<block>& inputs, const std::vector<Channel*>& chls);
-#if 0
-		void getOPRFkeys(std::vector<block>& inputs, Channel& chl);
-		void getOPRFkeys(std::vector<block>& inputs, const std::vector<Channel*>& chls);
 
+		void getOPRFkeys( u64 IdxParty, Channel& chl);
+		void getOPRFkeys(u64 IdxParty, const std::vector<Channel*>& chls);
+#if 0
 		void decrypt( std::vector<block>& plaintexts, Channel& chl);
 		void decrypt( std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 #endif

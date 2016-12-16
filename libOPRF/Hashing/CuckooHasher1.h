@@ -49,8 +49,8 @@ namespace osuCrypto
             Bin(const Bin& b) : mVal(b.mVal) {}
             Bin(Bin&& b) : mVal(b.mVal) {}
             u64 mVal;
-			block mValOPRF;
-			u8 mValMap;
+			std::vector<block> mValOPRF;
+			std::vector<u8> mValMap;
 
 			
 #endif
@@ -85,8 +85,8 @@ namespace osuCrypto
         CuckooParam1 mParams;
 		block mHashSeed;
 		u64 mBinCount, mBinStashCount, mMaxBinSize, mRepSize, mInputBitSize, mN;
-        void print(bool isIdx, bool isOPRF, bool isMap) const;
-		void init(u64 n, block hashSeed, u64 statSecParam, bool multiThreaded);
+        void print(u64 IdxParty, bool isIdx, bool isOPRF, bool isMap) const;
+		void init(u64 numParties, u64 n, block hashSeed, u64 statSecParam, bool multiThreaded);
         void insert(u64 IdxItem, ArrayView<u64> hashes);
         void insertHelper(u64 IdxItem, u64 hashIdx, u64 numTries);
 		void insertStashHelper(u64 IdxItem, u64 hashIdx, u64 numTries);

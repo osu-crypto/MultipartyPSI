@@ -71,7 +71,7 @@ namespace osuCrypto
 
 		
 
-        mBins.init(n, inputBitSize, mHashingSeed, statSec);
+        mBins.init(2,n, inputBitSize, mHashingSeed, statSec);
 
         //mPsis.resize(mBins.mBinCount);
 

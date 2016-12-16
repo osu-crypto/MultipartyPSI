@@ -54,6 +54,13 @@ void Bit_Position_Test_Impl()
 {
 	std::cout << sizeof(u8) << std::endl;
 
+	std::vector<int> myvector;
+
+	// set some initial content:
+	//for (int i = 1; i<10; i++) myvector.push_back(i);
+
+	myvector.resize(0);
+
 #if 0
 	u64 setSize = 1<<4;
 	std::vector<block> testSet(setSize);
@@ -233,7 +240,7 @@ void OPPRF_CuckooHasher_Test_Impl()
 
 void OPPRF_EmptrySet_Test_Impl()
 {
-    u64 setSize = 1<<5, psiSecParam = 40, bitSize = 128;
+    u64 setSize = 1<<5, psiSecParam = 40, bitSize = 128 , numParties=2;
     PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 
     std::vector<block> sendSet(setSize), recvSet(setSize);
@@ -244,7 +251,7 @@ void OPPRF_EmptrySet_Test_Impl()
         sendSet[i] = prng.get<block>();
 		sendPayLoads[i]= prng.get<block>();
 		recvSet[i] = prng.get<block>();
-		//recvSet[i] = sendSet[i];
+		recvSet[i] = sendSet[i];
     }
 	for (u64 i = 1; i < 3; ++i)
 	{
@@ -271,12 +278,13 @@ void OPPRF_EmptrySet_Test_Impl()
     std::thread thrd([&]() {
 
 
-		send.init(setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
+		send.init(numParties,setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
 		send.hash2Bins(sendSet, sendChl);
-		Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
-		//send.mSimpleBins.print(true, false, false,false);
-		//Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
-		send.mCuckooBins.print(true, false, false);
+		send.getOPRFKeys(1,sendChl);
+		//Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
+		//send.mSimpleBins.print(1,true, true, true, true);
+		Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
+		send.mCuckooBins.print(1,true, true, false);
 	
 
 
@@ -297,12 +305,15 @@ void OPPRF_EmptrySet_Test_Impl()
 		//
 
     });
-	recv.init(setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
+	recv.init(numParties,setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 	recv.hash2Bins(recvSet, recvChl);
-	Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
-	//recv.mCuckooBins.print(true, false, false);
+	recv.getOPRFkeys(0, recvChl);
+
+	/*Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
+	recv.mCuckooBins.print(0,true, true, false);*/
+	
 	Log::out << "recv.mSimpleBins.print(true, false, false,false);" << Log::endl;
-	recv.mSimpleBins.print(true, false, false,false);
+	recv.mSimpleBins.print(0,true, true, true, true);
 
 	/*recv.sendInput(recvSet, recvChl);
 	recv.decrypt(recvPayLoads, recvChl);

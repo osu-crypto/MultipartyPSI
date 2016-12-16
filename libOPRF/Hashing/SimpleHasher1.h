@@ -25,9 +25,9 @@ namespace osuCrypto
         //typedef std::vector<std::pair<u64, block>> MtBin;
 		struct Bin
 		{
-			std::vector<u64> mIdx;
-			BitPosition mBits;
-			std::vector<block> mValOPRF;
+			std::vector<u64> mIdx; //have many items in the bin
+			std::vector<BitPosition> mBits;//mBits[IdxParty]
+			std::vector<std::vector<block>> mValOPRF; //mValOPRF[IdxParty][mIdx]
 		};
 		u64 mBinCount, mMaxBinSize, mRepSize, mInputBitSize, mN, mNumHashes, mNumBits;
 		u64 mBinStashCount , mMaxBinStashSize, mNumStashHashes, mNumStashBits;
@@ -36,9 +36,9 @@ namespace osuCrypto
         std::vector<Bin> mBins;
         block mHashSeed;
 
-        void print(bool isIdx, bool isOPRF, bool isMap, bool isPos) const;
+        void print(u64 idxParty, bool isIdx, bool isOPRF, bool isMap, bool isPos) const;
 
-        void init(u64 n, u64 numBits, block hashSeed, u64 secParam);
+        void init(u64 numParties,u64 n, u64 numBits, block hashSeed, u64 secParam);
 
 		void insertBatch(
 			ArrayView<u64> inputIdxs,
