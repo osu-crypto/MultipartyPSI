@@ -318,7 +318,7 @@ namespace osuCrypto
                 else
                     insertProm.set_value();
 
-				for (u64 i = 0; i < mBins.mBinCount; ++i)
+				for (u64 i = 0; i < mBins.mBinCount[0]; ++i)
 				{
 					if (i < 3 || (i < mN && i > mN - 2)) {
 						

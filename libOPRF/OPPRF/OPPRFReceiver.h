@@ -39,10 +39,13 @@ namespace osuCrypto
 
 		void getOPRFkeys( u64 IdxParty, Channel& chl);
 		void getOPRFkeys(u64 IdxParty, const std::vector<Channel*>& chls);
-#if 0
-		void decrypt( std::vector<block>& plaintexts, Channel& chl);
-		void decrypt( std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
-#endif
+
+
+		void revSecretSharing(u64 IdxParty, std::vector<block>& plaintexts, Channel& chl);
+		void revSecretSharing(u64 IdxParty, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+
+		void sendSecretSharing(u64 IdxParty, std::vector<block>& plaintexts, Channel& chl);
+		void sendSecretSharing(u64 IdxParty, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 
     };
 

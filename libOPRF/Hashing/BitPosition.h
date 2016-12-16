@@ -30,6 +30,7 @@ namespace osuCrypto
 		void getMask(block& codeword,u8& mask);
 		void getPosHelper(std::vector<block>& codewords, int length);
 		void getPos(std::vector<block>& codewords, int length);
+		void getRandPos();
 		//void findPos(std::vector<block>& codewords);
 		//int isSet(block& codeword, int pos);
 		//void setBit(block& codeword, int pos);

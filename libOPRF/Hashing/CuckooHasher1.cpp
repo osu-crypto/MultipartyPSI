@@ -19,19 +19,19 @@ namespace osuCrypto
 	//u64 mSenderBinStashSize;
 
     CuckooParam1 k2n24s40CuckooParam1
-    { 1.2,3,32,0.3,3,64};
+	{ {1.2,0.3 },{3,3},{32,64}};
     CuckooParam1 k2n20s40CuckooParam1
-	{ 1.2,3,32,0.3,3,64 };
+	{ { 1.2,0.3 },{ 3,3 },{ 32,64 } };
     CuckooParam1 k2n16s40CuckooParam1
-	{ 1.2,3,32,0.3,3,64 };
+	{ { 1.2,0.3 },{ 3,3 },{ 32,64 } };
     CuckooParam1 k2n12s40CuckooParam1
-	{ 1.2,3,32,0.3,3,64 };
+	{ { 1.2,0.3 },{ 3,3 },{ 32,64 } };
     CuckooParam1 k2n08s40CuckooParam1
-	{ 1.2,3,32,0.3,3,64 };
+	{ { 1.2,0.3 },{ 3,3 },{ 32,64 } };
 
     // not sure if this needs a stash of 40, but should be safe enough.
     CuckooParam1 k2n07s40CuckooParam1
-	{ 1.2,3,32,0.3,3,64 };
+	{ { 1.2,0.3 },{ 3,3 },{ 32,64 } };
 
 
     CuckooHasher1::CuckooHasher1()
@@ -164,16 +164,16 @@ namespace osuCrypto
 				throw std::runtime_error("not implemented");
 		
 
-        mHashes.resize(n * mParams.mNumHashes, u64(-1));
-        mHashesView = MatrixView<u64>(mHashes.begin(), mHashes.end(), mParams.mNumHashes);
+        mHashes.resize(n * mParams.mNumHashes[0], u64(-1));
+        mHashesView = MatrixView<u64>(mHashes.begin(), mHashes.end(), mParams.mNumHashes[0]);
 
-		mStashHashes.resize(n * mParams.mNumStashHashes, u64(-1));
-		mStashHashesView = MatrixView<u64>(mStashHashes.begin(), mStashHashes.end(), mParams.mNumStashHashes);
+		mStashHashes.resize(n * mParams.mNumHashes[1], u64(-1));
+		mStashHashesView = MatrixView<u64>(mStashHashes.begin(), mStashHashes.end(), mParams.mNumHashes[1]);
 
-		mBinCount = (mParams.mBinScaler ) * n;
-		mBinStashCount= ( mParams.mBinStashScaler) * n;
+		mBinCount[0] = (mParams.mBinScaler[0] ) * n;
+		mBinCount[1] = ( mParams.mBinScaler[1]) * n;
 		
-			mBins.resize(mBinCount+ mBinStashCount);
+			mBins.resize(mBinCount[0]+ mBinCount[1]);
 			
     }
 
@@ -184,7 +184,7 @@ namespace osuCrypto
             throw std::runtime_error("");
         }
 
-        memcpy(mHashesView[inputIdx].data(), hashs.data(), sizeof(u64) * mParams.mNumHashes);
+        memcpy(mHashesView[inputIdx].data(), hashs.data(), sizeof(u64) * mParams.mNumHashes[0]);
 
         insertHelper(inputIdx, 0, 0);
     }
@@ -206,7 +206,7 @@ namespace osuCrypto
 
         for (u64 i = 0; i < inputIdxs.size(); ++i)
         {
-            for (u64 j = 0; j < mParams.mNumHashes; ++j)
+            for (u64 j = 0; j < mParams.mNumHashes[0]; ++j)
             {
                 //mHashesView[inputIdxs[i]][j] = hashs[i][j];
                 (mHashesView.data() + inputIdxs[i] * width)[j] = (hashs.data() + i * width)[j];
@@ -223,7 +223,7 @@ namespace osuCrypto
             for (u64 i = 0; i < remaining; ++i)
             {
                 //w.curAddrs[i] = mHashesView[inputIdxs[i]][w.curHashIdxs[i]] % mBins.size();
-                w.curAddrs[i] = (mHashesView.data() + inputIdxs[i] * width)[w.curHashIdxs[i]] % mBinCount;
+                w.curAddrs[i] = (mHashesView.data() + inputIdxs[i] * width)[w.curHashIdxs[i]] % mBinCount[0];
             }
 
             // same thing here, this fetch is slow. Do them in parallel.
@@ -247,7 +247,7 @@ namespace osuCrypto
             while (putIdx < remaining && w.oldVals[putIdx] != u64(-1))
             {
                 inputIdxs[putIdx] = w.oldVals[putIdx] & (u64(-1) >> 8);
-                w.curHashIdxs[putIdx] = (1 + (w.oldVals[putIdx] >> 56)) % mParams.mNumHashes;
+                w.curHashIdxs[putIdx] = (1 + (w.oldVals[putIdx] >> 56)) % mParams.mNumHashes[0];
                 ++putIdx;
             }
 
@@ -267,7 +267,7 @@ namespace osuCrypto
                 if (getIdx >= remaining) break;
 
                 inputIdxs[putIdx] = w.oldVals[getIdx] & (u64(-1) >> 8);
-                w.curHashIdxs[putIdx] = (1 + (w.oldVals[getIdx] >> 56)) % mParams.mNumHashes;
+                w.curHashIdxs[putIdx] = (1 + (w.oldVals[getIdx] >> 56)) % mParams.mNumHashes[0];
 
                 // not needed. debug only
                 std::swap(w.oldVals[putIdx], w.oldVals[getIdx]);
@@ -323,7 +323,7 @@ namespace osuCrypto
 
 		for (u64 i = 0; i < inputIdxs.size(); ++i)
 		{
-			for (u64 j = 0; j < mParams.mNumStashHashes; ++j)
+			for (u64 j = 0; j < mParams.mNumHashes[1]; ++j)
 			{
 				//mHashesView[inputIdxs[i]][j] = hashs[i][j];
 				(mStashHashesView.data() + inputIdxs[i] * width)[j] = (hashs.data() + i * width)[j];
@@ -340,7 +340,7 @@ namespace osuCrypto
 			for (u64 i = 0; i < remaining; ++i)
 			{
 				//w.curAddrs[i] = mHashesView[inputIdxs[i]][w.curHashIdxs[i]] % mBins.size();
-				w.curAddrs[i] = (mStashHashesView.data() + inputIdxs[i] * width)[w.curHashIdxs[i]] % mBinStashCount+ mBinCount;
+				w.curAddrs[i] = (mStashHashesView.data() + inputIdxs[i] * width)[w.curHashIdxs[i]] % mBinCount[1]+ mBinCount[0];
 			}
 
 			// same thing here, this fetch is slow. Do them in parallel.
@@ -364,7 +364,7 @@ namespace osuCrypto
 			while (putIdx < remaining && w.oldVals[putIdx] != u64(-1))
 			{
 				inputIdxs[putIdx] = w.oldVals[putIdx] & (u64(-1) >> 8);
-				w.curHashIdxs[putIdx] = (1 + (w.oldVals[putIdx] >> 56)) % mParams.mNumStashHashes;
+				w.curHashIdxs[putIdx] = (1 + (w.oldVals[putIdx] >> 56)) % mParams.mNumHashes[1];
 				++putIdx;
 			}
 
@@ -384,7 +384,7 @@ namespace osuCrypto
 				if (getIdx >= remaining) break;
 
 				inputIdxs[putIdx] = w.oldVals[getIdx] & (u64(-1) >> 8);
-				w.curHashIdxs[putIdx] = (1 + (w.oldVals[getIdx] >> 56)) % mParams.mNumStashHashes;
+				w.curHashIdxs[putIdx] = (1 + (w.oldVals[getIdx] >> 56)) % mParams.mNumHashes[1];
 
 				// not needed. debug only
 				std::swap(w.oldVals[putIdx], w.oldVals[getIdx]);
@@ -439,7 +439,7 @@ namespace osuCrypto
             if (numTries < 100)
             {
                 // lets try to insert it into its next location
-                insertHelper(inputIdx, (hashIdx + 1) % mParams.mNumHashes, numTries + 1);
+                insertHelper(inputIdx, (hashIdx + 1) % mParams.mNumHashes[0], numTries + 1);
             }
             else
             {
@@ -492,7 +492,7 @@ namespace osuCrypto
 			if (numTries < 100)
 			{
 				// lets try to insert it into its next location
-				insertStashHelper(inputIdx, (hashIdx + 1) % mParams.mNumHashes, numTries + 1);
+				insertStashHelper(inputIdx, (hashIdx + 1) % mParams.mNumHashes[0], numTries + 1);
 			}
 			else
 			{
@@ -508,11 +508,11 @@ namespace osuCrypto
 	}
 
 
-
+#if 0
 
     u64 CuckooHasher1::find(ArrayView<u64> hashes)
     {
-        if (mParams.mNumHashes == 2)
+        if (mParams.mNumHashes[0] == 2)
         {
             std::array<u64, 2>  addr{
                 (hashes[0]) % mBins.size(),
@@ -582,7 +582,7 @@ namespace osuCrypto
         else
         {
 
-            for (u64 i = 0; i < mParams.mNumHashes; ++i)
+            for (u64 i = 0; i < mParams.mNumHashes[0]; ++i)
             {
                 u64 xrHashVal = hashes[i];
                 auto addr = (xrHashVal) % mBins.size();
@@ -625,7 +625,7 @@ namespace osuCrypto
                     u64 itemIdx = val & (u64(-1) >> 8);
 
                     bool match = true;
-                    for (u64 j = 0; j < mParams.mNumHashes; ++j)
+                    for (u64 j = 0; j < mParams.mNumHashes[0]; ++j)
                     {
                         match &= (mHashesView[itemIdx][j] == hashes[j]);
                     }
@@ -645,15 +645,13 @@ namespace osuCrypto
     }
 
 
-
-
     u64 CuckooHasher1::findBatch(
         MatrixView<u64> hashes,
         ArrayView<u64> idxs,
         Workspace& w)
     {
 
-        if (mParams.mNumHashes == 2)
+        if (mParams.mNumHashes[0] == 2)
         {
             std::array<u64, 2>  addr;
 
@@ -737,7 +735,7 @@ namespace osuCrypto
         return u64(-1);
     }
 
-
+#endif
 
 
     bool CuckooHasher1::Bin::isEmpty() const

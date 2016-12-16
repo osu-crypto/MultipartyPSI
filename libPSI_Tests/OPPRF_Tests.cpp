@@ -281,15 +281,16 @@ void OPPRF_EmptrySet_Test_Impl()
 		send.init(numParties,setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
 		send.hash2Bins(sendSet, sendChl);
 		send.getOPRFKeys(1,sendChl);
+		send.revSecretSharing(1, recvPayLoads, sendChl);
+
 		//Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
 		//send.mSimpleBins.print(1,true, true, true, true);
-		Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
-		send.mCuckooBins.print(1,true, true, false);
+		//Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
+		//send.mCuckooBins.print(1,true, true, false);
 	
 
 
-		//send.sendInput(sendSet, sendChl);
-		//send.sendEnc(sendPayLoads, sendChl);
+		
 		//send.mBins.print();
 
 		//for (u64 i = 1; i < 3; ++i)
@@ -308,19 +309,28 @@ void OPPRF_EmptrySet_Test_Impl()
 	recv.init(numParties,setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 	recv.hash2Bins(recvSet, recvChl);
 	recv.getOPRFkeys(0, recvChl);
+	recv.sendSecretSharing(0, sendPayLoads, recvChl);
 
 	/*Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
 	recv.mCuckooBins.print(0,true, true, false);*/
 	
-	Log::out << "recv.mSimpleBins.print(true, false, false,false);" << Log::endl;
-	recv.mSimpleBins.print(0,true, true, true, true);
+	//Log::out << "recv.mSimpleBins.print(true, false, false,false);" << Log::endl;
+	//recv.mSimpleBins.print(0,true, true, true, true);
 
 	/*recv.sendInput(recvSet, recvChl);
-	recv.decrypt(recvPayLoads, recvChl);
 	recv.mBins.print();
 */
 
 #ifdef PRINT
+std::cout << IoStream::lock;
+for (u64 i = 1; i < recvPayLoads.size(); ++i)
+{
+		Log::out << recvPayLoads[i] << Log::endl;
+		Log::out << sendPayLoads[i] << Log::endl;
+	}
+
+std::cout << IoStream::unlock;
+
 	std::cout << IoStream::lock;
 	Log::out << otSend0.mT.size()[1] << Log::endl;
 	Log::out << otSend1.mT.size()[1] << Log::endl;
@@ -337,14 +347,7 @@ void OPPRF_EmptrySet_Test_Impl()
 
 	thrd.join();
 
-	//std::cout << IoStream::lock;
-	//for (u64 i = 1; i < recvPayLoads.size(); ++i)
-	//{
-	//		Log::out << recvPayLoads[i] << Log::endl;
-	//		Log::out << sendPayLoads[i] << Log::endl;
-	//	}
-	//
-	//std::cout << IoStream::unlock;
+	
 
    
 

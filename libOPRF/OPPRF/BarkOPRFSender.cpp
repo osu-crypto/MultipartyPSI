@@ -76,7 +76,7 @@ namespace osuCrypto
         //mPsis.resize(mBins.mBinCount);
 
         u64 perBinOtCount = 1;// mPsis[0].PsiOTCount(mBins.mMaxBinSize, mBins.mRepSize);
-        u64 otCount = perBinOtCount * mBins.mBinCount;
+        u64 otCount = perBinOtCount * mBins.size();
 
         gTimer.setTimePoint("init.send.baseStart");
 
@@ -113,8 +113,8 @@ namespace osuCrypto
 
         auto sendRoutine = [&](u64 tIdx, u64 total, NcoOtExtSender& ots, Channel& chl)
         {
-            auto start = (  tIdx     * mBins.mBinCount / total) ;
-            auto end =   ((tIdx + 1) * mBins.mBinCount / total) ;
+            auto start = (  tIdx     * mBins.mBinCount[0] / total) ;
+            auto end =   ((tIdx + 1) * mBins.mBinCount[0] / total) ;
 
             ots.init(end - start);
         };

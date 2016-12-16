@@ -132,7 +132,7 @@ namespace osuCrypto
 		std::vector<block> testSet1;
 		std::vector<block> testSet2;
 		
-		if (mPos.size() < mRealBitSize){
+		if (mPos.size() < mRealBitSize && setSize >0){
 			int idx = midIdx(codewords, length, mPos);
 
 			if (std::find(mPos.begin(), mPos.end(), idx) == mPos.end())
@@ -161,16 +161,20 @@ namespace osuCrypto
 	void BitPosition::getPos(std::vector<block>& codewords, int length)
 	{
 		getPosHelper(codewords, length);
-										 		while(mPos.size()<mMaxBitSize)
-										 		{
-										 			u64 rand = std::rand() % 128; //choose randome bit location
-													if (std::find(mPos.begin(), mPos.end(), rand) == mPos.end())
-													{
-														mPos.push_back(rand);
-													}
-										 		}
+		getRandPos();									 
+	}
+	void BitPosition::getRandPos()
+	{
+		while (mPos.size()<mMaxBitSize)
+		{
+			u64 rand = std::rand() % 128; //choose randome bit location
+			if (std::find(mPos.begin(), mPos.end(), rand) == mPos.end())
+			{
+				mPos.push_back(rand);
+			}
+		}
 
-									 
+
 	}
 	
 }

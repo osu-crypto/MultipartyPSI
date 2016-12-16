@@ -46,10 +46,10 @@ namespace osuCrypto
 					Log::out << "mBins[i].mIdx.size() != mBins[i].mMaps.size()" << Log::endl;
 				}
 
-				else if (i<mBinCount && mBins[i].mBits[IdxP].mPos.size() != mNumBits && isPos)
+				else if (i<mBinCount[0] && mBins[i].mBits[IdxP].mPos.size() != mNumBits[0] && isPos)
 					Log::out << "mBins[i].mBits.mPos.size() != mNumBits" << Log::endl;
 
-				else if (i>mBinCount-1 && mBins[i].mBits[IdxP].mPos.size() != mNumStashBits && isPos)
+				else if (i>mBinCount[0]-1 && mBins[i].mBits[IdxP].mPos.size() != mNumBits[1] && isPos)
 					Log::out << "mBins[i].mBits.mPos.size() != mNumBits" << Log::endl;
 
 				else
@@ -154,18 +154,18 @@ namespace osuCrypto
 			}
 		}
 #endif
-		mMaxBinSize = 32;
-		mMaxBinStashSize = 64;
+		mMaxBinSize[0] = 32;
+		mMaxBinSize[1] = 64;
 
-		mBinCount = 1.2*n;
-		mBinStashCount = 0.3*n;
+		mBinCount[0] = 1.2*n;
+		mBinCount[1] = 0.3*n;
 
-		mMtx.reset(new std::mutex[mBinCount + mBinStashCount]);
-		mBins.resize(mBinCount + mBinStashCount);
-		mNumHashes = 3;
-		mNumStashHashes = 3;
-		mNumBits = 5;
-		mNumStashBits = 6;
+		mMtx.reset(new std::mutex[mBinCount[0] + mBinCount[1]]);
+		mBins.resize(mBinCount[1] + mBinCount[0]);
+		mNumHashes[0] = 3;
+		mNumHashes[1] = 3;
+		mNumBits[0] = 5;
+		mNumBits[1] = 6;
 
 	}
 
@@ -173,9 +173,9 @@ namespace osuCrypto
 	{
 		for (u64 j = 0; j < inputIdxs.size(); ++j)
 		{
-			for (u64 k = 0; k < mNumHashes; ++k)
+			for (u64 k = 0; k < mNumHashes[0]; ++k)
 			{
-				u64 addr = *(u64*)&hashs[j][k] % mBinCount;
+				u64 addr = *(u64*)&hashs[j][k] % mBinCount[0];
 				//if(addr==0)
 				//	std::cout << "----"<<inputIdxs[j] <<"-" << addr << std::endl;
 
@@ -186,9 +186,9 @@ namespace osuCrypto
 				}
 			}
 
-			for (u64 k = 0; k < mNumStashHashes; ++k)
+			for (u64 k = 0; k < mNumHashes[1]; ++k)
 			{
-				u64 addrStash = *(u64*)&hashs[j][k] % mBinStashCount + mBinCount;
+				u64 addrStash = *(u64*)&hashs[j][k] % mBinCount[1] + mBinCount[0];
 				std::lock_guard<std::mutex> lock(mMtx[addrStash]);
 				if (std::find(mBins[addrStash].mIdx.begin(), mBins[addrStash].mIdx.end(), inputIdxs[j]) == mBins[addrStash].mIdx.end()) {
 					mBins[addrStash].mIdx.emplace_back(inputIdxs[j]);

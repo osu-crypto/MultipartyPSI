@@ -14,13 +14,13 @@ namespace osuCrypto
 {
     struct CuckooParam1
     {
-        double mBinScaler;
-		u64 mNumHashes;
-		u64 mSenderBinSize;
-
+        double mBinScaler[2]; //first index is for init step, 2nd index for stash step
+		u64 mNumHashes[2];
+		u64 mSenderBinSize[2];
+/*
 		double mBinStashScaler;
 		u64 mNumStashHashes;
-		u64 mSenderBinStashSize;
+		u64 mSenderBinStashSize;*/
     };
 
 
@@ -84,7 +84,8 @@ namespace osuCrypto
 
         CuckooParam1 mParams;
 		block mHashSeed;
-		u64 mBinCount, mBinStashCount, mMaxBinSize, mRepSize, mInputBitSize, mN;
+		u64  mRepSize, mInputBitSize, mN;
+		u64 mBinCount[2];//mBinCount[0] for init step, mBinCount[1] for Stash step
         void print(u64 IdxParty, bool isIdx, bool isOPRF, bool isMap) const;
 		void init(u64 numParties, u64 n, block hashSeed, u64 statSecParam, bool multiThreaded);
         void insert(u64 IdxItem, ArrayView<u64> hashes);

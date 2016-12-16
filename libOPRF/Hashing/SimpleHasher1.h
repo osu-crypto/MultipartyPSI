@@ -29,8 +29,8 @@ namespace osuCrypto
 			std::vector<BitPosition> mBits;//mBits[IdxParty]
 			std::vector<std::vector<block>> mValOPRF; //mValOPRF[IdxParty][mIdx]
 		};
-		u64 mBinCount, mMaxBinSize, mRepSize, mInputBitSize, mN, mNumHashes, mNumBits;
-		u64 mBinStashCount , mMaxBinStashSize, mNumStashHashes, mNumStashBits;
+		u64  mRepSize, mInputBitSize, mN;
+		u64 mBinCount[2], mMaxBinSize[2], mNumHashes[2], mNumBits[2];
 
         std::unique_ptr<std::mutex[]> mMtx;
         std::vector<Bin> mBins;

@@ -84,12 +84,6 @@
     <ClCompile Include="Hashing\BitPosition.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OPPRF\BarkOPRFReceiver.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OPPRF\BarkOPRFSender.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OPPRF\OPPRFReceiver.h">
@@ -105,12 +99,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Hashing\BitPosition.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OPPRF\BarkOPRFReceiver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OPPRF\BarkOPRFSender.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
