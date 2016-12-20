@@ -30,36 +30,7 @@ namespace osuCrypto
 		return (_mm_movemask_epi8(positioned) & (1 << (N / 8))) != 0;
 	}
 
-	int midIdx(std::vector<block>& codewords, int length, std::vector<u8>& rs)
-	{
-		int temp = 0;
-		int idx = 0;
-		int mid = 0;
-		int cnt = 0;
-		//std::cout << "temp ";
-		for (size_t j = 0; j < length; j++)
-		{
-			temp = 0;
-			if (std::find(rs.begin(), rs.end(),  j) == rs.end())
-			{
-				cnt++;
-				for (size_t i = 0; i < codewords.size(); i++)
-				{
-					if (TestBitN(codewords[i], j))
-						temp++;
-				}
-				//std::cout << j << "," << temp << " ";
-				if (temp < codewords.size() / 2 && mid < temp)
-				{
-					mid = temp;
-					idx = j;
-				}
-			}
-		}
-	//	std::cout << idx << " - " << mid << " - " << codewords.size() << " - " << cnt << std::endl;
-		return idx;
-	}
-
+	
 
 	BitPosition::BitPosition()
     {
@@ -84,15 +55,15 @@ namespace osuCrypto
 		}
 
     }
-	void BitPosition::init(u64 numRealCodeWord, u64 numMaxBitSize)
+	void BitPosition::init(/*u64 numRealCodeWord,*/ u64 numMaxBitSize)
     {
-		mRealBitSize= std::floor(std::log2(numRealCodeWord)) + 1;
+		/*mRealBitSize= std::floor(std::log2(numRealCodeWord)) + 1;*/
 		mMaxBitSize = numMaxBitSize;
 
     }
 	
 
-	void BitPosition::getMasks(std::vector<block>& codeword) {
+	bool BitPosition::getMasks(std::vector<block>& codeword) {
 		
 		u8 rs, idx;
 		for (int i = 0; i < codeword.size(); i++) {
@@ -107,8 +78,17 @@ namespace osuCrypto
 				}
 				idx = idx << 1;
 			}
-			mMaps.push_back(rs);
+			if (std::find(mMaps.begin(), mMaps.end(), rs) == mMaps.end())
+			{
+				mMaps.push_back(rs);
+			}
+			else
+			{
+				mMaps.clear();
+				return false;
+			}			
 		}
+		return true;
 	}
 	void BitPosition::getMask(block& codeword, u8& mask) {
 
@@ -125,43 +105,189 @@ namespace osuCrypto
 				idx = idx << 1;
 			}		
 	}
-	
+
+	int BitPosition::midIdx(std::vector<block>& codewords, int length)
+	{
+		int temp = 0;
+		int idx = 0;
+		int mid = 0;
+		int cnt = 0;
+		//std::cout << "temp ";
+		if (codewords.size() == 1) {
+			while (true)
+			{
+				auto rand = std::rand() % 128; //choose randome bit location
+				if (std::find(mPos.begin(), mPos.end(), rand) == mPos.end())
+				{
+					return rand;
+				}
+			}
+		}
+		else if (codewords.size() == 2) {
+			block diff = codewords[0] ^ codewords[1];
+			for (size_t j = 0; j < length; j++)
+			{
+				if (TestBitN(diff, j))
+					if (std::find(mPos.begin(), mPos.end(), j) == mPos.end())
+					{
+						return j;
+					}
+			}
+		}
+		else
+			for (size_t j = 0; j < length; j++)
+			{
+				temp = 0;
+				if (std::find(mPos.begin(), mPos.end(), j) == mPos.end())
+				{
+					cnt++;
+					for (size_t i = 0; i < codewords.size(); i++)
+					{
+						if (TestBitN(codewords[i], j))
+							temp++;
+					}
+					//std::cout << j << "," << temp << " ";
+					if (temp < codewords.size() / 2 && mid < temp)
+					{
+						mid = temp;
+						idx = j;
+					}
+				}
+			}
+		//	std::cout << idx << " - " << mid << " - " << codewords.size() << " - " << cnt << std::endl;
+		return idx;
+	}
+
+
+	std::vector<std::vector<block>> testSet;
+	int idxS = -1;
 	void BitPosition::getPosHelper(std::vector<block>& codewords, int length)
 	{
+		idxS++;
 		int setSize = codewords.size();
 		std::vector<block> testSet1;
 		std::vector<block> testSet2;
 		
-		if (mPos.size() < mRealBitSize && setSize >0){
-			int idx = midIdx(codewords, length, mPos);
+		if (mPos.size() < mRealBitSize){
+			int idx = midIdx(codewords, length);
 
-			if (std::find(mPos.begin(), mPos.end(), idx) == mPos.end())
+			//if (std::find(mPos.begin(), mPos.end(), idx) == mPos.end())
 			{
 				mPos.push_back(idx);
-					for (size_t i = 0; i < setSize; i++)
-
+				std::cout << std::endl;
+					for (size_t i = 0; i < setSize; i++)			
 						if (TestBitN(codewords[i], idx))
 						{
-							//std::cout << "TestBitN=1: " << i << std::endl;
+						//	std::cout << codewords[i] << " " << idx << " "<< 1 << std::endl;
 							testSet1.push_back(codewords[i]);
+						
 						}
 						else
 						{
+							//std::cout << codewords[i] << " " << idx << " " << 0 << std::endl;
 							//std::cout << "TestBitN=0: " << i << std::endl;
 							testSet2.push_back(codewords[i]);
 						}
+
+					for (size_t i = 0; i < testSet1.size(); i++)
+							std::cout << testSet1[i] << " " << idx << " "<< 1 << std::endl;
+					
+					std::cout << std::endl;
+
+					for (size_t i = 0; i < testSet2.size(); i++)
+						std::cout << testSet2[i] << " " << idx << " " << 0 << std::endl;
+
+
+					testSet.push_back(testSet1);
+					testSet.push_back(testSet2);
 					//std::cout <<"testSet1 " <<  testSet1.size() << std::endl;
 					//std::cout <<"testSet2 "<< testSet2.size() << std::endl;
-					getPos(testSet1, length);
-					getPos(testSet2, length);
+					getPos(testSet[idxS], length);
 				}
 		}
 	}
 
+	void BitPosition::getPos1(std::vector<block>& codewords, int length)
+	{
+		bool isFind=false;
+
+		if (codewords.size() == 1) {
+			getRandPos();
+			getMasks(codewords);
+		}
+		if (codewords.size() == 2) {
+			block diff = codewords[0] ^ codewords[1];
+			while (!isFind)
+			{
+				u64 rand = std::rand() % length;
+				if (TestBitN(diff, rand))
+					if (std::find(mPos.begin(), mPos.end(), rand) == mPos.end())
+					{
+						mPos.push_back(rand);
+						isFind = true;
+					}
+			}
+			getRandPos();
+			getMasks(codewords);
+		}
+		else
+		{
+			std::vector<block> diff;
+
+			for (int i = 0; i+1 < codewords.size();i+=2) {
+				diff.push_back(codewords[i] ^ codewords[i + 1]);
+			}
+			if (codewords.size() % 2 == 1)
+				diff.push_back(codewords[codewords.size() - 1]);
+
+			u64 sizeDiff = diff.size();
+
+			while (!isFind)
+			{
+				mMaps.clear();
+				mPos.clear();	
+				block m = ZeroBlock;
+					while(mPos.size() < mMaxBitSize)
+					{
+						bool isRand = true;
+						while (isRand)
+						{
+							u64 rIdx = std::rand() % length;
+							u64 rDiffIdx = std::rand() % sizeDiff;
+							if (TestBitN(diff[rDiffIdx], rIdx))
+								if (std::find(mPos.begin(), mPos.end(), rIdx) == mPos.end())
+								{
+									mPos.push_back(rIdx);
+									isRand = false;
+									//setBit(m, rand);
+								}
+						}
+					}
+					
+					//test mPos
+					/*for (size_t i = 0; i < codewords.size(); i++)
+					{
+						block a = codewords[i] & m;
+						Log::out << a << Log::endl;
+						checkUnique.push_back(a);
+					}*/
+
+					isFind=getMasks(codewords);
+
+					//// using default comparison:
+					//std::vector<u8>::iterator it;
+					//it = std::unique(mMaps.begin(), mMaps.end());
+
+					////remove duplicate
+					//mMaps.resize(std::distance(mMaps.begin(), it));
+					
+			}
+		}
+	}
 	void BitPosition::getPos(std::vector<block>& codewords, int length)
 	{
 		getPosHelper(codewords, length);
-		getRandPos();									 
+		//getRandPos();									 
 	}
 	void BitPosition::getRandPos()
 	{

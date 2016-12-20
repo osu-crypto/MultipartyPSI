@@ -23,17 +23,17 @@ namespace WeGarbleTests
 			OPPRF_EmptrySet_Test_Impl();
         }
 
-        TEST_METHOD(OPPRF_FullSet_Test)
-        {
-            InitDebugPrinting();
-			//OPPRF_FullSet_Test_Impl();
-        }
+   //     TEST_METHOD(OPPRF_FullSet_Test)
+   //     {
+   //         InitDebugPrinting();
+			////OPPRF_FullSet_Test_Impl();
+   //     }
 
-        TEST_METHOD(OPPRF_SingltonSet_Test)
-        {
-            InitDebugPrinting();
-			//OPPRF_SingltonSet_Test_Impl();
-        }
+   //     TEST_METHOD(OPPRF_SingltonSet_Test)
+   //     {
+   //         InitDebugPrinting();
+			////OPPRF_SingltonSet_Test_Impl();
+   //     }
 
  
 
@@ -50,7 +50,13 @@ namespace WeGarbleTests
 			Bit_Position_Recursive_Test_Impl();
 		}
 
-		
+
+		TEST_METHOD(Channel_Test)
+		{
+			InitDebugPrinting();
+			Channel_Test_Impl();
+		}
+
 
     };
 }

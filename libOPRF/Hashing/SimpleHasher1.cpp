@@ -41,17 +41,24 @@ namespace osuCrypto
 				if (isOPRF && mBins[i].mIdx.size() != mBins[i].mValOPRF[IdxP].size())
 				{
 					Log::out << "mBins[i].mIdx.size() != mBins[i].mValOPRF.size()" << Log::endl;
+					Log::out << "mBins[i].mIdx.size()= "<< mBins[i].mIdx.size() << Log::endl;
+					Log::out << "mBins[i].mValOPRF.size()= " << mBins[i].mValOPRF.size() << Log::endl;
 				}
 				else if (mBins[i].mIdx.size() != mBins[i].mBits[IdxP].mMaps.size() && isMap) {
 					Log::out << "mBins[i].mIdx.size() != mBins[i].mMaps.size()" << Log::endl;
+					Log::out << "mBins[i].mIdx.size()= " << mBins[i].mIdx.size() << Log::endl;
+					Log::out << "mBins[i].mMaps.size()= " << mBins[i].mBits[IdxP].mMaps.size() << Log::endl;
 				}
 
-				else if (i<mBinCount[0] && mBins[i].mBits[IdxP].mPos.size() != mNumBits[0] && isPos)
+				else if (i < mBinCount[0] && mBins[i].mBits[IdxP].mPos.size() != mNumBits[0] && isPos)
+				{
 					Log::out << "mBins[i].mBits.mPos.size() != mNumBits" << Log::endl;
 
-				else if (i>mBinCount[0]-1 && mBins[i].mBits[IdxP].mPos.size() != mNumBits[1] && isPos)
+				}
+				else if (i > mBinCount[0] - 1 && mBins[i].mBits[IdxP].mPos.size() != mNumBits[1] && isPos)
+				{
 					Log::out << "mBins[i].mBits.mPos.size() != mNumBits" << Log::endl;
-
+				}
 				else
 				{
 					if (isPos) {
@@ -155,7 +162,7 @@ namespace osuCrypto
 		}
 #endif
 		mMaxBinSize[0] = 32;
-		mMaxBinSize[1] = 64;
+		mMaxBinSize[1] = 32;
 
 		mBinCount[0] = 1.2*n;
 		mBinCount[1] = 0.3*n;
@@ -163,9 +170,9 @@ namespace osuCrypto
 		mMtx.reset(new std::mutex[mBinCount[0] + mBinCount[1]]);
 		mBins.resize(mBinCount[1] + mBinCount[0]);
 		mNumHashes[0] = 3;
-		mNumHashes[1] = 3;
+		mNumHashes[1] = 2;
 		mNumBits[0] = 5;
-		mNumBits[1] = 6;
+		mNumBits[1] = 5;
 
 	}
 

@@ -28,11 +28,13 @@ namespace osuCrypto
         CuckooHasher1 mBins;
 		//SimpleHasher1 mTheirBins;
         PRNG mPrng;
-
+#if 0
         void init(u64 n, u64 statSecParam, u64 inputBitSize, Channel& chl0, NcoOtExtReceiver& otRecv, block seed);
         void init(u64 n, u64 statSecParam, u64 inputBitSize, const std::vector<Channel*>& chls, NcoOtExtReceiver& ots, block seed);
         void sendInput(std::vector<block>& inputs, Channel& chl);
         void sendInput(std::vector<block>& inputs, const std::vector<Channel*>& chls);
+
+#endif
 
     };
 

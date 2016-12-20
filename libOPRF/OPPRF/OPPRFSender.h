@@ -27,6 +27,8 @@ namespace osuCrypto
 		CuckooHasher1 mCuckooBins;
 
         PRNG mPrng;
+		Timer mTimer;
+		double mTime=0;
 
         std::vector<std::unique_ptr<NcoOtExtSender>> mOtSends;
 		std::vector<std::unique_ptr<NcoOtExtReceiver>> mOtRecvs;

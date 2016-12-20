@@ -553,7 +553,7 @@ namespace osuCrypto
 						{
 							bin.mValOPRF[IdxP].resize(bin.mIdx.size());
 
-							std::cout << "s-" << bIdx << ", ";
+							//std::cout << "s-" << bIdx << ", ";
 							for (u64 i = 0; i < bin.mIdx.size(); ++i)
 							{
 
@@ -579,19 +579,19 @@ namespace osuCrypto
 							//######Finding bit locations
 							//#####################
 
-							std::cout << bin.mValOPRF[IdxP][0];
+						//	std::cout << bin.mValOPRF[IdxP][0];
 
 							//diff max bin size for first mSimpleBins.mBinCount and 
 							// mSimpleBins.mBinStashCount
 							if (bIdx < mSimpleBins.mBinCount[0])
-								bin.mBits[IdxP].init(bin.mIdx.size(), mSimpleBins.mNumBits[0]);
+								bin.mBits[IdxP].init(/*bin.mIdx.size(),*/ mSimpleBins.mNumBits[0]);
 							else
-								bin.mBits[IdxP].init(bin.mIdx.size(), mSimpleBins.mNumBits[1]);
+								bin.mBits[IdxP].init(/*bin.mIdx.size(),*/ mSimpleBins.mNumBits[1]);
 
-							bin.mBits[IdxP].getPos(bin.mValOPRF[IdxP], 128);
-							bin.mBits[IdxP].getMasks(bin.mValOPRF[IdxP]);
-							std::cout << ", "
-								<< static_cast<int16_t>(bin.mBits[IdxP].mMaps[0]) << std::endl;
+							bin.mBits[IdxP].getPos1(bin.mValOPRF[IdxP], 128);
+							//bin.mBits[IdxP].getMasks(bin.mValOPRF[IdxP]);
+							//std::cout << ", "
+							//	<< static_cast<int16_t>(bin.mBits[IdxP].mMaps[0]) << std::endl;
 						}
 					}
 				}
@@ -726,6 +726,8 @@ namespace osuCrypto
 								//Log::out << "inputIdx: " << inputIdx << Log::endl;
 								//	Log::out << "myMask: " << myMask << Log::endl;
 								//Log::out << "theirMask: " << theirMask << " " << Log::endl;
+			
+
 								plaintexts[inputIdx] = myMask^theirMask;
 
 
@@ -822,7 +824,7 @@ namespace osuCrypto
 
 						for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
 						{
-							Log::out << "Bin #" << bIdx << Log::endl;
+							//Log::out << "Bin #" << bIdx << Log::endl;
 
 							auto& bin = mSimpleBins.mBins[bIdx];
 							u64 baseMaskIdx = stepIdx;
@@ -832,7 +834,7 @@ namespace osuCrypto
 							{
 								//copy bit locations in which all OPRF values are distinct
 
-								Log::out << "    c_mPos= ";
+							//	Log::out << "    c_mPos= ";
 
 								if (bin.mBits[IdxP].mPos.size() != mSimpleBins.mNumBits[bIdxType])
 								{
@@ -850,12 +852,12 @@ namespace osuCrypto
 								//copy bit positions
 								for (u64 idxPos = 0; idxPos < bin.mBits[IdxP].mPos.size(); idxPos++)
 								{
-									Log::out << static_cast<int16_t>(bin.mBits[IdxP].mPos[idxPos]) << " ";
+							//		Log::out << static_cast<int16_t>(bin.mBits[IdxP].mPos[idxPos]) << " ";
 									memcpy(
 										maskView[baseMaskIdx].data() + idxPos,
 										(u8*)&bin.mBits[IdxP].mPos[idxPos], sizeof(u8));
 								}
-								Log::out << Log::endl;
+							//	Log::out << Log::endl;
 
 
 								for (u64 i = 0; i < bin.mIdx.size(); ++i)

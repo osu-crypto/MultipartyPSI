@@ -19,9 +19,9 @@ namespace osuCrypto
 	//u64 mSenderBinStashSize;
 
     CuckooParam1 k2n24s40CuckooParam1
-	{ {1.2,0.3 },{3,3},{32,64}};
+	{ {1.2,0.3 },{3,3},{32,32}};
     CuckooParam1 k2n20s40CuckooParam1
-	{ { 1.2,0.3 },{ 3,3 },{ 32,64 } };
+	{ { 1.2,0.3 },{ 3,2 },{ 32,32 } };
     CuckooParam1 k2n16s40CuckooParam1
 	{ { 1.2,0.3 },{ 3,3 },{ 32,64 } };
     CuckooParam1 k2n12s40CuckooParam1

@@ -24,13 +24,16 @@ int miraclTestMain();
 
 int main(int argc, char** argv)
 {
+	//Channel_test();
+	OPRFn_Test();
+	return 0;
 	//tt();
-	std::cout << "myCuckooTest_stash" << std::endl;
-	myCuckooTest_stash();
+	//std::cout << "myCuckooTest_stash" << std::endl;
+	//myCuckooTest_stash();
 
-	std::cout << "myCuckooTest_bin" << std::endl;
+	//std::cout << "myCuckooTest_bin" << std::endl;
 	//myCuckooTest_bin();
-    return 0;
+    //return 0;
 
     //LinearCode code;
     //code.loadBinFile(libOTe_DIR "/libPSI/Tools/bch511.bin");
@@ -61,22 +64,23 @@ int main(int argc, char** argv)
     if (argc == 2)
     {
 		//OPPRFSend();
-		BarkOPRSend();
+	//	BarkOPRSend();
 
 
     }
     else if (argc == 3)
     {
-		BarkOPRFRecv();
+	//	BarkOPRFRecv();
 		//OPPRFRecv();
     }
     else
     {
-#if 0
-		Bit_Position_Map_Test();
+#if 1
+	//	Bit_Position_Map_Test();
 		//Bit_Position_Test();
 		//Bit_Position_Recursive_Test();
-	//	 OPPRF_EmptrySet_Test_Impl1();
+		//OPPRF2_EmptrySet_Test();
+//		OPPRFn_EmptrySet_Test();
 #else
         auto thrd = std::thread([]() {
 

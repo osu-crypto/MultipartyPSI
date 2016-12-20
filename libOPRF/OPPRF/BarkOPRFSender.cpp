@@ -19,7 +19,7 @@ namespace osuCrypto
     BarkOPRFSender::~BarkOPRFSender()
     {
     }
-
+#if 0
     void BarkOPRFSender::init(u64 n, u64 statSec, u64 inputBitSize,
         Channel & chl0,
         NcoOtExtSender&  ots,
@@ -458,7 +458,7 @@ namespace osuCrypto
 
 
     }
-
+#endif
 }
 
 

@@ -25,7 +25,7 @@ namespace osuCrypto
         PRNG mPrng;
 
         std::vector<std::unique_ptr<NcoOtExtSender>> mOtSends;
-
+#if 0
         void init(u64 n, u64 statSecParam, u64 inputBitSize, 
             const std::vector<Channel*>& chls, 
             NcoOtExtSender& ots, 
@@ -38,7 +38,7 @@ namespace osuCrypto
 
         void sendInput(std::vector<block>& inputs, Channel& chl);
         void sendInput(std::vector<block>& inputs,const std::vector<Channel*>& chls);
-
+#endif
     };
 
 }

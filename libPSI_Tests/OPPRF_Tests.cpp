@@ -108,18 +108,22 @@ void Bit_Position_Test_Impl()
 
 void Bit_Position_Recursive_Test_Impl()
 {
-	u64 setSize = 1 << 4;
+	u64 setSize = 15;
 	std::vector<block> testSet(setSize);
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 
 	for (u64 i = 0; i < setSize; ++i)
 	{
-		testSet[i] = ZeroBlock;//prng.get<block>();
+		testSet[i] = prng.get<block>();
 	}
-	for (u64 i = 0; i < setSize; ++i)
-	{
-		//testSet[i].m128i_u8[i/8] = 1 << (i%8);
-	}
+	//for (u64 i = 0; i < 8; ++i)
+	//{
+	//	testSet[i].m128i_u8[0] = 1 << i;
+	//}
+	//for (u64 i = 8; i < setSize; ++i)
+	//{
+	//	testSet[i].m128i_u16[2] = 1 << i;
+	//}
 	
 	BitPosition b;
 
@@ -128,10 +132,7 @@ void Bit_Position_Recursive_Test_Impl()
 	//test.m128i_i8[0] = 126;
 	
 	BitPosition b;
-	b.init(5);
-	for (int i = 0; i < 3; ++i) b.mPos.insert(i);
-	b.mPos.insert(6);
-	b.mPos.insert(7);
+	b.init(5,5);
 	for (size_t i = 0; i < 8; i++)
 	{
 		b.setBit(test, i);
@@ -164,18 +165,23 @@ void Bit_Position_Recursive_Test_Impl()
 	//	idx = *(it);
 #endif
 	std::set<int> rs;
-	b.init(setSize,5);
-	b.getPos(testSet, 128);
-	b.getMasks(testSet);
+	b.init(4);
+	b.getPos1(testSet, 128);
+	//b.getMasks(testSet);
 
-	/*std::set<u8>::iterator iter;
-	for (iter = b.mPos.begin(); iter != b.mPos.end(); ++iter) {
-		std::cout << static_cast<int16_t>((*iter)) << " ";
+	Log::out << "    getPos=";
+	for (u64 j = 0; j < b.mPos.size(); ++j)
+	{
+			Log::out << static_cast<int16_t>(b.mPos[j])<<" ";
 	}
-	std::cout <<  std::endl;
-	for (iter = b.mMasks.begin(); iter != b.mMasks.end(); ++iter) {
-		std::cout<< static_cast<int16_t>((*iter)) <<" "<< std::endl;
-	}*/
+	Log::out << Log::endl;
+
+	for (u64 j = 0; j < b.mMaps.size(); ++j)
+	{
+		Log::out << testSet[j] << " " << static_cast<int16_t>(b.mMaps[j]) << " " << Log::endl;
+	}
+	Log::out << Log::endl;
+
 }
 
 
@@ -237,7 +243,97 @@ void OPPRF_CuckooHasher_Test_Impl()
 }
 
 
+void Channel_Test_Impl() {
+	std::string name("psi");
+	u64 numParties = 2;
+	BtIOService ios(0);
 
+
+	int btCount = numParties*(numParties);
+	std::vector<BtEndpoint> ep(btCount);
+	std::vector<std::vector<std::vector<Channel*>>> chls(numParties);
+
+	//for (u64 i = 0; i < numParties; ++i)
+	//{
+	//	//ep[i].resize(numParties);
+	//	chls[i].resize(numParties);
+
+	//	for (u64 j = 0; j < numParties; ++j)
+	//	{
+	//		if (i < j) {
+	//			auto port = i*10+j; //make same port: i=1, j=2 => port 12
+	//			ep[i*numParties+j].start(ios, "localhost", port, true, name);
+	//			//chls[i][j] = { &ep[i*numParties + j].addChannel(name, name) };
+
+	//		}
+	//		else if (i > j)
+	//		{
+	//			auto port = j*10+i; //i=2, j=1 => port 12
+	//			ep[i*numParties + j].start(ios, "localhost", port, false, name);
+	//			//chls[i][j] = { &ep[i*numParties + j].addChannel(name, name) };
+
+	//		}
+
+	//	}
+	//}
+
+	//for (u64 i = 0; i < numParties; ++i)
+	//{
+	//	chls[i].resize(numParties);
+	//	for (u64 j = 0; j < numParties; ++j)
+	//	{
+	//		if (i != j) {
+	//			chls[i][j].push_back(&ep[i*numParties + j].addChannel(name, name));
+
+	//		}
+	//	}
+	//}
+	BtEndpoint ep0;
+	BtEndpoint ep1;
+	ep[1].start(ios, "localhost", 1, true, name);
+	ep[2].start(ios, "localhost", 1, false, name);
+	std::vector<Channel*> recvChl{ &ep[2].addChannel(name, name) };
+	std::vector<Channel*> sendChl{ &ep[1].addChannel(name, name) };
+
+
+	std::vector<std::thread>  thrds(2);
+	u8 dummy[1];
+	u8 dummy1[1];
+	for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+	{
+		thrds[tIdx] = std::thread([&, tIdx]()
+		{
+			dummy[0] = tIdx + 5;
+			if (tIdx % 2 == 0)
+				//chls[0][1][0]->asyncSend(dummy, 1);
+				sendChl[0]->asyncSend(dummy, 1);
+			else
+			{
+				//chls[1][0][0]->recv(dummy1, 1);
+				recvChl[0]->recv(dummy, 1);
+				std::cout << static_cast<int16_t>(dummy[0]) << " ";
+
+			}
+		});
+	}
+
+	for (auto& thrd : thrds)
+		thrd.join();
+
+	chls[0][1][0]->close();
+	chls[1][0][0]->close();
+
+	for (u64 i = 0; i < numParties; ++i)
+	{
+		for (u64 j = 0; j < numParties; ++j)
+		{
+			if(i!=j)
+				ep[i*numParties+j].stop();
+		}
+	}
+
+	ios.stop();
+}
 void OPPRF_EmptrySet_Test_Impl()
 {
     u64 setSize = 1<<5, psiSecParam = 40, bitSize = 128 , numParties=2;
@@ -281,10 +377,10 @@ void OPPRF_EmptrySet_Test_Impl()
 		send.init(numParties,setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
 		send.hash2Bins(sendSet, sendChl);
 		send.getOPRFKeys(1,sendChl);
+		//send.sendSecretSharing(1, sendPayLoads, sendChl);
 		send.revSecretSharing(1, recvPayLoads, sendChl);
-
 		//Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
-		//send.mSimpleBins.print(1,true, true, true, true);
+		send.mSimpleBins.print(1,true, true, true, true);
 		//Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
 		//send.mCuckooBins.print(1,true, true, false);
 	
@@ -309,10 +405,11 @@ void OPPRF_EmptrySet_Test_Impl()
 	recv.init(numParties,setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 	recv.hash2Bins(recvSet, recvChl);
 	recv.getOPRFkeys(0, recvChl);
+	//recv.revSecretSharing(0, recvPayLoads, recvChl);
 	recv.sendSecretSharing(0, sendPayLoads, recvChl);
 
-	/*Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
-	recv.mCuckooBins.print(0,true, true, false);*/
+	Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
+	recv.mCuckooBins.print(0,true, true, false);
 	
 	//Log::out << "recv.mSimpleBins.print(true, false, false,false);" << Log::endl;
 	//recv.mSimpleBins.print(0,true, true, true, true);
@@ -327,6 +424,14 @@ for (u64 i = 1; i < recvPayLoads.size(); ++i)
 {
 		Log::out << recvPayLoads[i] << Log::endl;
 		Log::out << sendPayLoads[i] << Log::endl;
+		if (memcmp((u8*)&recvPayLoads[i], &sendPayLoads[i], sizeof(block)))
+		{
+			Log::out << "recvPayLoads[i] != sendPayLoads[i]" << Log::endl;
+			Log::out << recvSet[i] << Log::endl; 
+			Log::out << sendSet[i] << Log::endl; 
+			Log::out << i << Log::endl;
+		}
+
 	}
 
 std::cout << IoStream::unlock;

@@ -8,7 +8,7 @@
 #include "TwoChooseOne/IknpOtExtReceiver.h"
 #include "TwoChooseOne/IknpOtExtSender.h"
 
-#define PRINT
+//#define PRINT
 namespace osuCrypto
 {
 
@@ -204,7 +204,7 @@ namespace osuCrypto
 
 	}
 
-
+	
 	void OPPRFSender::hash2Bins(std::vector<block>& inputs, Channel & chl)
 	{
 		hash2Bins(inputs, { &chl });
@@ -473,25 +473,29 @@ namespace osuCrypto
 						//######Finding bit locations
 						//#####################
 
-						std::cout << bin.mValOPRF[IdxP][0];
+						//std::cout << bin.mValOPRF[IdxP][0];
 
 						//diff max bin size for first mSimpleBins.mBinCount and 
 						// mSimpleBins.mBinStashCount
 						if (bIdx < mSimpleBins.mBinCount[0])
-							bin.mBits[IdxP].init(bin.mIdx.size(), mSimpleBins.mNumBits[0]);
+							bin.mBits[IdxP].init(/*bin.mIdx.size(), */mSimpleBins.mNumBits[0]);
 						else
-							bin.mBits[IdxP].init(bin.mIdx.size(), mSimpleBins.mNumBits[1]);
+							bin.mBits[IdxP].init(/*bin.mIdx.size(), */mSimpleBins.mNumBits[1]);
 
-						bin.mBits[IdxP].getPos(bin.mValOPRF[IdxP], 128);
-						bin.mBits[IdxP].getMasks(bin.mValOPRF[IdxP]);
-						std::cout << ", "
-							<< static_cast<int16_t>(bin.mBits[IdxP].mMaps[0]) << std::endl;
+						auto start = mTimer.setTimePoint("getPos1.start");
+						bin.mBits[IdxP].getPos1(bin.mValOPRF[IdxP], 128);
+						auto end = mTimer.setTimePoint("getPos1.done");
+						mTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+
+						//bin.mBits[IdxP].getMasks(bin.mValOPRF[IdxP]);
+						//std::cout << ", "
+						//	<< static_cast<int16_t>(bin.mBits[IdxP].mMaps[0]) << std::endl;
 					}
 					}
 				}
 
 				if (tIdx == 0) gTimer.setTimePoint("online.send.otSend.finalOPRF");
-
+				std::cout << "getPos1 time: " << mTime/pow(10,6) << std::endl;
 #pragma endregion
 #endif
 
@@ -622,7 +626,7 @@ namespace osuCrypto
 
 						for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
 						{
-							Log::out << "Bin #" << bIdx << Log::endl;
+							//Log::out << "sBin #" << bIdx << Log::endl;
 
 							auto& bin = mSimpleBins.mBins[bIdx];
 							u64 baseMaskIdx = stepIdx;
@@ -632,7 +636,7 @@ namespace osuCrypto
 							{
 								//copy bit locations in which all OPRF values are distinct
 
-								Log::out << "    c_mPos= ";
+							//	Log::out << "    c_mPos= ";
 
 								if (bin.mBits[IdxP].mPos.size() != mSimpleBins.mNumBits[bIdxType])
 								{
@@ -650,12 +654,12 @@ namespace osuCrypto
 								//copy bit positions
 								for (u64 idxPos = 0; idxPos < bin.mBits[IdxP].mPos.size(); idxPos++)
 								{
-									Log::out << static_cast<int16_t>(bin.mBits[IdxP].mPos[idxPos]) << " ";
+								//	Log::out << static_cast<int16_t>(bin.mBits[IdxP].mPos[idxPos]) << " ";
 									memcpy(
 										maskView[baseMaskIdx].data() + idxPos,
 										(u8*)&bin.mBits[IdxP].mPos[idxPos], sizeof(u8));
 								}
-								Log::out << Log::endl;
+								//Log::out << Log::endl;
 
 
 								for (u64 i = 0; i < bin.mIdx.size(); ++i)

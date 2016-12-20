@@ -22,7 +22,7 @@ namespace osuCrypto
     BarkOPRFReceiver::~BarkOPRFReceiver()
     {
     }
-
+#if 0
     void BarkOPRFReceiver::init(
         u64 n,
         u64 statSecParam,
@@ -481,4 +481,5 @@ namespace osuCrypto
         //std::cout << gTimer;
 #endif
     }
+#endif
 }

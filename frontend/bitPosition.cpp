@@ -34,7 +34,7 @@ void Bit_Position_Test()
 	}
 
 	BitPosition b;
-	b.init(setSize, setSize);
+	b.init(setSize);
 	std::cout << b.mRealBitSize << std::endl;
 	std::set<u8> masks;
 	Timer timer;
@@ -74,7 +74,7 @@ void Bit_Position_Map_Test()
 	}
 
 	BitPosition b;
-	b.init(setSize, setSize);
+	b.init(setSize);
 	b.mRealBitSize= 7;
 
 	for (u8 i = 0; i < b.mRealBitSize; i++)
@@ -128,8 +128,9 @@ void Bit_Position_Recursive_Test()
 	{
 		testSet[i] = prng.get<block>();
 	}
+
 	BitPosition b;
-	b.init(setSize, setSize);
+	b.init(setSize);
 	std::set<int> rs;
 
 	Timer timer;
@@ -158,4 +159,125 @@ void Bit_Position_Recursive_Test()
 	}
 
 
+}
+
+u64 numParties = 4;
+std::vector<std::vector<std::vector<Channel*>>> chls(numParties);
+std::vector<std::vector<u8>> revDummy(numParties);
+std::vector<std::vector<u8>> dummy(numParties);
+
+void party(int idxP)
+{
+	// do stuff...
+}
+
+void bar(int x)
+{
+	// do stuff...
+}
+
+void Channel_Test() {
+	std::string name("psi");
+	
+	BtIOService ios(0);
+	u64 numThreads(1);
+	int btCount = numParties*(numParties);
+	std::vector<BtEndpoint> ep(btCount);
+	
+
+	for (u64 i = 0; i < numParties; ++i)
+	{
+		//ep[i].resize(numParties);
+		chls[i].resize(numParties);
+
+		for (u64 j = 0; j < numParties; ++j)
+		{
+			if (i < j) {
+				auto port = i*10+j; //make same port: i=1, j=2 => port 12
+				ep[i*numParties+j].start(ios, "localhost", port, true, name);				
+			}
+			else if (i > j)
+			{
+				auto port = j*10+i; //i=2, j=1 => port 12
+				ep[i*numParties + j].start(ios, "localhost", port, false, name);
+			}
+		}
+	}
+
+	for (int i = numParties-1; i > -1; --i)
+	{
+		chls[i].resize(numParties);
+		for (u64 j = 0; j < numParties; ++j)
+		{
+			if (i != j) {
+				chls[i][j].resize(1);
+				for (u64 k = 0; k < numThreads; ++k)
+				{
+						chls[i][j][k] = &ep[i*numParties + j].addChannel("chl" + std::to_string(k), "chl" + std::to_string(k));
+				}
+				chls[i][j][0] = &ep[i*numParties + j].addChannel(name, name);
+			}
+		}
+	}
+	
+	std::vector<std::pair<int, int>> pairs;
+	for (int i = 0; i < numParties; i++)
+	{
+		for (int j = i+1; j < numParties; j++)
+		{
+			pairs.push_back(std::make_pair(i, j));
+		}
+	}
+
+
+
+	std::vector<std::thread>  thrds(numParties);
+
+	
+
+	for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+	{
+		dummy[tIdx].resize(numParties);
+		revDummy[tIdx].resize(numParties);
+		for (u64 i = 0; i < thrds.size(); ++i)
+			dummy[tIdx][i] = tIdx*10+i;
+	}
+
+	for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+	{		
+		thrds[tIdx] = std::thread([&, tIdx]()
+		{
+			if (tIdx % 2 == 0)
+			{
+				chls[tIdx][tIdx + 1][0]->asyncSend(&dummy[tIdx][tIdx + 1], 1);
+
+			}
+			else
+			{
+				chls[tIdx][tIdx-1][0]->recv(&revDummy[tIdx][tIdx - 1], 1);
+				std::cout << static_cast<int16_t>(revDummy[tIdx][tIdx - 1]) << std::endl;
+			}
+		});
+	}
+
+	for (auto& thrd : thrds)
+		thrd.join();
+
+
+
+	chls[0][1][0]->close();
+	chls[1][0][0]->close();
+
+	for (u64 i = 0; i < numParties; ++i)
+	{
+		for (u64 j = 0; j < numParties; ++j)
+		{
+			if (i != j)
+			{
+				ep[i*numParties + j].stop();
+			}
+		}
+	}
+
+	ios.stop();
 }
