@@ -285,6 +285,7 @@ namespace osuCrypto
 			CuckooHasher1::Workspace stashW(remaining);
 			std::vector<Bin> mStashBins;*/
 			//mStashBins.insertBatch(stashIdxs, stashHashs, stashW, false);
+		std::lock_guard<std::mutex> lock(mInsertBin);
 			for (u64 i = 0; i < remaining; ++i)
 			{
 				mStashIdxs.push_back(inputIdxs[i]);

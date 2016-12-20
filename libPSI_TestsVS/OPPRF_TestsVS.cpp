@@ -22,6 +22,11 @@ namespace WeGarbleTests
             InitDebugPrinting();
 			OPPRF_EmptrySet_Test_Impl();
         }
+		TEST_METHOD(OPPRFn_EmptrySet_Test)
+		{
+			InitDebugPrinting();
+			OPPRFn_EmptrySet_Test_Impl();
+		}
 
    //     TEST_METHOD(OPPRF_FullSet_Test)
    //     {
@@ -48,6 +53,12 @@ namespace WeGarbleTests
 		{
 			InitDebugPrinting();
 			Bit_Position_Recursive_Test_Impl();
+		}
+
+		TEST_METHOD(Hashing2Bins_Test)
+		{
+			InitDebugPrinting();
+			hashing2Bins_Test_Impl();
 		}
 
 

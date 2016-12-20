@@ -74,7 +74,7 @@ namespace osuCrypto
         };
 
 
-
+		std::mutex mInsertBin;
         u64 mTotalTries;
 
         bool operator==(const CuckooHasher1& cmp)const;

@@ -5,8 +5,6 @@
 #include "NChooseOne/NcoOtExt.h"
 #include "Hashing/CuckooHasher1.h"
 #include "Hashing/SimpleHasher1.h"
-#include "OPPRF/OPPRFReceiver.h"
-#include "OPPRF/OPPRFSender.h"
 
 namespace osuCrypto
 {
@@ -17,16 +15,14 @@ namespace osuCrypto
 		binSet();
         ~binSet();
         
-        //static const u64 CodeWordSize = 7;
-        //static const u64 hasherStepSize;
 
         u64 mN, mParties, mMyIdx, mStatSecParam, mNcoInputBlkSize;// , mOtMsgBlkSize;
         block mHashingSeed;
 
 		std::vector<std::vector<block>> mNcoInputBuff;
 
-		//std::vector<OPPRFSender> mOpprfSends;
-        //std::vector<OPPRFReceiver> mOpprfRecvs;
+	//	OPPRFSender aaa;
+		
 
 		CuckooHasher1 mCuckooBins;
 		SimpleHasher1 mSimpleBins;

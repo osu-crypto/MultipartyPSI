@@ -716,10 +716,10 @@ void OPPRF2_EmptrySet_Test()
 
 
 		send.init(numParties, setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
-		send.hash2Bins(sendSet, sendChl);
-		send.getOPRFKeys(1, sendChl);
-		send.sendSecretSharing(1, sendPayLoads[1], sendChl);
-		send.revSecretSharing(1, recvPayLoads[1], sendChl);
+		//send.hash2Bins(sendSet, sendChl);
+		//send.getOPRFKeys(1, sendChl);
+		//send.sendSecretSharing(1, sendPayLoads[1], sendChl);
+		//send.revSecretSharing(1, recvPayLoads[1], sendChl);
 		//Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
 		//send.mSimpleBins.print(1, true, true, true, true);
 		//Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
@@ -733,11 +733,11 @@ void OPPRF2_EmptrySet_Test()
 	recv.init(numParties, setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 	
 	auto mid = timer.setTimePoint("init");
-	recv.hash2Bins(recvSet, recvChl);
+	//recv.hash2Bins(recvSet, recvChl);
 	auto mid_hashing = timer.setTimePoint("hashing");
-	recv.getOPRFkeys(0, recvChl);
-	recv.revSecretSharing(0, recvPayLoads[0], recvChl);
-	recv.sendSecretSharing(0, sendPayLoads[0], recvChl);
+	//recv.getOPRFkeys(0, recvChl);
+	//recv.revSecretSharing(0, recvPayLoads[0], recvChl);
+	//recv.sendSecretSharing(0, sendPayLoads[0], recvChl);
 	auto end = timer.setTimePoint("done");
 	//Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
 	//recv.mCuckooBins.print(0, true, true, false);
@@ -1012,20 +1012,26 @@ void party(u64 myIdx)
 		}
 	}
 
-	std::vector<KkrtNcoOtReceiver> otRecv0(nParties), otRecv1(nParties);
-	std::vector<KkrtNcoOtSender> otSend0(nParties), otSend1(nParties);
+	std::vector<KkrtNcoOtReceiver> otRecv(nParties);
+	std::vector<KkrtNcoOtSender> otSend(nParties);
 
 	std::vector<OPPRFSender> send(nParties - myIdx);
 	std::vector<OPPRFReceiver> recv(myIdx);
 
 	std::mutex printMtx1, printMtx2;
 	std::vector<std::thread>  pThrds(nParties);
+
+	binSet bins;
+
+	bins.init(myIdx, nParties, setSize, psiSecParam);
+	bins.hashing2Bins(set, nParties);
+
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
 	{
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			if (pIdx < myIdx) {
 				//I am a receiver if other party idx < mine
-				recv[pIdx].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otRecv0[pIdx], otSend1[pIdx], ZeroBlock);
+				recv[pIdx].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otRecv[pIdx], otSend[pIdx], ZeroBlock);
 				//recv[pIdx].hash2Bins(set, chls[pIdx]);
 
 				chls[pIdx][0]->asyncSend(&dummy[pIdx], 1);
@@ -1034,7 +1040,7 @@ void party(u64 myIdx)
 
 		}
 			else if (pIdx > myIdx) {
-				send[pIdx].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otSend0[pIdx], otRecv1[pIdx], prng.get<block>());
+				send[pIdx].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otSend[pIdx], otRecv[pIdx], prng.get<block>());
 				//send[pIdx].hash2Bins(set, chls[pIdx]);
 
 				chls[pIdx][0]->recv(&revDummy[pIdx], 1);
@@ -1048,10 +1054,10 @@ void party(u64 myIdx)
 
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
 	{ 
-	//	if(pIdx!=myIdx)
 			pThrds[pIdx].join();
 	}
 
+	bins.hashing2Bins(set, nParties);
 
 
 

@@ -38,6 +38,9 @@ namespace osuCrypto
 		//mOpprfSends.resize(mParties- mMyIdx);
 		//mOpprfRecvs.resize(mMyIdx);
 
+	/*	std::vector<OPPRFSender> mOpprfSends(3);
+		std::vector<OPPRFReceiver> mOpprfRecvs(3);*/
+
 		mSimpleBins.init(mN);
 		mCuckooBins.init(mN);
     }
@@ -108,13 +111,10 @@ namespace osuCrypto
                 for (u64 i = 0; i < ncoInputHasher.size(); ++i)
                     ncoInputHasher[i].setKey(_mm_set1_epi64x(i) ^ mHashingSeed);
 
-				//Log::out << "mHashingSeed: " << mHashingSeed << Log::endl;
-
-                u64 phaseShift = log2ceil(mN) / 8;
 
                 for (u64 i = startIdx; i < endIdx; i += 128)
                 {
-                    auto currentStepSize = std::min(u64(128), mN - i);
+                    auto currentStepSize = std::min(u64(128), endIdx - i);
 
                     for (u64 hashIdx = 0; hashIdx < ncoInputHasher.size(); ++hashIdx)
                     {
@@ -142,6 +142,11 @@ namespace osuCrypto
 					mCuckooBins.insertBatch(tempIdxBuff, hashes, w);
 				
                 }
+				// block until all items have been inserted. the last to finish will set the promise...
+				if (--insertRemaining)
+					insertFuture.get();
+				else
+					insertProm.set_value();
 
 				CuckooHasher1::Workspace stashW(mCuckooBins.mStashIdxs.size());
 				MatrixView<u64> stashHashes(mCuckooBins.mStashIdxs.size(), mCuckooBins.mParams.mNumHashes[1]);
@@ -155,11 +160,7 @@ namespace osuCrypto
 				}
 				mCuckooBins.insertStashBatch(mCuckooBins.mStashIdxs, stashHashes, stashW);
 
-                // block until all items have been inserted. the last to finish will set the promise...
-                if (--insertRemaining)
-                    insertFuture.get();
-                else
-                    insertProm.set_value();
+              
 
 
 
