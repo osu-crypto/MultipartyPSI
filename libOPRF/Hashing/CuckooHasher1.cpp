@@ -140,12 +140,12 @@ namespace osuCrypto
 		std::cout << IoStream::unlock;
 
     }
-    void CuckooHasher1::init(u64 numParties, u64 n, block hashSeed, u64 statSecParam, bool multiThreaded)
+    void CuckooHasher1::init(u64 n)
     {
-		mHashSeed = hashSeed;
+		
 
 
-        if (statSecParam != 40) throw std::runtime_error("not implemented");
+       // if (statSecParam != 40) throw std::runtime_error("not implemented");
 
 		
 			if (n <= 1 << 7)

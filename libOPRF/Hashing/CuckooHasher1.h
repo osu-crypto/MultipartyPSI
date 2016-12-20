@@ -87,7 +87,7 @@ namespace osuCrypto
 		u64  mRepSize, mInputBitSize, mN;
 		u64 mBinCount[2];//mBinCount[0] for init step, mBinCount[1] for Stash step
         void print(u64 IdxParty, bool isIdx, bool isOPRF, bool isMap) const;
-		void init(u64 numParties, u64 n, block hashSeed, u64 statSecParam, bool multiThreaded);
+		void init(u64 n);
         void insert(u64 IdxItem, ArrayView<u64> hashes);
         void insertHelper(u64 IdxItem, u64 hashIdx, u64 numTries);
 		void insertStashHelper(u64 IdxItem, u64 hashIdx, u64 numTries);

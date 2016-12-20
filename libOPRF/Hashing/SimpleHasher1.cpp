@@ -105,15 +105,25 @@ namespace osuCrypto
 		return std::log(bins * std::pow(balls * exp(1) / (bins * k), k)) / std::log(2);
 	}
 
-	void SimpleHasher1::init(u64 numParties, u64 n, u64 numBits, block hashSeed, u64 secParam)
-	{
-
-		mHashSeed = hashSeed;
+	void SimpleHasher1::init(u64 n)
+	{	
 		mN = n;
+		mMaxBinSize[0] = 32;
+		mMaxBinSize[1] = 32;
 
-		auto log2n = log2ceil(n);
+		mBinCount[0] = 1.2*n;
+		mBinCount[1] = 0.3*n;
 
-		mInputBitSize = numBits;
+		mMtx.reset(new std::mutex[mBinCount[0] + mBinCount[1]]);
+		mBins.resize(mBinCount[1] + mBinCount[0]);
+		mNumHashes[0] = 3;
+		mNumHashes[1] = 2;
+		mNumBits[0] = 5;
+		mNumBits[1] = 5;
+
+	//	auto log2n = log2ceil(n);
+
+//		mInputBitSize = numBits;
 
 #if 0
 		for (u64 maxBin = 15; maxBin < 64; maxBin++)
@@ -161,18 +171,7 @@ namespace osuCrypto
 			}
 		}
 #endif
-		mMaxBinSize[0] = 32;
-		mMaxBinSize[1] = 32;
-
-		mBinCount[0] = 1.2*n;
-		mBinCount[1] = 0.3*n;
-
-		mMtx.reset(new std::mutex[mBinCount[0] + mBinCount[1]]);
-		mBins.resize(mBinCount[1] + mBinCount[0]);
-		mNumHashes[0] = 3;
-		mNumHashes[1] = 2;
-		mNumBits[0] = 5;
-		mNumBits[1] = 5;
+		
 
 	}
 

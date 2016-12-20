@@ -78,6 +78,7 @@
     <ClCompile Include="Hashing\SimpleHasher1.cpp" />
     <ClCompile Include="OPPRF\BarkOPRFReceiver.cpp" />
     <ClCompile Include="OPPRF\BarkOPRFSender.cpp" />
+    <ClCompile Include="OPPRF\binSet.cpp" />
     <ClCompile Include="OPPRF\OPPRFReceiver.cpp" />
     <ClCompile Include="OPPRF\OPPRFSender.cpp" />
   </ItemGroup>
@@ -87,6 +88,7 @@
     <ClInclude Include="Hashing\SimpleHasher1.h" />
     <ClInclude Include="OPPRF\BarkOPRFReceiver.h" />
     <ClInclude Include="OPPRF\BarkOPRFSender.h" />
+    <ClInclude Include="OPPRF\binSet.h" />
     <ClInclude Include="OPPRF\OPPRFReceiver.h" />
     <ClInclude Include="OPPRF\OPPRFSender.h" />
   </ItemGroup>

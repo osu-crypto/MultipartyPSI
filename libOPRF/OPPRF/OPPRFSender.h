@@ -5,7 +5,7 @@
 #include "Hashing/SimpleHasher1.h"
 #include "Hashing/CuckooHasher1.h"
 #include "Hashing/BitPosition.h"
-
+#include "OPPRF/binSet.h"
 namespace osuCrypto
 {
 
@@ -23,8 +23,8 @@ namespace osuCrypto
 
         u64 mN, mParties, mStatSecParam, mNcoInputBlkSize,  mOtMsgBlkSize;
         block mHashingSeed;
-		SimpleHasher1 mSimpleBins;
-		CuckooHasher1 mCuckooBins;
+		//SimpleHasher1 mSimpleBins;
+		//CuckooHasher1 mCuckooBins;
 
         PRNG mPrng;
 		Timer mTimer;
@@ -32,7 +32,7 @@ namespace osuCrypto
 
         std::vector<std::unique_ptr<NcoOtExtSender>> mOtSends;
 		std::vector<std::unique_ptr<NcoOtExtReceiver>> mOtRecvs;
-		std::vector<std::vector<block>> mNcoInputBuff;
+		//std::vector<std::vector<block>> mNcoInputBuff;
 
         void init(u64 numParties, u64 setSize,  u64 statSecParam, u64 inputBitSize,
             const std::vector<Channel*>& chls, 
@@ -46,18 +46,19 @@ namespace osuCrypto
 			NcoOtExtReceiver& otRecv,
             block seed);
 
+		
+
+		void getOPRFKeys( u64 IdxParty, Bins& bins, Channel& chl);
+		void getOPRFKeys(u64 IdxParty, Bins& bins, const std::vector<Channel*>& chls);
+#if 0
 		void hash2Bins(std::vector<block>& inputs, Channel& chl);
 		void hash2Bins(std::vector<block>& inputs, const std::vector<Channel*>& chls);
-
-		void getOPRFKeys( u64 IdxParty, Channel& chl);
-		void getOPRFKeys(u64 IdxParty, const std::vector<Channel*>& chls);
-
 		void sendSecretSharing(u64 IdxParty, std::vector<block>& plaintexts,  Channel& chl);
 		void sendSecretSharing(u64 IdxParty, std::vector<block>& plaintexts,  const std::vector<Channel*>& chls);
 		
 		void revSecretSharing(u64 IdxParty, std::vector<block>& plaintexts, Channel& chl);
 		void revSecretSharing(u64 IdxParty, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
-
+#endif
     };
 
 }

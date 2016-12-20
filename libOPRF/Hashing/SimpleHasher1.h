@@ -38,7 +38,7 @@ namespace osuCrypto
 
         void print(u64 idxParty, bool isIdx, bool isOPRF, bool isMap, bool isPos) const;
 
-        void init(u64 numParties,u64 n, u64 numBits, block hashSeed, u64 secParam);
+        void init(u64 n);
 
 		void insertBatch(
 			ArrayView<u64> inputIdxs,
