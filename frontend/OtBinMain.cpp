@@ -1032,33 +1032,35 @@ void party(u64 myIdx)
 			if (pIdx < myIdx) {
 				//I am a receiver if other party idx < mine
 				recv[pIdx].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otRecv[pIdx], otSend[pIdx], ZeroBlock);
-				//recv[pIdx].hash2Bins(set, chls[pIdx]);
-
-				chls[pIdx][0]->asyncSend(&dummy[pIdx], 1);
-				std::lock_guard<std::mutex> lock(printMtx1);
-				std::cout << "s: " << myIdx << " -> " << pIdx <<" : " <<static_cast<int16_t>(dummy[pIdx]) << std::endl;
-
-		}
+			}
 			else if (pIdx > myIdx) {
 				send[pIdx].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otSend[pIdx], otRecv[pIdx], prng.get<block>());
-				//send[pIdx].hash2Bins(set, chls[pIdx]);
-
-				chls[pIdx][0]->recv(&revDummy[pIdx], 1);
-				std::lock_guard<std::mutex> lock(printMtx2);
-				std::cout << "r: " << myIdx << " <- " << pIdx << " : " << static_cast<int16_t>(revDummy[pIdx]) << std::endl;
-
-			}
+				}
 		});
 	}
 
-
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
-	{ 
 			pThrds[pIdx].join();
-	}
 
 	bins.hashing2Bins(set, nParties);
+	bins.mSimpleBins.print(0, true,false,false,false);
+	bins.mCuckooBins.print(0, true, false, false);
 
+	//for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+	//{
+	//	pThrds[pIdx] = std::thread([&, pIdx]() {
+	//		if (pIdx < myIdx) {
+	//			//I am a receiver if other party idx < mine
+	//			recv[pIdx].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otRecv[pIdx], otSend[pIdx], ZeroBlock);
+	//		}
+	//		else if (pIdx > myIdx) {
+	//			send[pIdx].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otSend[pIdx], otRecv[pIdx], prng.get<block>());
+	//		}
+	//	});
+	//}
+
+	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+		pThrds[pIdx].join();
 
 
 	for (u64 i = 0; i < nParties; ++i)
@@ -1100,6 +1102,8 @@ void OPRFn_Test()
 	}
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
 		pThrds[pIdx].join();
+
+
 }
 
 //void OPPRF_EmptrySet_Test_Impl1()

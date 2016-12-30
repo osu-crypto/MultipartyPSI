@@ -74,11 +74,12 @@ namespace osuCrypto
         // done inserting items into the bins, the future will be fulfilled 
         // and all threads will advance to performing the base OtPsi's
         std::atomic<u32>
-            insertRemaining((u32)thrds.size());
+            insertRemaining((u32)thrds.size()), insertStashRemaining((u32)thrds.size());
 
-		std::promise<void> insertProm ;
+		std::promise<void> insertProm, insertStashProm;
 		std::shared_future<void>
-			insertFuture(insertProm.get_future());
+			insertFuture(insertProm.get_future()),
+			insertStashFuture(insertStashProm.get_future());
 
       //  CuckooHasher1 maskMap;
         //maskMap.init(mN * mBins.mMaxBinSize, mStatSecParam, chls.size() > 1);
@@ -160,7 +161,10 @@ namespace osuCrypto
 				}
 				mCuckooBins.insertStashBatch(mCuckooBins.mStashIdxs, stashHashes, stashW);
 
-              
+				if (--insertStashRemaining)
+					insertStashFuture.get();
+				else
+					insertStashProm.set_value();
 
 
 
@@ -198,8 +202,17 @@ namespace osuCrypto
 				{
 					u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
 
+					
+					std::mutex mPrintMtx;
+				//	if (bIdx == 23)
+//Log::out << "c" << bIdx << Log::endl;
+					std::lock_guard<std::mutex> lock(mPrintMtx);
 					for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
 					{
+						
+					//	if (bIdx == 13)
+						//Log::out <<"c" << bIdx << Log::endl;
+
 						auto& cbin = mCuckooBins.mBins[bIdx];
 						if (!cbin.isEmpty())
 						{
@@ -207,6 +220,11 @@ namespace osuCrypto
 							cbin.mValMap.resize(mParties);
 						}
 						auto& sbin = mSimpleBins.mBins[bIdx];
+
+						std::mutex mPrintMtx1;
+
+						//std::lock_guard<std::mutex> lock1(mPrintMtx1);
+					//	Log::out << "c" << bIdx << Log::endl;
 
 						if (sbin.mIdx.size()>0)
 						{

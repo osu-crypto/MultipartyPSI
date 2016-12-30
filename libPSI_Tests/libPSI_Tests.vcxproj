@@ -84,6 +84,7 @@
     <ClCompile Include="DktMPsi_Tests.cpp" />
     <ClCompile Include="Ecc_Tests.cpp" />
     <ClCompile Include="NcoOT_Tests.cpp" />
+    <ClCompile Include="nPSI.cpp" />
     <ClCompile Include="OPPRF_Tests.cpp" />
     <ClCompile Include="OTOracleReceiver.cpp" />
     <ClCompile Include="OTOracleSender.cpp" />
@@ -102,6 +103,7 @@
     <ClInclude Include="DktMPsi_Tests.h" />
     <ClInclude Include="Ecc_Tests.h" />
     <ClInclude Include="NcoOT_Tests.h" />
+    <ClInclude Include="nPSI.h" />
     <ClInclude Include="OPPRF_Tests.h" />
     <ClInclude Include="OTOracleReceiver.h" />
     <ClInclude Include="OTOracleSender.h" />

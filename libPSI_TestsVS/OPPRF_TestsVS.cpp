@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
 #include "OPPRF_Tests.h"
+#include "nPSI.h"
 #include "Common.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -22,6 +23,12 @@ namespace WeGarbleTests
             InitDebugPrinting();
 			OPPRF_EmptrySet_Test_Impl();
         }
+		TEST_METHOD(nOPPRF_EmptrySet_Test)
+		{
+			InitDebugPrinting();
+			nOPPRF_EmptrySet_Test_Impl();
+		}
+
 		TEST_METHOD(OPPRFn_EmptrySet_Test)
 		{
 			InitDebugPrinting();
@@ -53,6 +60,16 @@ namespace WeGarbleTests
 		{
 			InitDebugPrinting();
 			Bit_Position_Recursive_Test_Impl();
+		}
+		TEST_METHOD(OPPRF_EmptrySet_hashing_Test)
+		{
+			InitDebugPrinting();
+			OPPRF_EmptrySet_hashing_Test_Impl();
+		}
+		TEST_METHOD(OPPRF3_EmptrySet_Test)
+		{
+			InitDebugPrinting();
+			OPPRF3_EmptrySet_Test_Impl();
 		}
 
 		TEST_METHOD(Hashing2Bins_Test)

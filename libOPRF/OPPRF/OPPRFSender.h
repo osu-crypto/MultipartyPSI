@@ -53,9 +53,10 @@ namespace osuCrypto
 
 			void sendSecretSharing(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts,  Channel& chl);
 		void sendSecretSharing(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts,  const std::vector<Channel*>& chls);
+
+		void revSecretSharing(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
+		void revSecretSharing(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 #if 0
-		void revSecretSharing(u64 IdxParty, std::vector<block>& plaintexts, Channel& chl);
-		void revSecretSharing(u64 IdxParty, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 		void hash2Bins(std::vector<block>& inputs, Channel& chl);
 		void hash2Bins(std::vector<block>& inputs, const std::vector<Channel*>& chls);
 
