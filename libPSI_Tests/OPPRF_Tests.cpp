@@ -1095,24 +1095,28 @@ void party(u64 myIdx, u64 setSize)
 				recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 				recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 			}
-			else if (pIdx == prevNeibough && myIdx !=0) {
-				recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
-			}
-			else if (pIdx == prevNeibough && myIdx == 0) {
-				send[pIdx - myIdx - 1].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
-			}
-			else if(pIdx == nextNeibough && myIdx != nParties-1)
-			{
-				send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
-			}
-			else if (pIdx == nextNeibough && myIdx == nParties - 1)
-			{
-				recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
-			}
 			else if (pIdx > myIdx && pIdx != nextNeibough) {
 				send[pIdx - myIdx - 1].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 				send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 			}
+
+			else if (pIdx == prevNeibough && myIdx !=0) {
+				recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+			}
+			else if (pIdx == nextNeibough && myIdx != nParties - 1)
+			{
+				send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+			}
+
+			else if (pIdx == nParties - 1 && myIdx == 0) {
+				send[pIdx - myIdx - 1].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+			}
+			
+			else if (pIdx == 0 && myIdx == nParties - 1)
+			{
+				recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+			}
+			
 		});
 	}
 
@@ -1126,14 +1130,20 @@ void party(u64 myIdx, u64 setSize)
 	if (myIdx == 0)
 	{
 		send[nextNeibough].sendSecretSharing(nextNeibough, bins, sendPayLoads[nextNeibough], chls[nextNeibough]);
-		send[prevNeibough].revSecretSharing(prevNeibough, bins, recvPayLoads[prevNeibough], chls[prevNeibough]);
+		send[nextNeibough - myIdx - 1].revSecretSharing(prevNeibough, bins, recvPayLoads[prevNeibough], chls[prevNeibough]);
+
+	}
+	else if(myIdx == nParties - 1)
+	{
+			recv[prevNeibough].revSecretSharing(prevNeibough, bins, recvPayLoads[prevNeibough], chls[prevNeibough]);
+		recv[nextNeibough].sendSecretSharing(nextNeibough, bins, sendPayLoads[nextNeibough], chls[nextNeibough]);
 
 	}
 	else
 	{
-		recv[prevNeibough].revSecretSharing(prevNeibough, bins, recvPayLoads[prevNeibough], chls[prevNeibough]);
-		//sendPayLoads = recvPayLoads;
-		send[nextNeibough].sendSecretSharing(nextNeibough, bins, sendPayLoads[nextNeibough], chls[nextNeibough]);
+	recv[prevNeibough].revSecretSharing(prevNeibough, bins, recvPayLoads[prevNeibough], chls[prevNeibough]);
+	//	sendPayLoads = recvPayLoads;
+	send[nextNeibough - myIdx - 1].sendSecretSharing(nextNeibough, bins, sendPayLoads[nextNeibough], chls[nextNeibough]);
 	}
 
 	std::cout << IoStream::lock;
@@ -1157,7 +1167,22 @@ void party(u64 myIdx, u64 setSize)
 	}
 	std::cout << IoStream::unlock;
 
+	//##########################
+	//### online phasing - compute intersection
+	//##########################
 
+	if (myIdx == 0) {
+		std::vector<u64> mIntersection;
+		u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+		for (u64 i = 0; i < setSize; ++i)
+		{
+			//if (!memcmp((u8*)&sendPayLoads[i], &recvPayLoads[i], maskSize))
+			{
+				mIntersection.push_back(i);
+			}
+		}
+		Log::out << mIntersection.size() << Log::endl;
+	}
 
 
 
