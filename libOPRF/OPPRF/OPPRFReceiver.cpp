@@ -88,12 +88,7 @@ namespace osuCrypto
 		mHashingSeed = myHashSeed ^ theirHashingSeed;
 
 
-		// this SimpleHasher class knows how to hash things into bins. But first we need 
-		// to compute how many bins we need, the max size of bins, etc.
-	//	mSimpleBins.init(n);
-	//	mCuckooBins.init(n);
-
-		// figure out how many OTs we need in total.
+		// how many OTs we need in total.
 		u64 otCountSend = otCounts;// mSimpleBins.mBins.size();
 		u64 otCountRecv = otCounts; //mCuckooBins.mBins.size();
 
@@ -103,18 +98,23 @@ namespace osuCrypto
 		// This will hold the send OTs
 
 		if (otRecv.hasBaseOts() == false ||
-			otSend.hasBaseOts() == false)
+			(otSend.hasBaseOts() == false && isOtherDirection))
 		{
 			// first do 128 public key OTs (expensive)
 			std::array<block, gOtExtBaseOtCount> kosSendBase;
 			BitVector choices(gOtExtBaseOtCount); choices.randomize(prng);
 			NaorPinkas base;
-			base.receive(choices, kosSendBase, prng, chl0, 1);
+			base.receive(choices, kosSendBase, prng, chl0, 2);
 
+
+			// now extend these to enough recv OTs to seed the send Kco and the send Kos ot extension
+			u64 dualBaseOtCount = gOtExtBaseOtCount;
+			if (!isOtherDirection) //if it is not dual, number extend OT is 128
+				dualBaseOtCount = 0;
 
 			IknpOtExtSender iknpSend;
 			iknpSend.setBaseOts(kosSendBase, choices);
-			std::vector<std::array<block, 2>> sendBaseMsg(baseOtCount + gOtExtBaseOtCount);
+			std::vector<std::array<block, 2>> sendBaseMsg(baseOtCount + dualBaseOtCount);
 			iknpSend.send(sendBaseMsg, prng, chl0);
 
 
@@ -122,21 +122,23 @@ namespace osuCrypto
 			ArrayView<std::array<block, 2>> kcoRecvBase(
 				sendBaseMsg.begin(),
 				sendBaseMsg.begin() + baseOtCount);
-			ArrayView<std::array<block, 2>> kosRecvBase(
-				sendBaseMsg.begin() + baseOtCount,
-				sendBaseMsg.end());
-
-			BitVector recvChoice(baseOtCount); recvChoice.randomize(prng);
-			std::vector<block> kcoSendBase(baseOtCount);
-			IknpOtExtReceiver iknp;
-			iknp.setBaseOts(kosRecvBase);
-			iknp.receive(recvChoice, kcoSendBase, prng, chl0);
-
-			// now set these ~800 OTs as the base of our N choose 1 OTs.
-			otSend.setBaseOts(kcoSendBase, recvChoice);
-
 			// now set these ~800 OTs as the base of our N choose 1 OTs.
 			otRecv.setBaseOts(kcoRecvBase);
+
+			if (isOtherDirection) {
+				ArrayView<std::array<block, 2>> kosRecvBase(
+					sendBaseMsg.begin() + baseOtCount,
+					sendBaseMsg.end());
+
+				BitVector recvChoice(baseOtCount); recvChoice.randomize(prng);
+				std::vector<block> kcoSendBase(baseOtCount);
+				IknpOtExtReceiver iknp;
+				iknp.setBaseOts(kosRecvBase);
+				iknp.receive(recvChoice, kcoSendBase, prng, chl0);
+				// now set these ~800 OTs as the base of our N choose 1 OTs.
+				otSend.setBaseOts(kcoSendBase, recvChoice);
+			}
+			
 		}
 
 
@@ -165,9 +167,16 @@ namespace osuCrypto
 		// compute how amny threads we want to do for each direction.
 		// the current thread will do one of the OT receives so -1 for that.
 		u64 numThreads = chls.size() - 1;
-		u64 numRecvThreads = numThreads / 2;
-		u64 numSendThreads = numThreads - numRecvThreads;
+		u64 numRecvThreads, numSendThreads;
 
+		if (isOtherDirection) {
+			 numRecvThreads = numThreads / 2;
+			numSendThreads = numThreads - numRecvThreads;
+		}
+		else {
+			numRecvThreads = numThreads;
+			numSendThreads = 0;
+		}
 		// where we will store the threads that are doing the extension
 		std::vector<std::thread> thrds(numThreads);
 
@@ -190,6 +199,11 @@ namespace osuCrypto
 
 			++chlIter;
 		}
+		mOtRecvs[0] = std::move(otRecv.split());
+		// now use this thread to do a recv routine.
+		recvOtRoutine(0, numRecvThreads + 1, *mOtRecvs[0], chl0);
+
+
 
 		mOtSends.resize(chls.size());
 		// do the same thing but for the send OT extensions
@@ -206,17 +220,11 @@ namespace osuCrypto
 			++chlIter;
 		}
 
-		mOtRecvs[0] = std::move(otRecv.split());
-
-		// now use this thread to do a recv routine.
-		recvOtRoutine(0, numRecvThreads + 1, *mOtRecvs[0], chl0);
-
 		// if the caller doesnt want to do things in parallel
 		// the we will need to do the send OT Ext now...
-		if (numSendThreads == 0)
+		if (numSendThreads == 0 && isOtherDirection)
 		{
 			mOtSends[0] = std::move(otSend.split());
-
 			sendOtRoutine(0, 1, *mOtSends[0], chl0);
 		}
 

@@ -923,7 +923,7 @@ void OPPRF_EmptrySet_hashing_Test_Impl()
 }
 
 std::vector<block> mSet;
-u64 nParties(4);
+u64 nParties(3);
 
 void party(u64 myIdx)
 {
@@ -1007,10 +1007,10 @@ void party(u64 myIdx)
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			if (pIdx < myIdx) {
 				//I am a receiver if other party idx < mine
-				recv[pIdx].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountRecv,otRecv[pIdx], otSend[pIdx], ZeroBlock);
+				recv[pIdx].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountRecv,otRecv[pIdx], otSend[pIdx], ZeroBlock, true);
 			}
 			else if (pIdx > myIdx) {
-				send[pIdx- myIdx-1].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountSend, otSend[pIdx], otRecv[pIdx], prng.get<block>());
+				send[pIdx- myIdx-1].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountSend, otSend[pIdx], otRecv[pIdx], prng.get<block>(), true);
 			}
 		});
 	}
@@ -1023,13 +1023,18 @@ void party(u64 myIdx)
 	if (myIdx == 0)
 	{
 		Log::out << otSend[2].mGens[0].get<block>() << Log::endl;
-		Log::out << otRecv[2].mGens[0][0].get<block>() << Log::endl;
-		Log::out << otRecv[2].mGens[0][1].get<block>() << Log::endl;
+		if (otRecv[2].hasBaseOts())
+		{
+			Log::out << otRecv[2].mGens[0][0].get<block>() << Log::endl;
+			Log::out << otRecv[2].mGens[0][1].get<block>() << Log::endl;
+		}
 		Log::out << "------------" << Log::endl;
 	}
 	if (myIdx == 2)
 	{
-		Log::out << otSend[0].mGens[0].get<block>() << Log::endl;
+		if (otSend[0].hasBaseOts())
+			Log::out << otSend[0].mGens[0].get<block>() << Log::endl;
+
 		Log::out << otRecv[0].mGens[0][0].get<block>() << Log::endl;
 		Log::out << otRecv[0].mGens[0][1].get<block>() << Log::endl;
 	}
@@ -1053,10 +1058,10 @@ void party(u64 myIdx)
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			if (pIdx < myIdx) {
 				//I am a receiver if other party idx < mine
-				recv[pIdx].getOPRFkeys(pIdx, bins,chls[pIdx]);
+				recv[pIdx].getOPRFkeys(pIdx, bins,chls[pIdx], true);
 				}
 			else if (pIdx > myIdx) {
-				send[pIdx - myIdx - 1].getOPRFKeys(pIdx, bins,chls[pIdx],true);
+				send[pIdx - myIdx - 1].getOPRFKeys(pIdx, bins,chls[pIdx], true);
 			}
 		});
 	}
@@ -1088,12 +1093,12 @@ void party(u64 myIdx)
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			if (pIdx < myIdx) {
 				//I am a receiver if other party idx < mine
-				//recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
-					recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+				recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+				//	recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 			}
 			else if (pIdx > myIdx) {
-				//send[pIdx - myIdx - 1].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
-				send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+				send[pIdx - myIdx - 1].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+				//send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 			}
 		});
 	}
@@ -1106,8 +1111,8 @@ void party(u64 myIdx)
 	{
 		for (int i = 0; i < 5; i++)
 		{
-			//Log::out << sendPayLoads[2][i] << Log::endl;
-			Log::out << recvPayLoads[2][i] << Log::endl;
+			Log::out << sendPayLoads[2][i] << Log::endl;
+			//Log::out << recvPayLoads[2][i] << Log::endl;
 		}
 		Log::out << "------------" << Log::endl;
 	}
@@ -1115,8 +1120,8 @@ void party(u64 myIdx)
 	{
 		for (int i = 0; i < 5; i++)
 		{
-			//Log::out << recvPayLoads[0][i] << Log::endl;
-			Log::out << sendPayLoads[0][i] << Log::endl;
+			Log::out << recvPayLoads[0][i] << Log::endl;
+			//Log::out << sendPayLoads[0][i] << Log::endl;
 		}
 	}
 

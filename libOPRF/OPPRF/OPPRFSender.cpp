@@ -88,17 +88,21 @@ namespace osuCrypto
 		gTimer.setTimePoint("init.send.baseStart");
 
 		if (otSend.hasBaseOts() == false ||
-			otRecv.hasBaseOts() == false)
+			(otRecv.hasBaseOts() == false && isOtherDirection))
 		{
 			// first do 128 public key OTs (expensive)
 			std::array<std::array<block, 2>, gOtExtBaseOtCount> baseMsg;
 			NaorPinkas base;
-			base.send(baseMsg, mPrng, chl0, 1);
-
+			base.send(baseMsg, mPrng, chl0, 2);
 
 			// now extend these to enough recv OTs to seed the send Kco and the send Kos ot extension
-			BitVector recvChoice(baseOtCount + gOtExtBaseOtCount); recvChoice.randomize(mPrng);
-			std::vector<block> recvBaseMsg(baseOtCount + gOtExtBaseOtCount);
+			u64 dualBaseOtCount = gOtExtBaseOtCount;
+
+			if (!isOtherDirection) //if it is not dual, number extend OT is 128
+				dualBaseOtCount = 0;
+
+			BitVector recvChoice(baseOtCount + dualBaseOtCount); recvChoice.randomize(mPrng);
+			std::vector<block> recvBaseMsg(baseOtCount + dualBaseOtCount);
 			IknpOtExtReceiver kosRecv;
 			kosRecv.setBaseOts(baseMsg);
 			kosRecv.receive(recvChoice, recvBaseMsg, mPrng, chl0);
@@ -113,29 +117,28 @@ namespace osuCrypto
 
 			otSend.setBaseOts(kcoSendBase, kcoSendBaseChoice);
 
+			if (isOtherDirection) {
+				// now lets extend these recv OTs in the other direction
+				BitVector kosSendBaseChoice;
+				kosSendBaseChoice.copy(recvChoice, baseOtCount, dualBaseOtCount);
+				ArrayView<block> kosSendBase(
+					recvBaseMsg.begin() + baseOtCount,
+					recvBaseMsg.end());
+				IknpOtExtSender kos;
+				kos.setBaseOts(kosSendBase, kosSendBaseChoice);
 
-			// now lets extend these recv OTs in the other direction
-			BitVector kosSendBaseChoice;
-			kosSendBaseChoice.copy(recvChoice, baseOtCount, gOtExtBaseOtCount);
-			ArrayView<block> kosSendBase(
-				recvBaseMsg.begin() + baseOtCount,
-				recvBaseMsg.end());
-			IknpOtExtSender kos;
-			kos.setBaseOts(kosSendBase, kosSendBaseChoice);
+				// these send OTs will be stored here
+				std::vector<std::array<block, 2>> sendBaseMsg(baseOtCount);
+				kos.send(sendBaseMsg, mPrng, chl0);
 
-			// these send OTs will be stored here
-			std::vector<std::array<block, 2>> sendBaseMsg(baseOtCount);
-			kos.send(sendBaseMsg, mPrng, chl0);
-
-			// now set these ~800 OTs as the base of our N choose 1 OTs NcoOtExtReceiver
-			otRecv.setBaseOts(sendBaseMsg);
+				// now set these ~800 OTs as the base of our N choose 1 OTs NcoOtExtReceiver
+				otRecv.setBaseOts(sendBaseMsg);
+			}
 		}
 
 		gTimer.setTimePoint("init.send.extStart");
 
-		mOtSends.resize(chls.size());
-		mOtRecvs.resize(chls.size());
-
+		
 		auto sendRoutine = [&](u64 tIdx, u64 total, NcoOtExtSender& ots, Channel& chl)
 		{
 			auto start = (tIdx     * otCountSend / total) ;
@@ -144,6 +147,7 @@ namespace osuCrypto
 			ots.init(end - start);
 		};
 
+		
 		auto recvOtRountine = [&](u64 tIdx, u64 total, NcoOtExtReceiver& ots, Channel& chl)
 		{
 			auto start = (tIdx     * otCountRecv / total) ;
@@ -153,14 +157,24 @@ namespace osuCrypto
 		};
 
 		u64 numThreads = chls.size() - 1;
-		u64 numSendThreads = numThreads / 2;
-		u64 numRecvThreads = numThreads - numSendThreads;
+		u64 numSendThreads, numRecvThreads;
+
+		if (isOtherDirection) {
+			 numSendThreads = numThreads / 2;
+			 numRecvThreads = numThreads - numSendThreads;
+		}
+		else
+		{
+			numSendThreads = numThreads;
+			numRecvThreads = 0;
+		}
 
 
 		std::vector<std::thread> thrds(numThreads);
 		auto thrdIter = thrds.begin();
 		auto chlIter = chls.begin() + 1;
 
+		mOtSends.resize(chls.size());
 
 		for (u64 i = 0; i < numSendThreads; ++i)
 		{
@@ -173,7 +187,10 @@ namespace osuCrypto
 			});
 			++chlIter;
 		}
+		mOtSends[0] = std::move(otSend.split());
+		sendRoutine(0, numSendThreads + 1, *mOtSends[0], chl0);
 
+		mOtRecvs.resize(chls.size());
 		for (u64 i = 0; i < numRecvThreads; ++i)
 		{
 			mOtRecvs[i] = std::move(otRecv.split());
@@ -185,11 +202,9 @@ namespace osuCrypto
 			});
 			++chlIter;
 		}
+		
 
-		mOtSends[0] = std::move(otSend.split());
-		sendRoutine(0, numSendThreads + 1, *mOtSends[0], chl0);
-
-		if (numRecvThreads == 0)
+		if (numRecvThreads == 0 && isOtherDirection)
 		{
 			mOtRecvs[0] = std::move(otRecv.split());
 
