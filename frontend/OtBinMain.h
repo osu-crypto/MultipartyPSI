@@ -9,6 +9,6 @@
 //void BarkOPRFRecv();
 //void BarkOPRSend();
 void Channel_test();
-void OPPRF2_EmptrySet_Test();
-void OPRFn_Test();
+void OPPRF3_EmptrySet_Test_Main();
+void OPPRFn_EmptrySet_Test_Main();
 //void OPPRFn_EmptrySet_Test();

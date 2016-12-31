@@ -57,13 +57,7 @@ namespace osuCrypto
 
         // check that the number of inputs is as expected.
         if (inputs.size() != mN)
-            throw std::runtime_error(LOCATION);
-
-		u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-
-
-        if (maskSize > sizeof(block))
-            throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
+            throw std::runtime_error(LOCATION);	
 
 
         std::vector<std::thread>  thrds(numThreads);

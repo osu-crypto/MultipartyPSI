@@ -402,7 +402,8 @@ namespace osuCrypto
 
 
 		//TODO: double check
-		u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+	//	u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		u64 maskSize =roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 		//u64 maskSize = 7;
 		if (maskSize > sizeof(block))
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
@@ -626,8 +627,8 @@ namespace osuCrypto
 		// this is the online phase.
 		gTimer.setTimePoint("online.recv.start");
 
-		u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-									 //u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		//u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 		if (maskSize > sizeof(block))
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 

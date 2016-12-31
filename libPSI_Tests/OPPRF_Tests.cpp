@@ -923,16 +923,14 @@ void OPPRF_EmptrySet_hashing_Test_Impl()
 }
 
 std::vector<block> mSet;
-u64 nParties(3);
+u64 nParties(4);
 
-void party(u64 myIdx)
+void party(u64 myIdx, u64 setSize)
 {
-	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128, numThreads = 1;
+	u64  psiSecParam = 40, bitSize = 128, numThreads = 1;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 
 	std::vector<block> set(setSize);
-	std::vector<u8> dummy(nParties);
-	std::vector<u8> revDummy(nParties);
 	std::vector<std::vector<block>> sendPayLoads(nParties), recvPayLoads(nParties);
 
 	for (u64 i = 0; i < setSize; ++i)
@@ -940,7 +938,7 @@ void party(u64 myIdx)
 		set[i] = mSet[i];
 	}
 	PRNG prng1(_mm_set_epi32(4253465, 3434565, 234435, myIdx));
-	set[0]= prng1.get<block>();;
+//	set[0]= prng1.get<block>();;
 	for (u64 idxP = 0; idxP < nParties; ++idxP)
 	{
 		sendPayLoads[idxP].resize(setSize);
@@ -957,7 +955,6 @@ void party(u64 myIdx)
 
 	for (u64 i = 0; i < nParties; ++i)
 	{
-		dummy[i] = myIdx * 10 + i;
 		if (i < myIdx)
 		{
 			u32 port = i * 10 + myIdx;//get the same port; i=1 & pIdx=2 =>port=102
@@ -1088,17 +1085,33 @@ void party(u64 myIdx)
 	//##########################
 	pThrds.clear();
 	pThrds.resize(nParties);
+	u64 nextNeibough = (myIdx + 1) % nParties;
+	u64 prevNeibough = (myIdx - 1 + nParties) % nParties;
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
 	{
 		pThrds[pIdx] = std::thread([&, pIdx]() {
-			if (pIdx < myIdx) {
-				//I am a receiver if other party idx < mine
+			if ((pIdx < myIdx && pIdx!= prevNeibough)) {
+				//I am a receiver if other party idx < mine				
 				recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
-				//	recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+				recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 			}
-			else if (pIdx > myIdx) {
+			else if (pIdx == prevNeibough && myIdx !=0) {
+				recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+			}
+			else if (pIdx == prevNeibough && myIdx == 0) {
 				send[pIdx - myIdx - 1].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
-				//send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+			}
+			else if(pIdx == nextNeibough && myIdx != nParties-1)
+			{
+				send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+			}
+			else if (pIdx == nextNeibough && myIdx == nParties - 1)
+			{
+				recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+			}
+			else if (pIdx > myIdx && pIdx != nextNeibough) {
+				send[pIdx - myIdx - 1].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+				send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 			}
 		});
 	}
@@ -1106,13 +1119,31 @@ void party(u64 myIdx)
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
 		pThrds[pIdx].join();
 
+	//##########################
+	//### online phasing - secretsharing - round
+	//##########################
+
+	if (myIdx == 0)
+	{
+		send[nextNeibough].sendSecretSharing(nextNeibough, bins, sendPayLoads[nextNeibough], chls[nextNeibough]);
+		send[prevNeibough].revSecretSharing(prevNeibough, bins, recvPayLoads[prevNeibough], chls[prevNeibough]);
+
+	}
+	else
+	{
+		recv[prevNeibough].revSecretSharing(prevNeibough, bins, recvPayLoads[prevNeibough], chls[prevNeibough]);
+		//sendPayLoads = recvPayLoads;
+		send[nextNeibough].sendSecretSharing(nextNeibough, bins, sendPayLoads[nextNeibough], chls[nextNeibough]);
+	}
+
+	std::cout << IoStream::lock;
 
 	if (myIdx == 0)
 	{
 		for (int i = 0; i < 5; i++)
 		{
 			Log::out << sendPayLoads[2][i] << Log::endl;
-			//Log::out << recvPayLoads[2][i] << Log::endl;
+			Log::out << recvPayLoads[2][i] << Log::endl;
 		}
 		Log::out << "------------" << Log::endl;
 	}
@@ -1121,9 +1152,10 @@ void party(u64 myIdx)
 		for (int i = 0; i < 5; i++)
 		{
 			Log::out << recvPayLoads[0][i] << Log::endl;
-			//Log::out << sendPayLoads[0][i] << Log::endl;
+			Log::out << sendPayLoads[0][i] << Log::endl;
 		}
 	}
+	std::cout << IoStream::unlock;
 
 
 
@@ -1156,9 +1188,10 @@ void party(u64 myIdx)
 //3. run OPPRF btw P2 and P0 where P2 is sender with the payload received from P1
 //4. P0 compare the received payload and his own secret sharing 'sendPayLoads'. 
 // If it is equal to 0 => intersection.
-void party3(u64 myIdx)
+void party3(u64 myIdx, u64 setSize)
 {
-	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128, numThreads = 1;
+	nParties = 3;
+	u64 psiSecParam = 40, bitSize = 128, numThreads = 1;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 
 	std::vector<block> set(setSize);
@@ -1333,17 +1366,11 @@ void party3(u64 myIdx)
 		recv.revSecretSharing(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
 
 	}
-	if (myIdx == 1)
+	else
 	{
 		recv.revSecretSharing(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
-		sendPayLoads = recvPayLoads;
-		send.sendSecretSharing(nextNeibough, bins, sendPayLoads, chls[nextNeibough]);
-	}
-	if (myIdx == 2)
-	{
-		recv.revSecretSharing(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
-		sendPayLoads = recvPayLoads;
-		send.sendSecretSharing(nextNeibough, bins, sendPayLoads, chls[nextNeibough]);
+		//sendPayLoads = recvPayLoads;
+		send.sendSecretSharing(nextNeibough, bins, recvPayLoads, chls[nextNeibough]);
 	}
 
 	std::cout << IoStream::lock;
@@ -1378,9 +1405,11 @@ void party3(u64 myIdx)
 
 	if (myIdx == 0) {
 		std::vector<u64> mIntersection;
+		u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
 		for (u64 i = 0; i < setSize; ++i)
 		{
-			if (sendPayLoads[i]== recvPayLoads[i])
+		//	if (sendPayLoads[i]== recvPayLoads[i])
+			if (!memcmp((u8*)&sendPayLoads[i], &recvPayLoads[i], maskSize))
 			{
 				mIntersection.push_back(i);
 			}
@@ -1729,7 +1758,7 @@ void OPPRFn_EmptrySet_Test_Impl()
 	{
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 		//	Channel_party_test(pIdx);
-			party(pIdx);
+			party(pIdx, setSize);
 		});
 	}
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
@@ -1740,7 +1769,9 @@ void OPPRFn_EmptrySet_Test_Impl()
 
 void OPPRF3_EmptrySet_Test_Impl()
 {
+	nParties = 3;
 	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128;
+	
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	mSet.resize(setSize);
 	for (u64 i = 0; i < setSize; ++i)
@@ -1752,7 +1783,7 @@ void OPPRF3_EmptrySet_Test_Impl()
 	{
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			//	Channel_party_test(pIdx);
-			party3(pIdx);
+			party3(pIdx, setSize);
 		});
 	}
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)

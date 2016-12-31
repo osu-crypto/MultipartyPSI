@@ -27,7 +27,6 @@ namespace osuCrypto
 
 		std::vector<std::unique_ptr<NcoOtExtSender>> mOtSends;
         std::vector<std::unique_ptr<NcoOtExtReceiver>> mOtRecvs;
-
 		//CuckooHasher1 mCuckooBins;
 		//SimpleHasher1 mSimpleBins;
         PRNG mPrng;
