@@ -27,22 +27,22 @@ namespace osuCrypto
         u64 n,
         u64 statSec,
         u64 inputBitSize,
-        Channel & chl0,
-		NcoOtExtReceiver& ots,
+        Channel & chl0, u64 otCounts,
+		NcoOtExtReceiver& otRecv,
 		NcoOtExtSender& otSend,
-        block seed)
+        block seed, bool isOtherDirection)
     {
-        init(numParties,n, statSec, inputBitSize, { &chl0 }, ots, otSend, seed);
+        init(numParties,n, statSec, inputBitSize, { &chl0 }, otCounts, otRecv, otSend, seed, isOtherDirection);
     }
 
     void OPPRFReceiver::init(u64 numParties,
 			u64 n,
 			u64 statSecParam,
 			u64 inputBitSize,
-			const std::vector<Channel*>& chls,
+			const std::vector<Channel*>& chls, u64 otCounts,
 			NcoOtExtReceiver& otRecv,
 			NcoOtExtSender& otSend,
-			block seed)
+			block seed, bool isOtherDirection)
 	{
 
 		// this is the offline function for doing binning and then performing the OtPsi* between the bins.
@@ -94,9 +94,8 @@ namespace osuCrypto
 	//	mCuckooBins.init(n);
 
 		// figure out how many OTs we need in total.
-		//u64 otCount = mSimpleBins.mBinCount;//+mSimpleBins.mBinCount;
-		u64 otCountSend = 1.5*mN;// mSimpleBins.mBins.size();
-		u64 otCountRecv = 1.5*mN; //mCuckooBins.mBins.size();
+		u64 otCountSend = otCounts;// mSimpleBins.mBins.size();
+		u64 otCountRecv = otCounts; //mCuckooBins.mBins.size();
 
 
 		gTimer.setTimePoint("Init.recv.baseStart");
@@ -113,10 +112,10 @@ namespace osuCrypto
 			base.receive(choices, kosSendBase, prng, chl0, 1);
 
 
-			IknpOtExtSender kosSend;
-			kosSend.setBaseOts(kosSendBase, choices);
+			IknpOtExtSender iknpSend;
+			iknpSend.setBaseOts(kosSendBase, choices);
 			std::vector<std::array<block, 2>> sendBaseMsg(baseOtCount + gOtExtBaseOtCount);
-			kosSend.send(sendBaseMsg, prng, chl0);
+			iknpSend.send(sendBaseMsg, prng, chl0);
 
 
 			// Divide these OT mssages between the Kco and Kos protocols
@@ -129,9 +128,9 @@ namespace osuCrypto
 
 			BitVector recvChoice(baseOtCount); recvChoice.randomize(prng);
 			std::vector<block> kcoSendBase(baseOtCount);
-			IknpOtExtReceiver kos;
-			kos.setBaseOts(kosRecvBase);
-			kos.receive(recvChoice, kcoSendBase, prng, chl0);
+			IknpOtExtReceiver iknp;
+			iknp.setBaseOts(kosRecvBase);
+			iknp.receive(recvChoice, kcoSendBase, prng, chl0);
 
 			// now set these ~800 OTs as the base of our N choose 1 OTs.
 			otSend.setBaseOts(kcoSendBase, recvChoice);
@@ -231,12 +230,12 @@ namespace osuCrypto
 
 
 
-	void OPPRFReceiver::getOPRFkeys(u64 IdxParty, binSet& bins, Channel & chl)
+	void OPPRFReceiver::getOPRFkeys(u64 IdxParty, binSet& bins, Channel & chl, bool isOtherDirectionGetOPRF)
 	{
-		getOPRFkeys( IdxParty, bins,{ &chl });
+		getOPRFkeys( IdxParty, bins,{ &chl }, isOtherDirectionGetOPRF);
 	}
 
-	void OPPRFReceiver::getOPRFkeys(u64 IdxP, binSet& bins, const std::vector<Channel*>& chls)
+	void OPPRFReceiver::getOPRFkeys(u64 IdxP, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF)
 	{
 #if 1
 		// this is the online phase.
@@ -255,8 +254,8 @@ namespace osuCrypto
 
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
-				auto& otRecv = *mOtRecvs[tIdx];
-				auto& otSend = *mOtSends[tIdx];
+				
+				
 				auto& chl = *chls[tIdx];
 				
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.insertDone");
@@ -264,22 +263,18 @@ namespace osuCrypto
 				const u64 stepSize = 16;
 				std::vector<block> ncoInput(bins.mNcoInputBlkSize);
 
-#pragma region compute Recv Bark-OPRF
 #if 1
+#pragma region compute Recv Bark-OPRF
+
 				//####################
 				//#######Recv role
 				//####################
-
+				auto& otRecv = *mOtRecvs[tIdx];
 
 				auto otCountRecv = bins.mCuckooBins.mBins.size();
 				// get the region of the base OTs that this thread should do.
 				auto binStart = tIdx       * otCountRecv / thrds.size();
 				auto binEnd = (tIdx + 1) * otCountRecv / thrds.size();
-
-				//if (!tIdx)
-				//gTimer.setTimePoint("sendInput.PSI");			
-
-				
 
 				for (u64 bIdx = binStart; bIdx < binEnd;)
 				{
@@ -287,7 +282,6 @@ namespace osuCrypto
 
 					for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
 					{
-
 						auto& bin = bins.mCuckooBins.mBins[bIdx];
 
 						if (!bin.isEmpty())
@@ -301,14 +295,9 @@ namespace osuCrypto
 								bIdx,      // input
 								ncoInput,             // input
 								bin.mValOPRF[IdxP]); // output
-
-											   /*if (bIdx < 3 || (bIdx < mN && bIdx > mN-2))
-											   std::cout << "r-" << bIdx << ", " << inputIdx << ": " << valOPRF[inputIdx] << std::endl;*/
 						}
 						else
-						{
 							otRecv.zeroEncode(bIdx);
-						}
 					}
 					otRecv.sendCorrection(chl, currentStepSize);
 				}
@@ -316,86 +305,83 @@ namespace osuCrypto
 				  if (tIdx == 0) gTimer.setTimePoint("online.recv.otRecv.finalOPRF");
 
 
-#endif
+
 #pragma endregion
+#endif
 
 #if 1
 #pragma region compute Send Bark-OPRF				
 				//####################
 				//#######Sender role
 				//####################
+				  if (isOtherDirectionGetOPRF) {
+					  auto& otSend = *mOtSends[tIdx];
+					  auto otCountSend = bins.mSimpleBins.mBins.size();
 
-				auto otCountSend = bins.mSimpleBins.mBins.size();
-
-				 binStart = tIdx       * otCountSend / thrds.size();
-				 binEnd = (tIdx + 1) * otCountSend / thrds.size();
+					  binStart = tIdx       * otCountSend / thrds.size();
+					  binEnd = (tIdx + 1) * otCountSend / thrds.size();
 
 
-				if (tIdx == 0) gTimer.setTimePoint("online.send.OT");
+					  if (tIdx == 0) gTimer.setTimePoint("online.send.OT");
 
-				for (u64 bIdx = binStart; bIdx < binEnd;)
-				{
-					u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
-					otSend.recvCorrection(chl, currentStepSize);
+					  for (u64 bIdx = binStart; bIdx < binEnd;)
+					  {
+						  u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
+						  otSend.recvCorrection(chl, currentStepSize);
 
-					for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
-					{
+						  for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
+						  {
 
-						auto& bin = bins.mSimpleBins.mBins[bIdx];
+							  auto& bin = bins.mSimpleBins.mBins[bIdx];
 
-						if (bin.mIdx.size() > 0)
-						{
-							bin.mValOPRF[IdxP].resize(bin.mIdx.size());
+							  if (bin.mIdx.size() > 0)
+							  {
+								  bin.mValOPRF[IdxP].resize(bin.mIdx.size());
 
-							//std::cout << "s-" << bIdx << ", ";
-							for (u64 i = 0; i < bin.mIdx.size(); ++i)
-							{
+								  //std::cout << "s-" << bIdx << ", ";
+								  for (u64 i = 0; i < bin.mIdx.size(); ++i)
+								  {
 
-								u64 inputIdx = bin.mIdx[i];
+									  u64 inputIdx = bin.mIdx[i];
 
-								for (u64 j = 0; j < mNcoInputBlkSize; ++j)
-								{
-									ncoInput[j] = bins.mNcoInputBuff[j][inputIdx];
-								}
+									  for (u64 j = 0; j < mNcoInputBlkSize; ++j)
+									  {
+										  ncoInput[j] = bins.mNcoInputBuff[j][inputIdx];
+									  }
 
-								//    block sendMask;
+									  otSend.encode(
+										  bIdx, //each bin has 1 OT
+										  ncoInput,
+										  bin.mValOPRF[IdxP][i]);
 
-								otSend.encode(
-									bIdx, //each bin has 1 OT
-									ncoInput,
-									bin.mValOPRF[IdxP][i]);
+								  }
 
-								/*if (bIdx < 3 || (bIdx < mN && bIdx > mN - 2))
-								std::cout << "s-"<<bIdx <<", "<< inputIdx << ": " << sendMask << std::endl;*/
-							}
+								  //#####################
+								  //######Finding bit locations
+								  //#####################
 
-							//#####################
-							//######Finding bit locations
-							//#####################
+							  //	std::cout << bin.mValOPRF[IdxP][0];
 
-						//	std::cout << bin.mValOPRF[IdxP][0];
+								  //diff max bin size for first mSimpleBins.mBinCount and 
+								  // mSimpleBins.mBinStashCount
+								  if (bIdx < bins.mSimpleBins.mBinCount[0])
+									  bin.mBits[IdxP].init(/*bin.mIdx.size(),*/ bins.mSimpleBins.mNumBits[0]);
+								  else
+									  bin.mBits[IdxP].init(/*bin.mIdx.size(),*/ bins.mSimpleBins.mNumBits[1]);
 
-							//diff max bin size for first mSimpleBins.mBinCount and 
-							// mSimpleBins.mBinStashCount
-							if (bIdx < bins.mSimpleBins.mBinCount[0])
-								bin.mBits[IdxP].init(/*bin.mIdx.size(),*/ bins.mSimpleBins.mNumBits[0]);
-							else
-								bin.mBits[IdxP].init(/*bin.mIdx.size(),*/ bins.mSimpleBins.mNumBits[1]);
-
-							bin.mBits[IdxP].getPos1(bin.mValOPRF[IdxP], 128);
-							//bin.mBits[IdxP].getMasks(bin.mValOPRF[IdxP]);
-							//std::cout << ", "
-							//	<< static_cast<int16_t>(bin.mBits[IdxP].mMaps[0]) << std::endl;
-						}
-					}
-				}
-
-				if (tIdx == 0) gTimer.setTimePoint("online.send.otSend.finalOPRF");
-
+								  bin.mBits[IdxP].getPos1(bin.mValOPRF[IdxP], 128);
+								  //bin.mBits[IdxP].getMasks(bin.mValOPRF[IdxP]);
+								  //std::cout << ", "
+								  //	<< static_cast<int16_t>(bin.mBits[IdxP].mMaps[0]) << std::endl;
+							  }
+						  }
+					  }
+					  if (tIdx == 0) gTimer.setTimePoint("online.send.otSend.finalOPRF");
+					  otSend.check(chl);
+				  }
 #pragma endregion
 #endif
-				otRecv.check(chl);
-				otSend.check(chl);
+				otRecv.check(chl);				
 			});
 		}
 
@@ -404,7 +390,6 @@ namespace osuCrypto
 			thrds[tIdx].join();
 
 		gTimer.setTimePoint("online.recv.exit");
-
 
 		//std::cout << gTimer;
 #endif

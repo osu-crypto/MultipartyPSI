@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
 #include "OPPRF_Tests.h"
-#include "nPSI.h"
+//#include "nPSI.h"
 #include "Common.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -23,11 +23,11 @@ namespace WeGarbleTests
             InitDebugPrinting();
 			OPPRF_EmptrySet_Test_Impl();
         }
-		TEST_METHOD(nOPPRF_EmptrySet_Test)
+		/*TEST_METHOD(nOPPRF_EmptrySet_Test)
 		{
 			InitDebugPrinting();
 			nOPPRF_EmptrySet_Test_Impl();
-		}
+		}*/
 
 		TEST_METHOD(OPPRFn_EmptrySet_Test)
 		{
