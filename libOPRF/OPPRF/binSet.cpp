@@ -143,18 +143,19 @@ namespace osuCrypto
 				else
 					insertProm.set_value();
 
-				CuckooHasher1::Workspace stashW(mCuckooBins.mStashIdxs.size());
-				MatrixView<u64> stashHashes(mCuckooBins.mStashIdxs.size(), mCuckooBins.mParams.mNumHashes[1]);
+				if (tIdx == 0) {
+					CuckooHasher1::Workspace stashW(mCuckooBins.mStashIdxs.size());
+					MatrixView<u64> stashHashes(mCuckooBins.mStashIdxs.size(), mCuckooBins.mParams.mNumHashes[1]);
 
-				for (u64 j = 0; j < mCuckooBins.mStashIdxs.size(); ++j)
-				{
-					for (u64 k = 0; k <mCuckooBins.mParams.mNumHashes[1]; ++k)
+					for (u64 j = 0; j < mCuckooBins.mStashIdxs.size(); ++j)
 					{
-						stashHashes[j][k] = *(u64*)&mNcoInputBuff[k][mCuckooBins.mStashIdxs[j]];
+						for (u64 k = 0; k < mCuckooBins.mParams.mNumHashes[1]; ++k)
+						{
+							stashHashes[j][k] = *(u64*)&mNcoInputBuff[k][mCuckooBins.mStashIdxs[j]];
+						}
 					}
+					mCuckooBins.insertStashBatch(mCuckooBins.mStashIdxs, stashHashes, stashW);
 				}
-				mCuckooBins.insertStashBatch(mCuckooBins.mStashIdxs, stashHashes, stashW);
-
 				if (--insertStashRemaining)
 					insertStashFuture.get();
 				else
