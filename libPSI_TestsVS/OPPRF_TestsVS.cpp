@@ -12,17 +12,17 @@ namespace WeGarbleTests
     {
     public:
 
-        TEST_METHOD(OPPRF_CuckooHasher_Test)
-        {
-            InitDebugPrinting();
-			//OPPRF_CuckooHasher_Test_Impl();
-        }
+   //     TEST_METHOD(OPPRF_CuckooHasher_Test)
+   //     {
+   //         InitDebugPrinting();
+			////OPPRF_CuckooHasher_Test_Impl();
+   //     }
 
-        TEST_METHOD(OPPRF_EmptrySet_Test)
+       /* TEST_METHOD(OPPRF_EmptrySet_Test)
         {
             InitDebugPrinting();
 			OPPRF_EmptrySet_Test_Impl();
-        }
+        }*/
 		/*TEST_METHOD(nOPPRF_EmptrySet_Test)
 		{
 			InitDebugPrinting();
@@ -49,41 +49,55 @@ namespace WeGarbleTests
 
  
 
-        TEST_METHOD(Bit_Position_Test)
+       /* TEST_METHOD(Bit_Position_Test)
         {
             InitDebugPrinting();
 			Bit_Position_Test_Impl();
-        }
+        }*/
 
 
-		TEST_METHOD(Bit_Position_Rec_Test)
+		/*TEST_METHOD(Bit_Position_Rec_Test)
 		{
 			InitDebugPrinting();
 			Bit_Position_Recursive_Test_Impl();
-		}
-		TEST_METHOD(OPPRF_EmptrySet_hashing_Test)
+		}*/
+		/*TEST_METHOD(OPPRF_EmptrySet_hashing_Test)
 		{
 			InitDebugPrinting();
 			OPPRF_EmptrySet_hashing_Test_Impl();
-		}
+		}*/
 		TEST_METHOD(OPPRF3_EmptrySet_Test)
 		{
 			InitDebugPrinting();
 			OPPRF3_EmptrySet_Test_Impl();
 		}
 
-		TEST_METHOD(Hashing2Bins_Test)
+		/*TEST_METHOD(Hashing2Bins_Test)
 		{
 			InitDebugPrinting();
 			hashing2Bins_Test_Impl();
+		}*/
+
+		TEST_METHOD(findScaleNumBins_Test)
+		{
+			InitDebugPrinting();
+			findScaleNumBins_Test_Impl();
 		}
-
-
-		TEST_METHOD(Channel_Test)
+		TEST_METHOD(findMaxBinSize_Test)
+		{
+			InitDebugPrinting();
+			findMaxBinSize_Test_Impl();
+		}
+		TEST_METHOD(Bit_Position_Random_Test)
+		{
+			InitDebugPrinting();
+			Bit_Position_Random_Test_Impl();
+		}
+		/*TEST_METHOD(Channel_Test)
 		{
 			InitDebugPrinting();
 			Channel_Test_Impl();
-		}
+		}*/
 
 
     };

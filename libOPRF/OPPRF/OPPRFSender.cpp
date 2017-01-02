@@ -225,6 +225,109 @@ namespace osuCrypto
 		getOPRFKeys(IdxParty, bins,{ &chl }, isOtherDirectionGetOPRF);
 	}
 
+	void Bit_Position_Random_Test_Impl11()
+	{
+		u64 power = 20;
+		u64 setSize = 1 << power;
+
+		PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+
+
+		SimpleHasher1 mSimpleBins;
+		mSimpleBins.init(setSize);
+		std::vector<u64> tempIdxBuff(setSize);
+		MatrixView<u64> hashes(setSize, mSimpleBins.mNumHashes[0]);
+
+		for (u64 j = 0; j < setSize; ++j)
+		{
+			tempIdxBuff[j] = j;
+			for (u64 k = 0; k <mSimpleBins.mNumHashes[0]; ++k)
+			{
+				block a = prng.get<block>();
+				hashes[j][k] = *(u64*)&a;
+			}
+		}
+
+		mSimpleBins.insertBatch(tempIdxBuff, hashes);
+
+		for (u64 bIdx = 0; bIdx < mSimpleBins.mBins.size(); ++bIdx)
+		{
+			auto& bin = mSimpleBins.mBins[bIdx];
+			if (bin.mIdx.size() > 0)
+			{
+				bin.mValOPRF.resize(1);
+				bin.mBits.resize(1);
+				bin.mValOPRF[0].resize(bin.mIdx.size());
+
+				for (u64 i = 0; i < bin.mIdx.size(); ++i)
+				{
+					bin.mValOPRF[0][i] = prng.get<block>();
+				}
+			}
+		}
+
+		Timer mTimer;
+		double mTime = 0;
+
+		auto start = mTimer.setTimePoint("getPos1.start");
+
+		for (u64 bIdx = 0; bIdx < mSimpleBins.mBinCount[0]; ++bIdx)
+		{
+			auto& bin = mSimpleBins.mBins[bIdx];
+			if (bin.mIdx.size() > 0)
+			{
+				bin.mBits[0].init(mSimpleBins.mNumBits[0]);
+				bin.mBits[0].getPos1(bin.mValOPRF[0], 128);
+			}
+
+		}
+		auto mid = mTimer.setTimePoint("getPos1.mid");
+
+		for (u64 bIdx = 0; bIdx < mSimpleBins.mBinCount[1]; ++bIdx)
+		{
+			auto& bin = mSimpleBins.mBins[mSimpleBins.mBinCount[0] + bIdx];
+			if (bin.mIdx.size() > 0)
+			{
+				bin.mBits[0].init(mSimpleBins.mNumBits[1]);
+				bin.mBits[0].getPos1(bin.mValOPRF[0], 128);
+			}
+		}
+
+		auto end = mTimer.setTimePoint("getPos1.done");
+		double time1 = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
+		double time2 = std::chrono::duration_cast<std::chrono::milliseconds>(end - mid).count();
+		double time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+		Log::out << "time1= " << time1 << "\n";
+		Log::out << "time2= " << time2 << "\n";
+		Log::out << "total= " << time << "\n";
+
+		//mSimpleBins.print(0, true, true, true, true);
+		/*BitPosition b;
+
+		std::set<int> rs;
+		b.init(4);
+		Timer mTimer;
+		auto start = mTimer.setTimePoint("getPos1.start");
+		b.getPos1(testSet, 128);
+		auto end = mTimer.setTimePoint("getPos1.done");
+		double time= std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+		Log::out << "time= " << time << "\n";
+
+		Log::out << "    getPos= ";
+		for (u64 j = 0; j < b.mPos.size(); ++j)
+		{
+		Log::out << static_cast<int16_t>(b.mPos[j]) << " ";
+		}
+		Log::out << Log::endl;
+
+		for (u64 j = 0; j < b.mMaps.size(); ++j)
+		{
+		Log::out << testSet[j] << " " << static_cast<int16_t>(b.mMaps[j]) << " " << Log::endl;
+		}*/
+		Log::out << Log::endl;
+
+	}
+
 	void  OPPRFSender::getOPRFKeys(u64 IdxP, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF)
 	{
 		
@@ -232,6 +335,7 @@ namespace osuCrypto
 		std::vector<std::thread>  thrds(1);
 
 		gTimer.setTimePoint("online.send.spaw");
+
 
 		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
 		{
@@ -247,6 +351,7 @@ namespace osuCrypto
 
 				if (tIdx == 0) gTimer.setTimePoint("online.send.insert");
 				const u64 stepSize = 16;
+				
 				std::vector<block> ncoInput(bins.mNcoInputBlkSize);
 
 #if 1
@@ -275,7 +380,6 @@ namespace osuCrypto
 						if (bin.mIdx.size() > 0)
 						{
 							bin.mValOPRF[IdxP].resize(bin.mIdx.size());
-
 						//std::cout << "s-" << bIdx << ", ";
 						for (u64 i = 0; i < bin.mIdx.size(); ++i)
 						{
@@ -293,7 +397,7 @@ namespace osuCrypto
 								bIdx, //each bin has 1 OT
 								ncoInput,
 								bin.mValOPRF[IdxP][i]);
-
+								//mmOPRF[bIdx][i]);
 							/*if (bIdx < 3 || (bIdx < mN && bIdx > mN - 2))
 							std::cout << "s-"<<bIdx <<", "<< inputIdx << ": " << sendMask << std::endl;*/
 						}
@@ -314,14 +418,16 @@ namespace osuCrypto
 						auto start = mTimer.setTimePoint("getPos1.start");
 						bin.mBits[IdxP].getPos1(bin.mValOPRF[IdxP], 128);
 						auto end = mTimer.setTimePoint("getPos1.done");
+						
 						mTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-
+					
 						//bin.mBits[IdxP].getMasks(bin.mValOPRF[IdxP]);
 						//std::cout << ", "
 						//	<< static_cast<int16_t>(bin.mBits[IdxP].mMaps[0]) << std::endl;
 					}
 					}
 				}
+		
 
 				if (tIdx == 0) gTimer.setTimePoint("online.send.otSend.finalOPRF");
 				std::cout << "getPos1 time: " << mTime/pow(10,6) << std::endl;

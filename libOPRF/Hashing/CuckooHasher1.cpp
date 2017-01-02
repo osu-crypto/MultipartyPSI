@@ -21,7 +21,7 @@ namespace osuCrypto
     CuckooParam1 k2n24s40CuckooParam1
 	{ {1.2,0.3 },{3,3},{32,32}};
     CuckooParam1 k2n20s40CuckooParam1
-	{ { 1.2,0.3 },{ 3,2 },{ 32,32 } };
+	{ { 1.15,0.17 },{ 3,2 },{ 32,64 } };
     CuckooParam1 k2n16s40CuckooParam1
 	{ { 1.2,0.3 },{ 3,3 },{ 32,64 } };
     CuckooParam1 k2n12s40CuckooParam1
@@ -313,7 +313,10 @@ namespace osuCrypto
 	{
 
 		u64 width = mStashHashesView.size()[1];
+
 		u64 remaining = inputIdxs.size();
+		std::cout << "inputStashIdxs.size(): " << inputIdxs.size() << std::endl;
+
 		u64 tryCount = 0;
 
 #ifndef  NDEBUG
@@ -341,7 +344,7 @@ namespace osuCrypto
 			for (u64 i = 0; i < remaining; ++i)
 			{
 				//w.curAddrs[i] = mHashesView[inputIdxs[i]][w.curHashIdxs[i]] % mBins.size();
-				w.curAddrs[i] = (mStashHashesView.data() + inputIdxs[i] * width)[w.curHashIdxs[i]] % mBinCount[1]+ mBinCount[0];
+				w.curAddrs[i] = (mStashHashesView.data() + inputIdxs[i] * width)[w.curHashIdxs[i]] % mBinCount[1] + mBinCount[0];
 			}
 
 			// same thing here, this fetch is slow. Do them in parallel.
@@ -397,8 +400,11 @@ namespace osuCrypto
 			remaining = putIdx;
 		}
 
-		if(remaining>0)
+		if (remaining > 0)
+		{
+			//std::cout << "remaining: " << remaining << std::endl;
 			throw std::runtime_error("" LOCATION);
+		}
 	}
 
 

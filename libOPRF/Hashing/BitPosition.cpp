@@ -221,12 +221,41 @@ namespace osuCrypto
 			{
 				u64 rand = std::rand() % length;
 				if (TestBitN(diff, rand))
-					if (std::find(mPos.begin(), mPos.end(), rand) == mPos.end())
 					{
 						mPos.push_back(rand);
 						isFind = true;
 					}
 			}
+			getRandPos();
+			getMasks(codewords);
+		}
+		if (codewords.size() == 3) {
+			block diff = codewords[0] ^ codewords[1];
+			while (!isFind)
+			{
+				u64 rand = std::rand() % length;
+				if (TestBitN(diff, rand))
+				{
+					mPos.push_back(rand);
+					isFind = true;
+				}
+			} //find 1st position
+
+			isFind = false; //start to find 2nd position
+			block diff2 = codewords[0] ^ codewords[2];
+
+			while (!isFind)
+			{
+				u64 rand = std::rand() % length;
+				if (TestBitN(diff, rand)==false && TestBitN(diff2, rand)==true)
+				{
+					if (std::find(mPos.begin(), mPos.end(), rand) == mPos.end())
+					{
+						mPos.push_back(rand);
+						isFind = true;
+					}
+				}
+			} //find 2nd position
 			getRandPos();
 			getMasks(codewords);
 		}

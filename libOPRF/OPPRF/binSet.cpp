@@ -45,10 +45,6 @@ namespace osuCrypto
 		mCuckooBins.init(mN);
     }
 
-  
-
-	
-
 	void binSet::hashing2Bins(std::vector<block>& inputs, int numThreads)
     {
 #if 1
@@ -101,7 +97,6 @@ namespace osuCrypto
                 auto endIdx = (tIdx + 1) * mN / thrds.size();
 #pragma region Hashing
 
-
                 std::vector<AES> ncoInputHasher(mNcoInputBlkSize);
                 for (u64 i = 0; i < ncoInputHasher.size(); ++i)
                     ncoInputHasher[i].setKey(_mm_set1_epi64x(i) ^ mHashingSeed);
@@ -134,6 +129,7 @@ namespace osuCrypto
 					}
 
 					mSimpleBins.insertBatch(tempIdxBuff, hashes);
+
 					mCuckooBins.insertBatch(tempIdxBuff, hashes, w);
 				
                 }
@@ -253,5 +249,4 @@ namespace osuCrypto
     }
 
 	
-
 }

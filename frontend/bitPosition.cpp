@@ -166,15 +166,8 @@ std::vector<std::vector<std::vector<Channel*>>> chls(numParties);
 std::vector<std::vector<u8>> revDummy(numParties);
 std::vector<std::vector<u8>> dummy(numParties);
 
-void party(int idxP)
-{
-	// do stuff...
-}
 
-void bar(int x)
-{
-	// do stuff...
-}
+
 
 void Channel_Test() {
 	std::string name("psi");

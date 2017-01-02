@@ -109,17 +109,17 @@ namespace osuCrypto
 	{	
 		mN = n;
 		mMaxBinSize[0] = 32;
-		mMaxBinSize[1] = 32;
+		mMaxBinSize[1] = 64;
 
-		mBinCount[0] = 1.2*n;
-		mBinCount[1] = 0.3*n;
+		mBinCount[0] = 1.15*n;
+		mBinCount[1] = 0.17*n;
 
 		mMtx.reset(new std::mutex[mBinCount[0] + mBinCount[1]]);
 		mBins.resize(mBinCount[1] + mBinCount[0]);
 		mNumHashes[0] = 3;
 		mNumHashes[1] = 2;
 		mNumBits[0] = 5;
-		mNumBits[1] = 5;
+		mNumBits[1] = 6;
 
 	//	auto log2n = log2ceil(n);
 
@@ -186,17 +186,22 @@ namespace osuCrypto
 				//	std::cout << "----"<<inputIdxs[j] <<"-" << addr << std::endl;
 
 				std::lock_guard<std::mutex> lock(mMtx[addr]);
-				if (std::find(mBins[addr].mIdx.begin(), mBins[addr].mIdx.end(), inputIdxs[j]) == mBins[addr].mIdx.end()) {
-					mBins[addr].mIdx.emplace_back(inputIdxs[j]);
+				if (std::find(mBins[addr].mIdx.begin(), mBins[addr].mIdx.end(), inputIdxs[j]) 
+					== mBins[addr].mIdx.end()) {
+					{	
+							mBins[addr].mIdx.emplace_back(inputIdxs[j]);
 					//		std::cout << "1----"<<inputIdxs[j] <<"-" << addr << std::endl;
+					}
 				}
 			}
 
 			for (u64 k = 0; k < mNumHashes[1]; ++k)
 			{
 				u64 addrStash = *(u64*)&hashs[j][k] % mBinCount[1] + mBinCount[0];
+
 				std::lock_guard<std::mutex> lock(mMtx[addrStash]);
-				if (std::find(mBins[addrStash].mIdx.begin(), mBins[addrStash].mIdx.end(), inputIdxs[j]) == mBins[addrStash].mIdx.end()) {
+				if (std::find(mBins[addrStash].mIdx.begin(), mBins[addrStash].mIdx.end(), inputIdxs[j])
+					== mBins[addrStash].mIdx.end()) {				
 					mBins[addrStash].mIdx.emplace_back(inputIdxs[j]);
 					//	std::cout << "2----" << inputIdxs[j] << "-" << addrStash << std::endl;
 

@@ -106,6 +106,58 @@ void Bit_Position_Test_Impl()
 #endif
 }
 
+double maxprob1(u64 balls, u64 bins, u64 k)
+{
+	return std::log(bins * std::pow(balls * exp(1) / (bins * k), k)) / std::log(2);
+}
+u64 findMaxBinSize(u64 n, u64 numBins, u64 numHash=2)
+{
+	u64 balls = numHash*n;
+	u64 maxBin;
+	for (maxBin = 15; maxBin < 64; maxBin++)
+	{
+		// finds the min number of bins needed to get max occ. to be maxBin
+		if (-maxprob1(balls, numBins, maxBin) < 40)
+		{
+			// maxBins is too small, skip it.
+			continue;
+		}
+		else
+			return maxBin;
+	}
+}
+double findScaleNumBins(u64 n, u64 maxBin, u64 numHash = 2)
+{
+	u64 balls = numHash*n;
+	double scale;
+	for (scale = 0.01; scale < 1; scale+= 0.01)
+	{
+		// finds the min number of bins needed to get max occ. to be maxBin
+		if (-maxprob1(balls, scale*n, maxBin) < 40)
+		{
+			// maxBins is too small, skip it.
+			continue;
+		}
+		else
+			return scale;
+	}
+}
+void findScaleNumBins_Test_Impl()
+{
+	u64 n = 1 << 12;
+	u64 maxBin = 63;
+
+	double scaleNumBins = findScaleNumBins(n, maxBin);
+	std::cout << scaleNumBins << std::endl;
+}
+void findMaxBinSize_Test_Impl()
+{
+	u64 n = 1 << 20;
+	u64 numBins = 0.17*n;
+	u64 maxBin = findMaxBinSize(n, numBins);
+	std::cout << maxBin << std::endl;
+}
+
 void hashing2Bins_Test_Impl()
 {
 	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128, numParties = 2;
@@ -213,6 +265,109 @@ void Bit_Position_Recursive_Test_Impl()
 	{
 		Log::out << testSet[j] << " " << static_cast<int16_t>(b.mMaps[j]) << " " << Log::endl;
 	}
+	Log::out << Log::endl;
+
+}
+
+void Bit_Position_Random_Test_Impl()
+{
+	u64 power = 5;
+	u64 setSize =  1<< power;
+
+	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));	
+	
+
+	SimpleHasher1 mSimpleBins;
+	mSimpleBins.init(setSize);
+	std::vector<u64> tempIdxBuff(setSize);
+	MatrixView<u64> hashes(setSize, mSimpleBins.mNumHashes[0]);
+
+	for (u64 j = 0; j < setSize; ++j)
+	{
+		tempIdxBuff[j] = j;
+		for (u64 k = 0; k <mSimpleBins.mNumHashes[0]; ++k)
+		{
+			block a = prng.get<block>();
+			hashes[j][k] = *(u64*)&a;
+		}
+	}
+
+	mSimpleBins.insertBatch(tempIdxBuff, hashes);
+
+	for (u64 bIdx = 0; bIdx < mSimpleBins.mBins.size(); ++bIdx)
+	{
+		auto& bin = mSimpleBins.mBins[bIdx];
+		if (bin.mIdx.size() > 0)
+		{
+			bin.mValOPRF.resize(1);
+			bin.mBits.resize(1);
+			bin.mValOPRF[0].resize(bin.mIdx.size());
+
+			for (u64 i = 0; i < bin.mIdx.size(); ++i)
+			{
+				bin.mValOPRF[0][i] = prng.get<block>();
+			}
+		}
+	}
+
+	Timer mTimer;
+	double mTime = 0;
+
+	auto start = mTimer.setTimePoint("getPos1.start");
+
+	for (u64 bIdx = 0; bIdx < mSimpleBins.mBinCount[0]; ++bIdx)
+	{
+		auto& bin = mSimpleBins.mBins[bIdx];
+		if (bin.mIdx.size() > 0)
+		{			
+			bin.mBits[0].init(mSimpleBins.mNumBits[0]);
+			bin.mBits[0].getPos1(bin.mValOPRF[0], 128);
+		}
+
+	}
+	auto mid = mTimer.setTimePoint("getPos1.mid");
+
+	for (u64 bIdx = 0; bIdx < mSimpleBins.mBinCount[1]; ++bIdx)
+	{
+		auto& bin = mSimpleBins.mBins[mSimpleBins.mBinCount[0]+bIdx];
+		if (bin.mIdx.size() > 0)
+		{
+			bin.mBits[0].init(mSimpleBins.mNumBits[1]);
+			bin.mBits[0].getPos1(bin.mValOPRF[0], 128);
+		}
+	}
+
+	auto end = mTimer.setTimePoint("getPos1.done");
+	double time1 = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
+	double time2 = std::chrono::duration_cast<std::chrono::milliseconds>(end - mid).count();
+	double time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	Log::out << "time1= " << time1 << "\n";
+	Log::out << "time2= " << time2 << "\n";
+	Log::out << "total= " << time << "\n";
+
+	mSimpleBins.print(0, true, true, true, true);
+	/*BitPosition b;
+
+	std::set<int> rs;
+	b.init(4);
+	Timer mTimer;
+	auto start = mTimer.setTimePoint("getPos1.start");
+	b.getPos1(testSet, 128);
+	auto end = mTimer.setTimePoint("getPos1.done");
+	double time= std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	Log::out << "time= " << time << "\n";
+
+	Log::out << "    getPos= ";
+	for (u64 j = 0; j < b.mPos.size(); ++j)
+	{
+		Log::out << static_cast<int16_t>(b.mPos[j]) << " ";
+	}
+	Log::out << Log::endl;
+
+	for (u64 j = 0; j < b.mMaps.size(); ++j)
+	{
+		Log::out << testSet[j] << " " << static_cast<int16_t>(b.mMaps[j]) << " " << Log::endl;
+	}*/
 	Log::out << Log::endl;
 
 }

@@ -269,6 +269,7 @@ namespace osuCrypto
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.insertDone");
 
 				const u64 stepSize = 16;
+
 				std::vector<block> ncoInput(bins.mNcoInputBlkSize);
 
 #if 1

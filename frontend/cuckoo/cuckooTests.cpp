@@ -5,10 +5,10 @@ using namespace osuCrypto;
 #include "Hashing/CuckooHasher1.h"
 #include <fstream>
 
-#define powNs  { 8/*,24 */}
-#define powTrials {10,20,30/*,20*/}
+#define powNs  { 16}
+#define powTrials {20/*,20*/}
 //#define ee {1.1,1.2,1.5,2.0}
-#define ee {1.1/*, 1.14, 1.15,1.2*/}
+#define ee {1.0, 1.05, 1.1,1.12,1.13,1.14,1.15,1.16,1.17,1.2}
 
 //myCuckooTest_bin
 #define Ns  { /*8,12,16,*/256/*,24 */}
@@ -17,16 +17,16 @@ using namespace osuCrypto;
 
 void myCuckooTest_stash()
 {
-	for (auto powN : powNs)
+	for (auto powTrial : powTrials)
 	{
-		for (auto powTrial : powTrials)
-		{
-			for (auto e : ee)
-			{
+	for (auto e : ee)
+	{
+	for (auto powN : powNs)	{	
+			
 				u64 n = 1 << powN;
 				u64 h = 3;
 				u64 trials = 1 << powTrial;
-				u64 numThrds = 1;
+				u64 numThrds = 64;
 				std::vector<u64> maxStashSize(numThrds);
 
 				auto routine = [trials, &maxStashSize, n, h, e, numThrds](u64 tIdx)
@@ -64,11 +64,12 @@ void myCuckooTest_stash()
 
 						c.insertBatch(idxs, hashes, ws);
 						u64 stashSize = c.stashUtilization();
-						c.print();
-						if (maxStashSize[tIdx] < stashSize)
+						//c.print();
+						if (maxStashSize[tIdx] < stashSize && tIdx==0)
+						{
 							maxStashSize[tIdx] = stashSize;
-
-						//	std::cout << "stashSize: " << i << "  " << stashSize << std::endl;
+						//	std::cout << "stashSize: " << i << "  " << maxStashSize[tIdx] << std::endl;
+						}
 					}
 
 				};

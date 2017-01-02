@@ -30,6 +30,10 @@ namespace osuCrypto
 		Timer mTimer;
 		double mTime=0;
 
+		//std::vector<std::vector<block>> mmOPRF; //mValOPRF[bIdx][Idx]
+		//std::vector<BitPosition> mmBits;//mBits[bIdx]
+
+
         std::vector<std::unique_ptr<NcoOtExtSender>> mOtSends;
 		std::vector<std::unique_ptr<NcoOtExtReceiver>> mOtRecvs;
 		//std::vector<std::vector<block>> mNcoInputBuff;
