@@ -1101,6 +1101,29 @@ void party(u64 myIdx, u64 setSize)
 		for (u64 i = 0; i < setSize; ++i)
 			sendPayLoads[idxP][i] = prng.get<block>();
 	}
+	u64 nextNeighbor = (myIdx + 1) % nParties;
+	u64 prevNeighbor = (myIdx - 1 + nParties) % nParties;
+	//sum share of other party =0 => compute the share to his neighbor = sum of other shares
+	if (myIdx != 0) {
+		for (u64 i = 0; i < setSize; ++i)
+		{
+			sendPayLoads[nextNeighbor][i] = ZeroBlock;
+			for (u64 idxP = 0; idxP < nParties, idxP != myIdx && idxP != nextNeighbor; ++idxP)
+			{
+				sendPayLoads[nextNeighbor][i] = sendPayLoads[nextNeighbor][i] ^ sendPayLoads[idxP][i];
+			}
+		}
+	}
+	else
+		for (u64 i = 0; i < setSize; ++i)
+		{
+			sendPayLoads[myIdx][i] = ZeroBlock;
+			for (u64 idxP = 0; idxP < nParties && idxP != myIdx; ++idxP)
+			{
+				sendPayLoads[myIdx][i] = sendPayLoads[myIdx][i] ^ sendPayLoads[idxP][i];
+			}
+		}
+
 
 	std::string name("psi");
 	BtIOService ios(0);
@@ -1149,7 +1172,8 @@ void party(u64 myIdx, u64 setSize)
 	//##########################
 	//### Offline Phasing
 	//##########################
-
+	Timer timer;
+	auto start = timer.setTimePoint("start");
 	bins.init(myIdx, nParties, setSize, psiSecParam);
 	u64 otCountSend = bins.mSimpleBins.mBins.size();
 	u64 otCountRecv = bins.mCuckooBins.mBins.size();
@@ -1170,6 +1194,7 @@ void party(u64 myIdx, u64 setSize)
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
 		pThrds[pIdx].join();
 
+	auto initDone = timer.setTimePoint("initDone");
 
 	std::cout << IoStream::lock;
 	if (myIdx == 0)
@@ -1198,7 +1223,7 @@ void party(u64 myIdx, u64 setSize)
 	bins.hashing2Bins(set, nParties);
 	//bins.mSimpleBins.print(myIdx, true, false, false, false);
 	//bins.mCuckooBins.print(myIdx, true, false, false);
-
+	auto hashingDone = timer.setTimePoint("hashingDone");
 	//##########################
 	//### Online Phasing - compute OPRF
 	//##########################
@@ -1233,32 +1258,31 @@ void party(u64 myIdx, u64 setSize)
 	//	bins.mCuckooBins.print(0, true, true, false);
 	//}
 
-	
+	auto getOPRFDone = timer.setTimePoint("getOPRFDone");
 
 	//##########################
 	//### online phasing - secretsharing
 	//##########################
 	pThrds.clear();
 	pThrds.resize(nParties);
-	u64 nextNeibough = (myIdx + 1) % nParties;
-	u64 prevNeibough = (myIdx - 1 + nParties) % nParties;
+
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
 	{
 		pThrds[pIdx] = std::thread([&, pIdx]() {
-			if ((pIdx < myIdx && pIdx!= prevNeibough)) {
+			if ((pIdx < myIdx && pIdx!= prevNeighbor)) {
 				//I am a receiver if other party idx < mine				
 				recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 				recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 			}
-			else if (pIdx > myIdx && pIdx != nextNeibough) {
+			else if (pIdx > myIdx && pIdx != nextNeighbor) {
 				send[pIdx - myIdx - 1].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 				send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 			}
 
-			else if (pIdx == prevNeibough && myIdx !=0) {
+			else if (pIdx == prevNeighbor && myIdx !=0) {
 				recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 			}
-			else if (pIdx == nextNeibough && myIdx != nParties - 1)
+			else if (pIdx == nextNeighbor && myIdx != nParties - 1)
 			{
 				send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 			}
@@ -1278,28 +1302,61 @@ void party(u64 myIdx, u64 setSize)
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
 		pThrds[pIdx].join();
 
+	auto getSSDone2Dir = timer.setTimePoint("getSSDone2Dir");
+
 	//##########################
 	//### online phasing - secretsharing - round
 	//##########################
 
 	if (myIdx == 0)
 	{
-		send[nextNeibough].sendSecretSharing(nextNeibough, bins, sendPayLoads[nextNeibough], chls[nextNeibough]);
-		send[nextNeibough - myIdx - 1].revSecretSharing(prevNeibough, bins, recvPayLoads[prevNeibough], chls[prevNeibough]);
+		// Xor the received shares
+			for (u64 i = 0; i < setSize; ++i)
+			{
+				for (u64 idxP = 0; idxP < nParties && idxP != myIdx && idxP != prevNeighbor; ++idxP)
+				{
+					sendPayLoads[nextNeighbor][i] = sendPayLoads[nextNeighbor][i] ^ recvPayLoads[idxP][i];
+				}
+			}
+
+		send[nextNeighbor].sendSecretSharing(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
+		send[nextNeighbor - myIdx - 1].revSecretSharing(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
 
 	}
 	else if(myIdx == nParties - 1)
 	{
-			recv[prevNeibough].revSecretSharing(prevNeibough, bins, recvPayLoads[prevNeibough], chls[prevNeibough]);
-		recv[nextNeibough].sendSecretSharing(nextNeibough, bins, sendPayLoads[nextNeibough], chls[nextNeibough]);
+			recv[prevNeighbor].revSecretSharing(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
+		
+			//Xor the received shares 	
+			for (u64 i = 0; i < setSize; ++i)
+			{
+					sendPayLoads[nextNeighbor][i] = sendPayLoads[nextNeighbor][i] ^ recvPayLoads[prevNeighbor][i];
+				for (u64 idxP = 0; idxP < nParties && idxP != myIdx && idxP != prevNeighbor; ++idxP)
+				{
+					sendPayLoads[nextNeighbor][i] = sendPayLoads[nextNeighbor][i] ^ recvPayLoads[idxP][i];
+				}
+			}
+			
+			recv[nextNeighbor].sendSecretSharing(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
 
 	}
 	else
 	{
-	recv[prevNeibough].revSecretSharing(prevNeibough, bins, recvPayLoads[prevNeibough], chls[prevNeibough]);
-	//	sendPayLoads = recvPayLoads;
-	send[nextNeibough - myIdx - 1].sendSecretSharing(nextNeibough, bins, sendPayLoads[nextNeibough], chls[nextNeibough]);
+	recv[prevNeighbor].revSecretSharing(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
+	//Xor the received shares 	
+	for (u64 i = 0; i < setSize; ++i)
+	{
+		sendPayLoads[nextNeighbor][i] = sendPayLoads[nextNeighbor][i] ^ recvPayLoads[prevNeighbor][i];
+		for (u64 idxP = 0; idxP < nParties && idxP != myIdx && idxP != prevNeighbor; ++idxP)
+		{
+			sendPayLoads[nextNeighbor][i] = sendPayLoads[nextNeighbor][i] ^ recvPayLoads[idxP][i];
+		}
 	}
+	send[nextNeighbor - myIdx - 1].sendSecretSharing(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
+	}
+
+	auto getSSDoneRound = timer.setTimePoint("getSSDoneRound");
+
 
 	std::cout << IoStream::lock;
 
@@ -1331,12 +1388,40 @@ void party(u64 myIdx, u64 setSize)
 		u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
 		for (u64 i = 0; i < setSize; ++i)
 		{
-			//if (!memcmp((u8*)&sendPayLoads[i], &recvPayLoads[i], maskSize))
+			if (!memcmp((u8*)&sendPayLoads[myIdx][i], &recvPayLoads[prevNeighbor][i], maskSize))
 			{
 				mIntersection.push_back(i);
 			}
 		}
 		Log::out << mIntersection.size() << Log::endl;
+	}
+	auto getIntersection = timer.setTimePoint("getIntersection");
+
+
+	if (myIdx == 0) {
+		auto offlineTime = std::chrono::duration_cast<std::chrono::milliseconds>(initDone - start).count();
+		auto hashingTime = std::chrono::duration_cast<std::chrono::milliseconds>(hashingDone - initDone).count();
+		auto getOPRFTime = std::chrono::duration_cast<std::chrono::milliseconds>(getOPRFDone - hashingDone).count();
+		auto ss2DirTime = std::chrono::duration_cast<std::chrono::milliseconds>(getSSDone2Dir - getOPRFDone).count();
+		auto ssRoundTime = std::chrono::duration_cast<std::chrono::milliseconds>(getSSDoneRound - getSSDone2Dir).count();
+		auto intersectionTime = std::chrono::duration_cast<std::chrono::milliseconds>(getIntersection - getSSDoneRound).count();
+
+		double onlineTime = hashingTime + getOPRFTime + ss2DirTime+ ssRoundTime + intersectionTime;
+
+		double time = offlineTime + onlineTime;
+		time /= 1000;
+
+		std::cout << "setSize: " << setSize << "\n"
+			<< "offlineTime:  " << offlineTime << " ms\n"
+			<< "hashingTime:  " << hashingTime << " ms\n"
+			<< "getOPRFTime:  " << getOPRFTime << " ms\n"
+			<< "ss2DirTime:  " << ss2DirTime << " ms\n"
+			<< "ssRoundTime:  " << ssRoundTime << " ms\n"
+			<< "intersection:  " << intersectionTime << " ms\n"
+			<< "onlineTime:  " << onlineTime << " ms\n"
+			<< "Total time: " << time << " s\n"
+			<< "------------------\n";
+
 	}
 
 

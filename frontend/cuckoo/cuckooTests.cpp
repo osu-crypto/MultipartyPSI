@@ -5,10 +5,10 @@ using namespace osuCrypto;
 #include "Hashing/CuckooHasher1.h"
 #include <fstream>
 
-#define powNs  { 16}
+#define powNs  { 20}
 #define powTrials {20/*,20*/}
 //#define ee {1.1,1.2,1.5,2.0}
-#define ee {1.0, 1.05, 1.1,1.12,1.13,1.14,1.15,1.16,1.17,1.2}
+#define ee {/*1.05, 1.1,1.12,1.13,*/1.14,1.15,1.16,1.17,1.2}
 
 //myCuckooTest_bin
 #define Ns  { /*8,12,16,*/256/*,24 */}
@@ -17,12 +17,13 @@ using namespace osuCrypto;
 
 void myCuckooTest_stash()
 {
-	for (auto powTrial : powTrials)
-	{
+	
 	for (auto e : ee)
 	{
 	for (auto powN : powNs)	{	
-			
+		//u64 avgMaxStashSize = 0;
+		for (auto powTrial : powTrials)
+		{
 				u64 n = 1 << powN;
 				u64 h = 3;
 				u64 trials = 1 << powTrial;
@@ -95,7 +96,8 @@ void myCuckooTest_stash()
 						finalMaxStashSize = maxStashSize[i];
 				}
 				std::cout << "n=" << powN << "   trial=" << powTrial <<"   e=" <<e<<  "   maxStashSize=" << finalMaxStashSize << std::endl;
-
+			//	if(avgMaxStashSize<finalMaxStashSize)
+					//avgMaxStashSize=finalMaxStashSize
 			}
 		}
 	}

@@ -31,9 +31,9 @@ void usage(const char* argv0)
 int main(int argc, char** argv)
 {
 	//std::cout << "fffffffff\n";
-	//myCuckooTest_stash();
+	myCuckooTest_stash();
 	 //Bit_Position_Random_Test();
-	//return 0;
+	return 0;
 	//OPPRF2_EmptrySet_Test_Main();
 	//OPPRFn_EmptrySet_Test_Main();
 	
