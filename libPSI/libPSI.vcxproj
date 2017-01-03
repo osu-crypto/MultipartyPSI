@@ -51,7 +51,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/cryptoTools;C:/libs/boost;C:/libs/;C:/libs/NTL/include;C:/libs/miracl;C:\Program Files %28x86%29\Visual Leak Detector\include;D:\VisualGDB\allprojects\libPSI\libOTe;$(libOTeDir)/libOTe</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\libs\NTL;D:\libs\miracl;D:\libs\boost;$(ProjectDir);$(SolutionDir)/cryptoTools;C:/libs/boost;C:/libs/;D:/libs/NTL/include;C:/libs/NTL/include;C:/libs/miracl;C:\Program Files %28x86%29\Visual Leak Detector\include;D:\VisualGDB\allprojects\libPSI\libOTe;$(libOTeDir)/libOTe</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SOLUTION_DIR=R"**($(SolutionDir))**";_MBCS;%(PreprocessorDefinitions);_WIN32_WINNT=0x0501</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
