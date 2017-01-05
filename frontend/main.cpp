@@ -31,14 +31,15 @@ void usage(const char* argv0)
 int main(int argc, char** argv)
 {
 	//std::cout << "fffffffff\n";
-	myCuckooTest_stash();
+	//myCuckooTest_stash();
 	 //Bit_Position_Random_Test();
-	return 0;
+	//return 0;
 	//OPPRF2_EmptrySet_Test_Main();
 	//OPPRFn_EmptrySet_Test_Main();
 	
 	std::vector<block> mSet;
 	 u64 setSize = 1 << 20, psiSecParam = 40, bitSize = 128;
+	 u64 nParties=3;
 	 PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	 mSet.resize(setSize);
 	 for (u64 i = 0; i < setSize; ++i)
@@ -46,38 +47,44 @@ int main(int argc, char** argv)
 		 mSet[i] = prng.get<block>();
 	 }
 
-	
-  ////  if (argc == 2)
-  ////  {
-		////OPPRFSend();
-		////BarkOPRSend();
-		////party3(0, setSize,  mSet);
-
-  ////  }
-  ////  else if (argc == 3)
-  ////  {
-		////BarkOPRFRecv();
-		////OPPRFRecv();
-		////party3(1, setSize, mSet);
-  ////  }
-  ////  else if (argc == 4)
-  ////  {
-		////party3(2, setSize,mSet);
-  ////  }
+	 /*if (argc == 3) {
+		 if (argv[1][0] == '-' && argv[1][1] == 'p' && atoi(argv[2]) == 0) {
+			 party3(0, setSize, mSet);
+		 }
+		 else if (argv[1][0] == '-' && argv[1][1] == 'p' && atoi(argv[2]) == 1) {
+			 party3(1, setSize, mSet);
+		 }
+		 else if (argv[1][0] == '-' && argv[1][1] == 'p' && atoi(argv[2]) == 2) {
+			 party3(2, setSize, mSet);
+		 }
+		 else {
+			 usage(argv[0]);
+		 }
+	 }*/
 
 
-	if (argc == 3 && argv[1][0] == '-' && argv[1][1] == 'p' && atoi(argv[2]) == 0) {
-		party3(0, setSize, mSet);
-	}
-	else if (argc == 3 && argv[1][0] == '-' && argv[1][1] == 'p' && atoi(argv[2]) == 1) {
-		party3(1, setSize, mSet);
-	}
-	else if (argc == 3 && argv[1][0] == '-' && argv[1][1] == 'p' && atoi(argv[2]) == 2) {
-		party3(2, setSize, mSet);
-	}
-	else {
-		usage(argv[0]);
-	}
+	 if (argc == 5) {
+		 if (argv[1][0] == '-' && argv[1][1] == 'n')
+			 nParties = atoi(argv[2]);
 
+		 if (nParties == 3)
+		 {
+			 if (argv[3][0] == '-' && argv[3][1] == 'p') {
+				 u64 pIdx = atoi(argv[4]);
+				 party3(pIdx, setSize, mSet);
+			 }
+		 }
+		 else
+		 {
+			 if (argv[3][0] == '-' && argv[3][1] == 'p') {
+				 u64 pIdx = atoi(argv[4]);
+				 party(pIdx, nParties, setSize, mSet);
+			 }
+		 }
+		 	 
+	 }
+	 else {
+		 usage(argv[0]);
+	 }
     return 0;
 }

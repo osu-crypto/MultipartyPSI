@@ -419,7 +419,7 @@ namespace osuCrypto
 						bin.mBits[IdxP].getPos1(bin.mValOPRF[IdxP], 128);
 						auto end = mTimer.setTimePoint("getPos1.done");
 						
-						mTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+						mPosBitsTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 					
 						//bin.mBits[IdxP].getMasks(bin.mValOPRF[IdxP]);
 						//std::cout << ", "
@@ -430,7 +430,7 @@ namespace osuCrypto
 		
 
 				if (tIdx == 0) gTimer.setTimePoint("online.send.otSend.finalOPRF");
-				std::cout << "getPos1 time: " << mTime/pow(10,6) << std::endl;
+				std::cout << "getPosTime" << IdxP << ": " << mPosBitsTime / pow(10, 6) << std::endl;
 #pragma endregion
 #endif
 
@@ -509,7 +509,7 @@ namespace osuCrypto
 
 		//TODO: double check
 	//	u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-		u64 maskSize =roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		u64 maskSize =roundUpTo(mStatSecParam + 2 * std::log(mN) - 1 + bins.mSimpleBins.mNumBits[1], 8) / 8;
 		//u64 maskSize = 7;
 		if (maskSize > sizeof(block))
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
@@ -734,7 +734,7 @@ namespace osuCrypto
 		gTimer.setTimePoint("online.recv.start");
 
 		//u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-		u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1 + bins.mSimpleBins.mNumBits[1], 8) / 8;
 		if (maskSize > sizeof(block))
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 

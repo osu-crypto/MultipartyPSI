@@ -93,6 +93,11 @@ namespace WeGarbleTests
 			InitDebugPrinting();
 			Bit_Position_Random_Test_Impl();
 		}
+		TEST_METHOD(testShareValue_Test)
+		{
+			InitDebugPrinting();
+			testShareValue();
+		}
 		/*TEST_METHOD(Channel_Test)
 		{
 			InitDebugPrinting();

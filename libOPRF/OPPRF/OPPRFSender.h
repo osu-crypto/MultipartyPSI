@@ -28,7 +28,7 @@ namespace osuCrypto
 
         PRNG mPrng;
 		Timer mTimer;
-		double mTime=0;
+		double mPosBitsTime=0;
 
 		//std::vector<std::vector<block>> mmOPRF; //mValOPRF[bIdx][Idx]
 		//std::vector<BitPosition> mmBits;//mBits[bIdx]
