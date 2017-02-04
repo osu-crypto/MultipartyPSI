@@ -14,8 +14,6 @@ using namespace osuCrypto;
 #include "OtBinMain.h"
 #include "bitPosition.h"
 
-#include "TwoChooseOne/KosOtExtReceiver.h"
-#include "TwoChooseOne/KosOtExtSender.h"
 #include <numeric>
 #include "Common/Log.h"
 //int miraclTestMain();
@@ -35,8 +33,8 @@ int main(int argc, char** argv)
 	 //Bit_Position_Random_Test();
 	//return 0;
 	//OPPRF2_EmptrySet_Test_Main();
-	//OPPRFn_EmptrySet_Test_Main();
-	
+	OPPRFn_EmptrySet_Test_Main();
+	return 0;
 	std::vector<block> mSet;
 	 u64 setSize = 1 << 20, psiSecParam = 40, bitSize = 128;
 	 u64 nParties=3;

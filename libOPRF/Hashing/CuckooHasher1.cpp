@@ -19,19 +19,19 @@ namespace osuCrypto
 	//u64 mSenderBinStashSize;
 
     CuckooParam1 k2n24s40CuckooParam1
-	{ {1.2,0.3 },{3,3},{32,32}};
+	{ { 1.15,0.17 },{ 3,2 },{ 32,64 } };
     CuckooParam1 k2n20s40CuckooParam1
 	{ { 1.15,0.17 },{ 3,2 },{ 32,64 } };
     CuckooParam1 k2n16s40CuckooParam1
-	{ { 1.2,0.3 },{ 3,3 },{ 32,64 } };
+	{ { 1.15,0.17 },{ 3,2 },{ 32,64 } };
     CuckooParam1 k2n12s40CuckooParam1
-	{ { 1.2,0.3 },{ 3,3 },{ 32,64 } };
+	{ { 1.15,0.17 },{ 3,2 },{ 32,64 } };
     CuckooParam1 k2n08s40CuckooParam1
-	{ { 1.2,0.3 },{ 3,3 },{ 32,64 } };
+	{ { 1.15,0.17 },{ 3,2 },{ 32,64 } };
 
     // not sure if this needs a stash of 40, but should be safe enough.
     CuckooParam1 k2n07s40CuckooParam1
-	{ { 1.2,0.3 },{ 3,3 },{ 32,64 } };
+	{ { 1.5,0.17 },{ 3,2 },{ 32,64 } };
 
 
     CuckooHasher1::CuckooHasher1()
@@ -402,7 +402,7 @@ namespace osuCrypto
 
 		if (remaining > 0)
 		{
-			//std::cout << "remaining: " << remaining << std::endl;
+			std::cout << "remaining: " << remaining << std::endl;
 			throw std::runtime_error("" LOCATION);
 		}
 	}

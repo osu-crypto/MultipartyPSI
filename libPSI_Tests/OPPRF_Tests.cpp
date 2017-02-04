@@ -1704,7 +1704,7 @@ void party3(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 	//##########################
 	//### Hashing
 	//##########################
-	bins.hashing2Bins(set, nParties);
+	bins.hashing2Bins(set, 1);
 	//bins.mSimpleBins.print(myIdx, true, false, false, false);
 	//bins.mCuckooBins.print(myIdx, true, false, false);
 

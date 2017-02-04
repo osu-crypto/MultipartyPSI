@@ -14,6 +14,21 @@ namespace osuCrypto
     //    {1<<24, 21}
     //};
 
+	
+
+	struct SimpleParam1
+	{
+		
+		double mBinScaler[2];
+		u64 mNumHashes[2];
+
+		u64 mMaxBinSize[2];
+		u64 mNumBits[2];
+		/*
+		double mBinStashScaler;
+		u64 mNumStashHashes;
+		u64 mSenderBinStashSize;*/
+	};
 
     class SimpleHasher1
     {
@@ -35,7 +50,7 @@ namespace osuCrypto
         std::unique_ptr<std::mutex[]> mMtx;
         std::vector<Bin> mBins;
         block mHashSeed;
-
+		SimpleParam1 mParams;
         void print(u64 idxParty, bool isIdx, bool isOPRF, bool isMap, bool isPos) const;
 
         void init(u64 n);

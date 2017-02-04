@@ -9,6 +9,21 @@
 namespace osuCrypto
 {
 
+	SimpleParam1 k2n24s40SimpleParam1
+	{ { 1.15,0.17 },{ 3,2 },{ 32,64 },{5,6} };
+	SimpleParam1 k2n20s40SimpleParam1
+	{ { 1.15,0.17 },{ 3,2 },{ 32,64 } ,{ 5,6 } };
+	SimpleParam1 k2n16s40SimpleParam1
+	{ { 1.15,0.17 },{ 3,2 },{ 32,64 },{ 5,6 } };
+	SimpleParam1 k2n12s40SimpleParam1
+	{ { 1.15,0.17 },{ 3,2 },{ 32,64 },{ 5,6 } };
+	SimpleParam1 k2n08s40SimpleParam1
+	{ { 1.15,0.17 },{ 3,2 },{ 32,64 },{ 5,6 } };
+
+	// not sure if this needs a stash of 40, but should be safe enough.
+	SimpleParam1 k2n07s40SimpleParam1
+	{ { 1.5,0.17 },{ 3,2 },{ 32,64 },{ 5,6 } };
+
 
 	SimpleHasher1::SimpleHasher1()
 	{
@@ -108,18 +123,34 @@ namespace osuCrypto
 	void SimpleHasher1::init(u64 n)
 	{	
 		mN = n;
-		mMaxBinSize[0] = 32;
-		mMaxBinSize[1] = 64;
 
-		mBinCount[0] = 1.15*n;
-		mBinCount[1] = 0.17*n;
+		if (n <= 1 << 7)
+			mParams = k2n07s40SimpleParam1;
+		else if (n <= 1 << 8)
+			mParams = k2n08s40SimpleParam1;
+		else if (n <= 1 << 12)
+			mParams = k2n12s40SimpleParam1;
+		else if (n <= 1 << 16)
+			mParams = k2n16s40SimpleParam1;
+		else if (n <= 1 << 20)
+			mParams = k2n20s40SimpleParam1;
+		else if (n <= 1 << 24)
+			mParams = k2n24s40SimpleParam1;
+		else
+			throw std::runtime_error("not implemented");
+
+		mMaxBinSize[0] = mParams.mMaxBinSize[0];
+		mMaxBinSize[1] = mParams.mMaxBinSize[1];
+
+		mBinCount[0] = mParams.mBinScaler[0]*n;
+		mBinCount[1] = mParams.mBinScaler[1] *n;
 
 		mMtx.reset(new std::mutex[mBinCount[0] + mBinCount[1]]);
 		mBins.resize(mBinCount[1] + mBinCount[0]);
-		mNumHashes[0] = 3;
-		mNumHashes[1] = 2;
-		mNumBits[0] = 5;
-		mNumBits[1] = 6;
+		mNumHashes[0] = mParams.mNumHashes[0];
+		mNumHashes[1] = mParams.mNumHashes[1];
+		mNumBits[0] = mParams.mNumBits[0];
+		mNumBits[1] = mParams.mNumBits[1];
 
 	//	auto log2n = log2ceil(n);
 

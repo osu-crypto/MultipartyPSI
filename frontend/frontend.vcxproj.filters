@@ -18,9 +18,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UnitTests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -30,16 +27,7 @@
     <ClCompile Include="OtBinMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cuckooTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cuckoo\cuckooTests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CLP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cuckoo\SimpleCuckoo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="bitPosition.cpp">
@@ -47,28 +35,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="UnitTests.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dcwMain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="bloomFilterMain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OtBinMain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dktMain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cuckoo\SimpleCuckoo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="cuckoo\cuckooTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CLP.h">
