@@ -430,7 +430,12 @@ namespace osuCrypto
 		
 
 				if (tIdx == 0) gTimer.setTimePoint("online.send.otSend.finalOPRF");
+
+#ifdef PRINT
 				std::cout << "getPosTime" << IdxP << ": " << mPosBitsTime / pow(10, 6) << std::endl;
+#endif // PRINT
+
+				
 #pragma endregion
 #endif
 

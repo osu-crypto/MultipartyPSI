@@ -98,6 +98,15 @@ namespace WeGarbleTests
 			InitDebugPrinting();
 			testShareValue();
 		}
+
+		TEST_METHOD(OPPRFnt_EmptrySet_Test)
+		{
+			InitDebugPrinting();
+			OPPRFnt_EmptrySet_Test_Impl();
+		}
+
+		
+
 		/*TEST_METHOD(Channel_Test)
 		{
 			InitDebugPrinting();

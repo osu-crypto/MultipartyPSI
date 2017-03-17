@@ -1,7 +1,7 @@
 #include "PRNG.h"
 #include <algorithm>
 #include <cstring>
-#include <Common/Log.h>
+#include "Common/Log.h"
 
 namespace osuCrypto {
 

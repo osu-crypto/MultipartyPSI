@@ -374,11 +374,11 @@ namespace osuCrypto
 #endif
         if (mCurve->mIsPrimeField)
         {
-            return static_cast<bool>(epoint_comp(mCurve->mMiracl, mVal, cmp.mVal));
+            return epoint_comp(mCurve->mMiracl, mVal, cmp.mVal) != 0;
         }
         else
         {
-            return static_cast<bool>(epoint2_comp(mCurve->mMiracl, mVal, cmp.mVal));
+            return epoint2_comp(mCurve->mMiracl, mVal, cmp.mVal) != 0;
         }
     }
     bool EccPoint::operator!=(
@@ -942,7 +942,7 @@ namespace osuCrypto
         //}
     }
 
-    void EccNumber::fromBytes(u8 * src)
+    void EccNumber::fromBytes(const u8 * src)
     {
         bytes_to_big(mCurve->mMiracl, (int)sizeBytes(), (char*)src, mVal);
         //mIsNres = NresState::nonNres;
@@ -958,23 +958,23 @@ namespace osuCrypto
         //}
     }
 
-    void EccNumber::fromHex(char * src)
+    void EccNumber::fromHex(const char * src)
     {
         auto oldBase = mCurve->mMiracl->IOBASE;
         mCurve->mMiracl->IOBASE = 16;
 
-        cinstr(mCurve->mMiracl, mVal, src);
+        cinstr(mCurve->mMiracl, mVal, (char*)src);
         //mIsNres = NresState::nonNres;
 
         mCurve->mMiracl->IOBASE = oldBase;
     }
 
-    void EccNumber::fromDec(char * src)
+    void EccNumber::fromDec(const char * src)
     {
         auto oldBase = mCurve->mMiracl->IOBASE;
         mCurve->mMiracl->IOBASE = 10;
 
-        cinstr(mCurve->mMiracl, mVal, src);
+        cinstr(mCurve->mMiracl, mVal,(char*) src);
         //mIsNres = NresState::nonNres;
 
         mCurve->mMiracl->IOBASE = oldBase;
@@ -1109,13 +1109,13 @@ namespace osuCrypto
 
 
 
-            result = static_cast<bool>(ebrick_init(
+            result = 0 < ebrick_init(
                 mCurve->mMiracl,
                 &mBrick,
                 x, y,
                 mCurve->BA, mCurve->BB,
                 mCurve->getFieldPrime().mVal,
-                8, mCurve->mEccpParams.bitCount));
+                8, mCurve->mEccpParams.bitCount);
 
             mirkill(x);
             mirkill(y);
@@ -1124,7 +1124,7 @@ namespace osuCrypto
         {
 
             //fe2ec2(point)->getxy(x, y);
-            result = static_cast<bool>(ebrick2_init(
+            result = 0 < ebrick2_init(
                 mCurve->mMiracl,
                 &mBrick2,
                 copy.mVal->X,
@@ -1136,7 +1136,7 @@ namespace osuCrypto
                 mCurve->mEcc2mParams.b,
                 mCurve->mEcc2mParams.c,
                 8,
-                mCurve->mEcc2mParams.bitCount));
+                mCurve->mEcc2mParams.bitCount);
         }
 
         if (result == 0)

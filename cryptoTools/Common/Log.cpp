@@ -10,6 +10,7 @@ namespace osuCrypto
 {
 
 
+
     std::mutex gIoStreamMtx;
 
     void setThreadName(const std::string name)

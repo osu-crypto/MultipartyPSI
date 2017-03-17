@@ -21,7 +21,7 @@ namespace osuCrypto
 
     public:
 
-        
+        typedef T value_type;
 
         MatrixView()
             :mData(nullptr),
@@ -48,11 +48,7 @@ namespace osuCrypto
 
 
         MatrixView(u64 rowSize, u64 columnSize) :
-#ifdef NDEBUG
-            mData(new T[rowSize * columnSize]),
-#else
             mData(new T[rowSize * columnSize]()),
-#endif
             mSize({ rowSize, columnSize }),
             mOwner(true)
         { }
@@ -77,13 +73,32 @@ namespace osuCrypto
             mSize({ (end - start) / numColumns, numColumns }),
             mOwner(false)
         {
+            //static_assert(std::is_same<Iter::value_type, T>::value, "Iter iter must have the same value_type as ArrayView");
+            std::ignore = p;
+
         }
 
-        //MatrixView(T* data, u64 rowSize, u64 columnSize) :
-        //    mData(data),
-        //    mSize({ rowSize, columnSize }),
+        //template<class C>
+        //MatrixView(const C& cont, u64 numColumns, typename C::value_type* p = 0) :
+        //    mData(&*((C&)cont).begin()),
+        //    mSize({ (((C&)cont).end() - ((C&)cont).begin()) / numColumns, numColumns }),
         //    mOwner(false)
-        //{}
+        //{
+        //    static_assert(std::is_same<C::value_type, T>::value, "Container cont must have the same value_type as ArrayView");
+
+        //    (void*)p;
+        //}
+
+        template<template<typename, typename...> class C, typename... Args>
+        MatrixView(const C<T, Args...>& cont, u64 numColumns, typename C<T, Args...>::value_type* p = 0) :
+            mData(&*((C<T, Args...>&)cont).begin()),
+            mSize({ (((C<T, Args...>&)cont).end() - ((C<T, Args...>&)cont).begin()) / numColumns, numColumns }),
+            mOwner(false)
+        {
+            //static_assert(std::is_same<C::value_type, T>::value, "Container cont must have the same value_type as ArrayView");
+            std::ignore = p;
+
+        }
 
 
         ~MatrixView()
@@ -129,11 +144,11 @@ namespace osuCrypto
         };
         ArrayIterator<T> end() const {
             T* e = (T*)mData + (mSize[0] * mSize[1]);
-            return ArrayIterator<T>(mData, e, e);
+            return ArrayIterator<T>(mData, e, e); 
         }
 #else
         T* begin() const { return mData; };
-        T* end() const { return mData + mSize; }
+        T* end() const { return mData + mSize[0] * mSize[1]; }
 #endif
 
         ArrayView<T> operator[](u64 rowIdx) const

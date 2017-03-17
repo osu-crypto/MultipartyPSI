@@ -1,7 +1,7 @@
 #include "BtChannel.h"
 #include "Network/BtSocket.h"
 #include "Network/BtEndpoint.h"
-#include  "Common/Defines.h"
+#include "Common/Defines.h"
 #include "Common/Log.h"
 
 namespace osuCrypto {
@@ -204,6 +204,7 @@ namespace osuCrypto {
         if (mSocket)
         {
             mSocket->mTotalSentData = 0;
+            mSocket->mTotalRecvData = 0;
             mSocket->mMaxOutstandingSendData = 0;
             mSocket->mOutstandingSendData = 0;
         }
@@ -212,6 +213,11 @@ namespace osuCrypto {
     u64 BtChannel::getTotalDataSent() const
     {
         return (mSocket) ? (u64)mSocket->mTotalSentData : 0;
+    }
+
+    u64 BtChannel::getTotalDataRecv() const
+    {
+        return (mSocket) ? (u64)mSocket->mTotalRecvData : 0;
     }
 
     u64 BtChannel::getMaxOutstandingSendData() const

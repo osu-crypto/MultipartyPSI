@@ -9,11 +9,13 @@ namespace osuCrypto
 
     const Timer::timeUnit& Timer::setTimePoint(const std::string& msg)
     {
+        //if (mLocking) mMtx.lock();
         mTimes.push_back(std::make_pair(timeUnit::clock::now(), msg));
-
+        auto& ret = mTimes.back().first;
+        //if (mLocking) mMtx.unlock();
         //std::cout << msg << "     " << std::chrono::duration_cast<std::chrono::milliseconds>(mTimes.back().first - mStart).count() << std::endl;
 
-        return mTimes.back().first;
+        return ret;
         //return mStart;
     }
 
@@ -30,7 +32,7 @@ namespace osuCrypto
             auto iter = timer.mTimes.begin();
             out << iter->second;
 
-            u64 tabs = std::min((u64)4, (u64)4 - (iter->second.size() / 8));
+            u64 tabs = std::min<u64>((u64)4, (u64)4 - (iter->second.size() / 8));
 
             for (u64 i = 0; i < tabs; ++i)
                 out << "\t";
@@ -42,7 +44,7 @@ namespace osuCrypto
             {
                 out << iter->second;
                 
-                tabs = std::min((u64)4,  (u64)4 - (iter->second.size() / 8));
+                tabs = std::min<u64>((u64)4,  (u64)4 - (iter->second.size() / 8));
 
                 for (u64 i = 0; i < tabs ; ++i)
                     out << "\t";

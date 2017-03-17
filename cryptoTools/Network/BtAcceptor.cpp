@@ -3,7 +3,7 @@
 #include "Network/BtChannel.h"
 #include "Network/Endpoint.h"
 #include "Common/Log.h"
-#include <Common/ByteStream.h>
+#include "Common/ByteStream.h"
 
 #include "boost/lexical_cast.hpp"
 

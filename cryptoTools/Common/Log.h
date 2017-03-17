@@ -8,6 +8,7 @@
 namespace osuCrypto
 {
 
+
     enum class Color {
         LightGreen = 2,
         LightGrey = 3,
@@ -41,8 +42,5 @@ namespace osuCrypto
 
     void setThreadName(const std::string name);
     void setThreadName(const char* name);
-	
+
 }
-
-
-  

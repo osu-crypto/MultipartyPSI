@@ -33,53 +33,59 @@ int main(int argc, char** argv)
 	 //Bit_Position_Random_Test();
 	//return 0;
 	//OPPRF2_EmptrySet_Test_Main();
-	OPPRFn_EmptrySet_Test_Main();
-	return 0;
+	//OPPRFn_EmptrySet_Test_Main();
+	//OPPRF3_EmptrySet_Test_Main();
+	//return 0;
+	//OPPRFnt_EmptrySet_Test_Main();
+	//OPPRFnt_EmptrySet_Test_Main();
+
+	u64 trials=1;
+
 	std::vector<block> mSet;
 	 u64 setSize = 1 << 20, psiSecParam = 40, bitSize = 128;
-	 u64 nParties=3;
+	 u64 nParties, tParties;
+	 u64 roundOPPRF;
 	 PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	 mSet.resize(setSize);
 	 for (u64 i = 0; i < setSize; ++i)
-	 {
 		 mSet[i] = prng.get<block>();
-	 }
 
-	 /*if (argc == 3) {
-		 if (argv[1][0] == '-' && argv[1][1] == 'p' && atoi(argv[2]) == 0) {
-			 party3(0, setSize, mSet);
-		 }
-		 else if (argv[1][0] == '-' && argv[1][1] == 'p' && atoi(argv[2]) == 1) {
-			 party3(1, setSize, mSet);
-		 }
-		 else if (argv[1][0] == '-' && argv[1][1] == 'p' && atoi(argv[2]) == 2) {
-			 party3(2, setSize, mSet);
-		 }
-		 else {
-			 usage(argv[0]);
-		 }
-	 }*/
-
-
-	 if (argc == 5) {
+	 if (argc == 7) {
 		 if (argv[1][0] == '-' && argv[1][1] == 'n')
 			 nParties = atoi(argv[2]);
 
+		 
 		 if (nParties == 3)
 		 {
-			 if (argv[3][0] == '-' && argv[3][1] == 'p') {
-				 u64 pIdx = atoi(argv[4]);
-				 party3(pIdx, setSize, mSet);
+			 if (argv[3][0] == '-' && argv[3][1] == 'r')
+				 roundOPPRF = atoi(argv[4]);
+
+			 if (argv[5][0] == '-' && argv[5][1] == 'p') {
+				 u64 pIdx = atoi(argv[6]);
+				 if(roundOPPRF==1)
+					party3(pIdx, setSize, trials);
+				 else
+					 tparty(pIdx, nParties, 2, setSize, trials);
 			 }
 		 }
 		 else
 		 {
-			 if (argv[3][0] == '-' && argv[3][1] == 'p') {
-				 u64 pIdx = atoi(argv[4]);
-				 party(pIdx, nParties, setSize, mSet);
+			 if (argv[3][0] == '-' && argv[3][1] == 't')
+				 tParties = atoi(argv[4]);
+
+			 if (argv[5][0] == '-' && argv[5][1] == 'p') {
+				 u64 pIdx = atoi(argv[6]);
+				 std::cout << "pIdx:  " << pIdx << "\n";
+				 tparty(pIdx, nParties, tParties, setSize, trials);
 			 }
 		 }
 		 	 
+	 }
+	 else if (argc == 2) {
+		 if (argv[1][0] == '-' && argv[1][1] == 'u')
+		 {
+			 OPPRFnt_EmptrySet_Test_Main();
+		 }
 	 }
 	 else {
 		 usage(argv[0]);
