@@ -105,7 +105,12 @@ namespace WeGarbleTests
 			OPPRFnt_EmptrySet_Test_Impl();
 		}
 
-		
+		TEST_METHOD(polynomial_Test)
+		{
+			InitDebugPrinting();
+			polynomial_Test_Impl();
+		}
+
 
 		/*TEST_METHOD(Channel_Test)
 		{

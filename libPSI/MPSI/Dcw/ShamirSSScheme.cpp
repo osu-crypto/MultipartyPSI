@@ -22,6 +22,7 @@ namespace osuCrypto
         NTL::GF2X& P = mPrime;
         NTL::BuildIrred(P, 127);
         NTL::GF2E::init(P);
+
     }
 
     block ShamirSSScheme::init(u64 n, u64 k)
