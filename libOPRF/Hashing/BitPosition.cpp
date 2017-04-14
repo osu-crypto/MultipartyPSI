@@ -62,7 +62,7 @@ namespace osuCrypto
 
     }
 	
-
+	//#################Table based
 	bool BaseOPPRF::getMasks(std::vector<block>& codeword) {
 		
 		u8 rs, idx;
@@ -331,7 +331,91 @@ namespace osuCrypto
 
 
 	}
-	
+
+	//#################POLYNOMIAL
+
+	void BaseOPPRF::GF2EFromBlock(NTL::GF2E &element, block& blk) {
+
+		NTL::GF2X x1;
+		NTL::BuildIrred(x1, 128);
+		NTL::GF2E::init(x1);
+		//convert the Block to GF2X element.
+		NTL::GF2XFromBytes(x1, (u8*)&blk, sizeof(block));
+		element = to_GF2E(x1);
+	}
+
+	void BaseOPPRF::BlockFromGF2E(block& blk, NTL::GF2E & element) {
+		//Get the bytes of the random element.
+		NTL::GF2X fromEl = NTL::rep(element); //convert the GF2E element to GF2X element.	
+											  //the function rep returns the representation of GF2E as the related GF2X, it returns as read only.
+		BytesFromGF2X((u8*)&blk, fromEl, sizeof(block));
+	}
+
+
+	//computes coefficients (in blocks) of f such that f(x[i]) = y[i]
+	void BaseOPPRF::getBlkCoefficients(u64 degree, std::vector<block>& setX, std::vector<block>& setY, std::vector<block>& coeffs)
+	{
+		NTL::vec_GF2E x; NTL::vec_GF2E y;
+		NTL::GF2E e;
+
+		for (u64 i = 0; i < setX.size(); ++i)
+		{
+			GF2EFromBlock(e, setX[i]);
+			x.append(e);
+
+			GF2EFromBlock(e, setY[i]);
+			y.append(e);
+		}
+
+		for (u64 i = setX.size(); i < degree; ++i)
+		{
+			NTL::random(e);
+			x.append(e);
+			NTL::random(e);
+			y.append(e);
+		}
+		//interpolate
+		NTL::GF2EX polynomial = NTL::interpolate(x, y);
+
+		TODO("better to have dummpy_pol * real_pol");
+		//NTL::GF2EX real_polynomial = NTL::interpolate(x, y);
+		//std::cout << NTL::deg(real_polynomial) << std::endl;
+
+		//NTL::GF2EX dummy_polynomial= NTL::interpolate(x1, y1);
+		//NTL::random(dummy_polynomial, 1);
+		//std::cout << NTL::deg(dummy_polynomial) << std::endl;
+
+		// NTL::mul(polynomial,dummy_polynomial, real_polynomial);
+
+
+
+		////convert coefficient to vector<block> 
+		coeffs.resize(NTL::deg(polynomial) + 1);
+		for (int i = 0; i < coeffs.size(); i++) {
+			//get the coefficient polynomial
+			e = NTL::coeff(polynomial, i);
+			BlockFromGF2E(coeffs[i], e);
+		}
+	}
+
+	//compute y=f(x) giving coefficients (in block)
+	void BaseOPPRF::evalPolynomial(std::vector<block>& coeffs, block& x, block& y)
+	{
+		NTL::GF2EX res_polynomial;
+		NTL::GF2E e;
+		std::cout << coeffs.size() << std::endl;
+		for (u64 i = 0; i < coeffs.size(); ++i)
+		{
+			GF2EFromBlock(e, coeffs[i]);
+			NTL::SetCoeff(res_polynomial, i, e); //build res_polynomial
+		}
+
+		GF2EFromBlock(e, x);
+		e = NTL::eval(res_polynomial, e); //get y=f(x) in GF2E
+		BlockFromGF2E(y, e); //convert to block 
+	}
+
+
 }
 
 //void BaseOPPRF::findPos(std::vector<block>& codewords) {

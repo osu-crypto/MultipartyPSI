@@ -23,7 +23,7 @@ namespace osuCrypto
     {
     }
 
-    void OPPRFReceiver::init(u64 numParties,
+    void OPPRFReceiver::init(u32 opt, u64 numParties,
         u64 n,
         u64 statSec,
         u64 inputBitSize,
@@ -32,10 +32,10 @@ namespace osuCrypto
 		NcoOtExtSender& otSend,
         block seed, bool isOtherDirection)
     {
-        init(numParties,n, statSec, inputBitSize, { &chl0 }, otCounts, otRecv, otSend, seed, isOtherDirection);
+        init(opt,numParties,n, statSec, inputBitSize, { &chl0 }, otCounts, otRecv, otSend, seed, isOtherDirection);
     }
 
-    void OPPRFReceiver::init(u64 numParties,
+    void OPPRFReceiver::init(u32 opt, u64 numParties,
 			u64 n,
 			u64 statSecParam,
 			u64 inputBitSize,
@@ -46,7 +46,7 @@ namespace osuCrypto
 	{
 
 		// this is the offline function for doing binning and then performing the OtPsi* between the bins.
-
+		mOpt = opt;
 		mParties = numParties;
 		mStatSecParam = statSecParam;
 		mN = n;
@@ -378,7 +378,9 @@ namespace osuCrypto
 								  else
 									  bin.mBits[IdxP].init(/*bin.mIdx.size(),*/ bins.mSimpleBins.mNumBits[1]);
 
-								  bin.mBits[IdxP].getPos1(bin.mValOPRF[IdxP], 128);
+								  //Table-based-OPPRF
+								  if(mOpt==0)
+									 bin.mBits[IdxP].getPos1(bin.mValOPRF[IdxP], 128);
 								  //bin.mBits[IdxP].getMasks(bin.mValOPRF[IdxP]);
 								  //std::cout << ", "
 								  //	<< static_cast<int16_t>(bin.mBits[IdxP].mMaps[0]) << std::endl;
@@ -515,8 +517,7 @@ namespace osuCrypto
 								//{
 								//Log::out << "inputIdx: " << inputIdx << Log::endl;
 								//	Log::out << "myMask: " << myMask << Log::endl;
-								//Log::out << "theirMask: " << theirMask << " " << Log::endl;
-			
+								//Log::out << "theirMask: " << theirMask << " " << Log::endl;		
 
 								plaintexts[inputIdx] = myMask^theirMask;
 

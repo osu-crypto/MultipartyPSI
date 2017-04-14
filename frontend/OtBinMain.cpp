@@ -367,10 +367,10 @@ void party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 			pThrds[pIdx] = std::thread([&, pIdx]() {
 				if (pIdx < myIdx) {
 					//I am a receiver if other party idx < mine
-					recv[pIdx].getOPRFkeys(pIdx, bins, chls[pIdx], true);
+					recv[pIdx].getOPRFKeys(0,0,pIdx, bins, chls[pIdx], true);
 				}
 				else if (pIdx > myIdx) {
-					send[pIdx - myIdx - 1].getOPRFKeys(pIdx, bins, chls[pIdx], true);
+					send[pIdx - myIdx - 1].getOPRFKeys(0,0,pIdx, bins, chls[pIdx], true);
 				}
 			});
 		}
@@ -827,11 +827,11 @@ void party3(u64 myIdx, u64 setSize, u64 nTrials)
 
 				if (pIdx == nextNeibough) {
 					//I am a sender to my next neigbour
-					send.getOPRFKeys(pIdx, bins, chls[pIdx], false);
+					send.getOPRFKeys(0,pIdx, bins, chls[pIdx], false);
 				}
 				else if (pIdx == prevNeibough) {
 					//I am a recv to my previous neigbour
-					recv.getOPRFkeys(pIdx, bins, chls[pIdx], false);
+					recv.getOPRFKeys(0,pIdx, bins, chls[pIdx], false);
 				}
 			});
 		}
@@ -1221,11 +1221,11 @@ void party2(u64 myIdx, u64 setSize)
 
 	if (myIdx == 0) {
 		//I am a sender to my next neigbour
-		send.getOPRFKeys(1, bins, chls[1], false);
+		send.getOPRFKeys(0,1, bins, chls[1], false);
 	}
 	else if (myIdx == 1) {
 		//I am a recv to my previous neigbour
-		recv.getOPRFkeys(0, bins, chls[0], false);
+		recv.getOPRFKeys(0,0, bins, chls[0], false);
 	}
 
 
@@ -1782,7 +1782,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize,  u64 nTrials)
 					pThrds[thr] = std::thread([&, prevIdx]() {
 
 						//prevIdx << " --> " << myIdx
-						recv[prevIdx].getOPRFkeys(prevIdx, bins, chls[prevIdx], false);
+						recv[prevIdx].getOPRFKeys(0,prevIdx, bins, chls[prevIdx], false);
 
 					});
 				}
@@ -1798,11 +1798,11 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize,  u64 nTrials)
 						//dual myIdx << " <-> " << nextIdx 
 						if (myIdx < nextIdx)
 						{
-							send[nextIdx].getOPRFKeys(nextIdx, bins, chls[nextIdx], true);
+							send[nextIdx].getOPRFKeys(0,nextIdx, bins, chls[nextIdx], true);
 						}
 						else if (myIdx > nextIdx) //by index
 						{
-							recv[nextIdx].getOPRFkeys(nextIdx, bins, chls[nextIdx], true);
+							recv[nextIdx].getOPRFKeys(0,nextIdx, bins, chls[nextIdx], true);
 						}
 					});
 
@@ -1810,14 +1810,14 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize,  u64 nTrials)
 				else
 				{
 					pThrds[pIdx] = std::thread([&, nextIdx]() {
-						send[nextIdx].getOPRFKeys(nextIdx, bins, chls[nextIdx], false);
+						send[nextIdx].getOPRFKeys(0,nextIdx, bins, chls[nextIdx], false);
 					});
 				}
 			}
 
 			//last thread for connecting with leader
 			pThrds[pThrds.size() - 1] = std::thread([&, leaderIdx]() {
-				send[leaderIdx].getOPRFKeys(leaderIdx, bins, chls[leaderIdx], false);
+				send[leaderIdx].getOPRFKeys(0,leaderIdx, bins, chls[leaderIdx], false);
 			});
 
 		}
@@ -1826,7 +1826,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize,  u64 nTrials)
 			for (u64 pIdx = 0; pIdx < nSS; ++pIdx)
 			{
 				pThrds[pIdx] = std::thread([&, pIdx]() {
-					recv[pIdx].getOPRFkeys(pIdx, bins, chls[pIdx], false);
+					recv[pIdx].getOPRFKeys(0,pIdx, bins, chls[pIdx], false);
 				});
 			}
 		}
@@ -1926,7 +1926,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize,  u64 nTrials)
 
 			//last thread for connecting with leader
 			pThrds[pThrds.size() - 1] = std::thread([&, leaderIdx]() {
-				//send[leaderIdx].getOPRFKeys(leaderIdx, bins, chls[leaderIdx], false);
+				//send[leaderIdx].getOPRFKeys(0,leaderIdx, bins, chls[leaderIdx], false);
 			});
 
 			for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)

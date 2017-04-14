@@ -25,7 +25,7 @@
 using namespace osuCrypto;
 #define PRINT
 
-
+u32 opt = 0;
 void nOPPRF2_EmptrySet_Test_Impl()
 {
     u64 setSize = 1<<5, psiSecParam = 40, bitSize = 128 , numParties=2;
@@ -66,7 +66,7 @@ void nOPPRF2_EmptrySet_Test_Impl()
  //   std::thread thrd([&]() {
 
 
-	//	send.init(numParties,setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
+	//	send.init(opt, numParties,setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
 	//	send.hash2Bins(sendSet, sendChl);
 		//send.getOPRFKeys(1,sendChl);
 		//send.sendSecretSharing(1, sendPayLoads, sendChl);
@@ -76,7 +76,7 @@ void nOPPRF2_EmptrySet_Test_Impl()
 		//Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
 		//send.mCuckooBins.print(1,true, true, false);
  //   });
-//	recv.init(numParties,setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
+//	recv.init(opt, numParties,setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 	//recv.hash2Bins(recvSet, recvChl);
 //	recv.getOPRFkeys(0, recvChl);
 	//recv.revSecretSharing(0, recvPayLoads, recvChl);
@@ -97,11 +97,11 @@ void nOPPRF2_EmptrySet_Test_Impl()
 	//	pThrds[pIdx] = std::thread([&, pIdx]() {
 	//		if (pIdx == 0)
 	//		{
-	//			send.init(numParties, setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
+	//			send.init(opt, numParties, setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
 
 	//		}
 	//		else if (pIdx == 1) {
-	//			recv.init(numParties, setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
+	//			recv.init(opt, numParties, setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 	//		}
 	//	});
 	//}
@@ -231,16 +231,16 @@ void nOPPRF_EmptrySet_Test_Impl()
 				for (u64 pIdx0 = 0; pIdx0 < pThrds0.size(); ++pIdx0)
 				{
 					pThrds0[pIdx0] = std::thread([&, pIdx0]() {
-						send[0][pIdx0+1].init(numParties, setSize, psiSecParam, bitSize, sendChl[pIdx0], 1.5*setSize, otSend0[pIdx0], otRecv1[pIdx0], prng.get<block>());
-						//send[0][2].init(numParties, setSize, psiSecParam, bitSize, sendChl2, otSend02, otRecv12, prng.get<block>());
+						send[0][pIdx0+1].init(opt,numParties, setSize, psiSecParam, bitSize, sendChl[pIdx0], 1.5*setSize, otSend0[pIdx0], otRecv1[pIdx0], prng.get<block>());
+						//send[0][2].init(opt, numParties, setSize, psiSecParam, bitSize, sendChl2, otSend02, otRecv12, prng.get<block>());
 					});
 				}
 				for (u64 pIdx0 = 0; pIdx0 < pThrds0.size(); ++pIdx0)
 					pThrds0[pIdx0].join();
 
 
-			//	send[0][1].init(numParties, setSize, psiSecParam, bitSize, sendChl[0], otSend0[0], otRecv1[0], prng.get<block>());
-			//	send[0][2].init(numParties, setSize, psiSecParam, bitSize, sendChl[1], otSend0[1], otRecv1[1], prng.get<block>());
+			//	send[0][1].init(opt, numParties, setSize, psiSecParam, bitSize, sendChl[0], otSend0[0], otRecv1[0], prng.get<block>());
+			//	send[0][2].init(opt, numParties, setSize, psiSecParam, bitSize, sendChl[1], otSend0[1], otRecv1[1], prng.get<block>());
 
 
 			}
@@ -250,17 +250,17 @@ void nOPPRF_EmptrySet_Test_Impl()
 				{
 					pThrds1[pIdx0] = std::thread([&, pIdx0]() {
 						if (pIdx0 == 0)
-							recv[pIdx][0].init(numParties, setSize, psiSecParam, bitSize, recvChl[0], 1.5*setSize, otRecv0[0], otSend1[0], ZeroBlock);
+							recv[pIdx][0].init(opt, numParties, setSize, psiSecParam, bitSize, recvChl[0], 1.5*setSize, otRecv0[0], otSend1[0], ZeroBlock);
 						else if (pIdx0 == 2)
-							send[pIdx][2].init(numParties, setSize, psiSecParam, bitSize, sendChl[2], 1.5*setSize, otSend0[2], otRecv1[2], prng.get<block>());
+							send[pIdx][2].init(opt, numParties, setSize, psiSecParam, bitSize, sendChl[2], 1.5*setSize, otSend0[2], otRecv1[2], prng.get<block>());
 					});
 				}
 					for (u64 pIdx0 = 0; pIdx0 < pThrds1.size(); ++pIdx0)
 						pThrds1[pIdx0].join();
 			}
 			else if (pIdx == 2) {
-				recv[pIdx][0].init(numParties, setSize, psiSecParam, bitSize, recvChl[1], 1.5*setSize, otRecv0[1], otSend1[1], ZeroBlock);
-				recv[pIdx][1].init(numParties, setSize, psiSecParam, bitSize, recvChl[2], 1.5*setSize, otRecv0[2], otSend1[2], ZeroBlock);
+				recv[pIdx][0].init(opt, numParties, setSize, psiSecParam, bitSize, recvChl[1], 1.5*setSize, otRecv0[1], otSend1[1], ZeroBlock);
+				recv[pIdx][1].init(opt, numParties, setSize, psiSecParam, bitSize, recvChl[2], 1.5*setSize, otRecv0[2], otSend1[2], ZeroBlock);
 
 			}
 		});
@@ -271,9 +271,9 @@ void nOPPRF_EmptrySet_Test_Impl()
 
 
 	/*std::thread thrd([&]() {
-		send.init(numParties, setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
+		send.init(opt, numParties, setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
 	});
-	recv.init(numParties, setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
+	recv.init(opt, numParties, setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 
 		thrd.join();*/
 
@@ -344,6 +344,7 @@ void nOPPRF_EmptrySet_Test_Impl()
 
 void nOPPRF3_EmptrySet_Test_Impl()
 {
+	
 	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128, numParties = 3;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 
@@ -403,17 +404,17 @@ void nOPPRF3_EmptrySet_Test_Impl()
 	//	pThrds[pIdx] = std::thread([&, pIdx]() {
 	//		if(pIdx==0)
 	//		{
-	//			send01.init(numParties, setSize, psiSecParam, bitSize, sendChl01, otSend0[1], otRecv0[1], prng.get<block>());
-	//		//	send02.init(numParties, setSize, psiSecParam, bitSize, sendChl02, otSend0[2], otRecv0[2], prng.get<block>());
+	//			send01.init(opt, numParties, setSize, psiSecParam, bitSize, sendChl01, otSend0[1], otRecv0[1], prng.get<block>());
+	//		//	send02.init(opt, numParties, setSize, psiSecParam, bitSize, sendChl02, otSend0[2], otRecv0[2], prng.get<block>());
 
 	//		}
 	//		else if (pIdx == 1) {
-	//			recv10.init(numParties, setSize, psiSecParam, bitSize, recvChl10, otRecv1[0], otSend1[0], ZeroBlock);
+	//			recv10.init(opt, numParties, setSize, psiSecParam, bitSize, recvChl10, otRecv1[0], otSend1[0], ZeroBlock);
 
 	//		}
 	//		else
 	//		{ 
-	//		//	recv20.init(numParties, setSize, psiSecParam, bitSize, recvChl20, otRecv2[0], otSend2[0], ZeroBlock);
+	//		//	recv20.init(opt, numParties, setSize, psiSecParam, bitSize, recvChl20, otRecv2[0], otSend2[0], ZeroBlock);
 
 	//		}
 	//	});
@@ -523,9 +524,9 @@ void nOPPRF_EmptrySet_hashing_Test_Impl()
 
 	std::thread thrd([&]() {
 
-		bins[0].init(0, numParties, setSize, psiSecParam);
+		bins[0].init(opt, numParties, setSize, psiSecParam);
 		u64 otCounts = bins[0].mSimpleBins.mBins.size();
-		send[0].init(numParties, setSize, psiSecParam, bitSize, sendChl, otCounts,otSend[0], otRecv[0], prng.get<block>());
+		send[0].init(opt, numParties, setSize, psiSecParam, bitSize, sendChl, otCounts,otSend[0], otRecv[0], prng.get<block>());
 
 
 		bins[0].hashing2Bins(sendSet, 2);
@@ -557,11 +558,11 @@ void nOPPRF_EmptrySet_hashing_Test_Impl()
 
 	});
 
-	bins[1].init(0, numParties, setSize, psiSecParam);
+	bins[1].init(opt, numParties, setSize, psiSecParam);
 
 	u64 otCountRecv = bins[1].mCuckooBins.mBins.size();
 
-	recv[0].init(numParties, setSize, psiSecParam, bitSize, recvChl, otCountRecv,otRecv[1], otSend[1], ZeroBlock);
+	recv[0].init(opt, numParties, setSize, psiSecParam, bitSize, recvChl, otCountRecv,otRecv[1], otSend[1], ZeroBlock);
 
 	bins[1].hashing2Bins(recvSet, 2);
 
@@ -715,10 +716,10 @@ void nParty(u64 myIdx)
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			if (pIdx < myIdx) {
 				//I am a receiver if other party idx < mine
-				recv[myIdx].init(mParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountRecv,otRecv[pIdx], otSend[pIdx], ZeroBlock);
+				recv[myIdx].init(opt, mParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountRecv,otRecv[pIdx], otSend[pIdx], ZeroBlock);
 			}
 			else if (pIdx > myIdx) {
-				send[myIdx].init(mParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountSend, otSend[pIdx], otRecv[pIdx], prng.get<block>());
+				send[myIdx].init(opt, mParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountSend, otSend[pIdx], otRecv[pIdx], prng.get<block>());
 			}
 		});
 	}
@@ -803,10 +804,10 @@ void nParty(u64 myIdx)
 	//	pThrds[pIdx] = std::thread([&, pIdx]() {
 	//		if (pIdx < myIdx) {
 	//			//I am a receiver if other party idx < mine
-	//			recv[pIdx].init(mParties, setSize, psiSecParam, bitSize, chls[pIdx], otRecv[pIdx], otSend[pIdx], ZeroBlock);
+	//			recv[pIdx].init(opt, mParties, setSize, psiSecParam, bitSize, chls[pIdx], otRecv[pIdx], otSend[pIdx], ZeroBlock);
 	//		}
 	//		else if (pIdx > myIdx) {
-	//			send[pIdx].init(mParties, setSize, psiSecParam, bitSize, chls[pIdx], otSend[pIdx], otRecv[pIdx], prng.get<block>());
+	//			send[pIdx].init(opt, mParties, setSize, psiSecParam, bitSize, chls[pIdx], otSend[pIdx], otRecv[pIdx], prng.get<block>());
 	//		}
 	//	});
 	//}

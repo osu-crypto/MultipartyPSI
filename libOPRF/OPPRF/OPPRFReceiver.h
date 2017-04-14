@@ -19,6 +19,7 @@ namespace osuCrypto
         //static const u64 CodeWordSize = 7;
         //static const u64 hasherStepSize;
 
+		u32 mOpt;
         u64 mN, mParties, mStatSecParam, mNcoInputBlkSize;// , mOtMsgBlkSize;
         block mHashingSeed;
         std::vector<u64> mIntersection;
@@ -31,8 +32,8 @@ namespace osuCrypto
 		//SimpleHasher1 mSimpleBins;
         PRNG mPrng;
 
-		void init(u64 numParties, u64 n, u64 statSecParam, u64 inputBitSize, Channel& chl0, u64 otCounts, NcoOtExtReceiver& otRecv, NcoOtExtSender& otSend, block seed, bool isOtherDirection=true);
-		void init(u64 numParties, u64 n, u64 statSecParam, u64 inputBitSize, const std::vector<Channel*>& chls, u64 otCounts, NcoOtExtReceiver& ots, NcoOtExtSender& otSend, block seed, bool isOtherDirection=true);
+		void init(u32 opt, u64 numParties, u64 n, u64 statSecParam, u64 inputBitSize, Channel& chl0, u64 otCounts, NcoOtExtReceiver& otRecv, NcoOtExtSender& otSend, block seed, bool isOtherDirection=true);
+		void init(u32 opt, u64 numParties, u64 n, u64 statSecParam, u64 inputBitSize, const std::vector<Channel*>& chls, u64 otCounts, NcoOtExtReceiver& ots, NcoOtExtSender& otSend, block seed, bool isOtherDirection=true);
 
 	
 

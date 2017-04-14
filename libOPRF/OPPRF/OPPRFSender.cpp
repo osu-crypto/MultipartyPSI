@@ -22,21 +22,22 @@ namespace osuCrypto
     {
     }
 
-    void OPPRFSender::init(u64 numParties, u64 setSize, u64 statSec, u64 inputBitSize,
+    void OPPRFSender::init(u32 opt, u64 numParties, u64 setSize, u64 statSec, u64 inputBitSize,
         Channel & chl0, u64 otCounts,
         NcoOtExtSender&  otSend,
 		NcoOtExtReceiver& otRecv,
         block seed, bool isOtherDirection)
     {
-        init(numParties, setSize,  statSec, inputBitSize, { &chl0 }, otCounts, otSend, otRecv, seed, isOtherDirection);
+        init(opt, numParties, setSize,  statSec, inputBitSize, { &chl0 }, otCounts, otSend, otRecv, seed, isOtherDirection);
     }
 
-    void OPPRFSender::init(u64 numParties, u64 setSize,  u64 statSec, u64 inputBitSize,
+    void OPPRFSender::init(u32 opt, u64 numParties, u64 setSize,  u64 statSec, u64 inputBitSize,
         const std::vector<Channel*>& chls, u64 otCounts,
         NcoOtExtSender& otSend,
 		NcoOtExtReceiver& otRecv,
         block seed, bool isOtherDirection)
 	{
+		mOpt = opt;
 		mStatSecParam = statSec;
 		mN = setSize;
 		mParties = numParties;
@@ -225,109 +226,6 @@ namespace osuCrypto
 		getOPRFKeys(IdxParty, bins,{ &chl }, isOtherDirectionGetOPRF);
 	}
 
-	void Bit_Position_Random_Test_Impl11()
-	{
-		u64 power = 20;
-		u64 setSize = 1 << power;
-
-		PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
-
-
-		SimpleHasher1 mSimpleBins;
-		mSimpleBins.init(setSize);
-		std::vector<u64> tempIdxBuff(setSize);
-		MatrixView<u64> hashes(setSize, mSimpleBins.mNumHashes[0]);
-
-		for (u64 j = 0; j < setSize; ++j)
-		{
-			tempIdxBuff[j] = j;
-			for (u64 k = 0; k <mSimpleBins.mNumHashes[0]; ++k)
-			{
-				block a = prng.get<block>();
-				hashes[j][k] = *(u64*)&a;
-			}
-		}
-
-		mSimpleBins.insertBatch(tempIdxBuff, hashes);
-
-		for (u64 bIdx = 0; bIdx < mSimpleBins.mBins.size(); ++bIdx)
-		{
-			auto& bin = mSimpleBins.mBins[bIdx];
-			if (bin.mIdx.size() > 0)
-			{
-				bin.mValOPRF.resize(1);
-				bin.mBits.resize(1);
-				bin.mValOPRF[0].resize(bin.mIdx.size());
-
-				for (u64 i = 0; i < bin.mIdx.size(); ++i)
-				{
-					bin.mValOPRF[0][i] = prng.get<block>();
-				}
-			}
-		}
-
-		Timer mTimer;
-		double mTime = 0;
-
-		auto start = mTimer.setTimePoint("getPos1.start");
-
-		for (u64 bIdx = 0; bIdx < mSimpleBins.mBinCount[0]; ++bIdx)
-		{
-			auto& bin = mSimpleBins.mBins[bIdx];
-			if (bin.mIdx.size() > 0)
-			{
-				bin.mBits[0].init(mSimpleBins.mNumBits[0]);
-				bin.mBits[0].getPos1(bin.mValOPRF[0], 128);
-			}
-
-		}
-		auto mid = mTimer.setTimePoint("getPos1.mid");
-
-		for (u64 bIdx = 0; bIdx < mSimpleBins.mBinCount[1]; ++bIdx)
-		{
-			auto& bin = mSimpleBins.mBins[mSimpleBins.mBinCount[0] + bIdx];
-			if (bin.mIdx.size() > 0)
-			{
-				bin.mBits[0].init(mSimpleBins.mNumBits[1]);
-				bin.mBits[0].getPos1(bin.mValOPRF[0], 128);
-			}
-		}
-
-		auto end = mTimer.setTimePoint("getPos1.done");
-		double time1 = std::chrono::duration_cast<std::chrono::milliseconds>(mid - start).count();
-		double time2 = std::chrono::duration_cast<std::chrono::milliseconds>(end - mid).count();
-		double time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-		Log::out << "time1= " << time1 << "\n";
-		Log::out << "time2= " << time2 << "\n";
-		Log::out << "total= " << time << "\n";
-
-		//mSimpleBins.print(0, true, true, true, true);
-		/*BaseOPPRF b;
-
-		std::set<int> rs;
-		b.init(4);
-		Timer mTimer;
-		auto start = mTimer.setTimePoint("getPos1.start");
-		b.getPos1(testSet, 128);
-		auto end = mTimer.setTimePoint("getPos1.done");
-		double time= std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-		Log::out << "time= " << time << "\n";
-
-		Log::out << "    getPos= ";
-		for (u64 j = 0; j < b.mPos.size(); ++j)
-		{
-		Log::out << static_cast<int16_t>(b.mPos[j]) << " ";
-		}
-		Log::out << Log::endl;
-
-		for (u64 j = 0; j < b.mMaps.size(); ++j)
-		{
-		Log::out << testSet[j] << " " << static_cast<int16_t>(b.mMaps[j]) << " " << Log::endl;
-		}*/
-		Log::out << Log::endl;
-
-	}
-
 	void  OPPRFSender::getOPRFKeys(u64 IdxP, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF)
 	{
 		
@@ -415,12 +313,15 @@ namespace osuCrypto
 						else
 							bin.mBits[IdxP].init(/*bin.mIdx.size(), */bins.mSimpleBins.mNumBits[1]);
 
-						auto start = mTimer.setTimePoint("getPos1.start");
-						bin.mBits[IdxP].getPos1(bin.mValOPRF[IdxP], 128);
-						auto end = mTimer.setTimePoint("getPos1.done");
-						
-						mPosBitsTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-					
+						//Table-based-OPPRF
+						if (mOpt == 0)
+						{
+							auto start = mTimer.setTimePoint("getPos1.start");
+							bin.mBits[IdxP].getPos1(bin.mValOPRF[IdxP], 128);
+							auto end = mTimer.setTimePoint("getPos1.done");
+
+							mPosBitsTime += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+						}
 						//bin.mBits[IdxP].getMasks(bin.mValOPRF[IdxP]);
 						//std::cout << ", "
 						//	<< static_cast<int16_t>(bin.mBits[IdxP].mMaps[0]) << std::endl;
@@ -519,8 +420,6 @@ namespace osuCrypto
 		if (maskSize > sizeof(block))
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
-
-
 		std::vector<std::thread>  thrds(chls.size());
 		// std::vector<std::thread>  thrds(1);        
 
@@ -581,7 +480,6 @@ namespace osuCrypto
 							if (bin.mIdx.size() > 0)
 							{
 								//copy bit locations in which all OPRF values are distinct
-
 							//	Log::out << "    c_mPos= ";
 
 								if (bin.mBits[IdxP].mPos.size() != bins.mSimpleBins.mNumBits[bIdxType])
@@ -594,9 +492,7 @@ namespace osuCrypto
 									Log::out << "mSimpleBins.mNumBits[bIdxType]: " << bins.mSimpleBins.mNumBits[bIdxType] << Log::endl;
 #endif // PRINT
 									throw std::runtime_error("bin.mBits.mPos.size()!= mBins.mNumBits");
-
 								}
-
 								//copy bit positions
 								for (u64 idxPos = 0; idxPos < bin.mBits[IdxP].mPos.size(); idxPos++)
 								{
@@ -606,7 +502,6 @@ namespace osuCrypto
 										(u8*)&bin.mBits[IdxP].mPos[idxPos], sizeof(u8));
 								}
 								//Log::out << Log::endl;
-
 
 								for (u64 i = 0; i < bin.mIdx.size(); ++i)
 								{

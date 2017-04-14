@@ -21,6 +21,7 @@ namespace osuCrypto
         OPPRFSender();
         ~OPPRFSender();
 
+		u32 mOpt;
         u64 mN, mParties, mStatSecParam, mNcoInputBlkSize,  mOtMsgBlkSize;
         block mHashingSeed;
 		//SimpleHasher1 mSimpleBins;
@@ -38,13 +39,13 @@ namespace osuCrypto
 		std::vector<std::unique_ptr<NcoOtExtReceiver>> mOtRecvs;
 		//std::vector<std::vector<block>> mNcoInputBuff;
 
-        void init(u64 numParties, u64 setSize,  u64 statSecParam, u64 inputBitSize,
+        void init(u32 opt, u64 numParties, u64 setSize,  u64 statSecParam, u64 inputBitSize,
             const std::vector<Channel*>& chls, u64 otCounts,
             NcoOtExtSender& ots, 
 			NcoOtExtReceiver& otRecv,
             block seed, bool isOtherDirection=true);
 
-        void init(u64 numParties, u64 setSize,u64 statSecParam, u64 inputBitSize,
+        void init(u32 opt,u64 numParties, u64 setSize,u64 statSecParam, u64 inputBitSize,
             Channel & chl0, u64 otCounts,
             NcoOtExtSender& ots,
 			NcoOtExtReceiver& otRecv,

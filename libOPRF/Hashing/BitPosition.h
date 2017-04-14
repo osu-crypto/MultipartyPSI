@@ -9,6 +9,16 @@
 #include <unordered_map>
 //#define THREAD_SAFE_CUCKOO
 #include <set>
+#include "NTL/GF2EX.h"
+#include "NTL/GF2XFactoring.h"
+#include <NTL/GF2E.h>
+#include "NTL/GF2EX.h"
+#include <NTL/ZZ_pE.h>
+#include <NTL/vec_ZZ_pE.h>
+#include "NTL/GF2EX.h"
+#include "NTL/ZZ_p.h"
+#include "NTL/GF2EX.h" 
+#include "NTL/GF2XFactoring.h"
 
 namespace osuCrypto
 {
@@ -38,6 +48,14 @@ namespace osuCrypto
 		//int isSet(block& codeword, int pos);
 		//void setBit(block& codeword, int pos);
 		//bool TestBitN(__m128i value, int N);
+
+		//#################POLYNOMIAL
+		void GF2EFromBlock(NTL::GF2E &element, block& blk);
+		void BlockFromGF2E(block& blk, NTL::GF2E & element);
+		//computes coefficients (in blocks) of f such that f(x[i]) = y[i]
+		void getBlkCoefficients(u64 degree, std::vector<block>& setX, std::vector<block>& setY, std::vector<block>& coeffs);
+		//compute y=f(x) giving coefficients (in block)
+		void evalPolynomial(std::vector<block>& coeffs, block& x, block& y);
     };
 
 }

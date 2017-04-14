@@ -37,6 +37,7 @@ using namespace osuCrypto;
 #define PRINT
 //#define BIN_PRINT
 
+u32 opt = 0;
 void testPointer(std::vector<block>* test)
 {
 	//int length = test->size();
@@ -574,7 +575,7 @@ void OPPRF2_EmptrySet_Test_Impl()
 	//   std::thread thrd([&]() {
 
 
-	   //	send.init(numParties,setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
+	   //	send.init(opt, numParties,setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
 	   //	send.hash2Bins(sendSet, sendChl);
 		   //send.getOPRFKeys(1,sendChl);
 		   //send.sendSecretSharing(1, sendPayLoads, sendChl);
@@ -584,7 +585,7 @@ void OPPRF2_EmptrySet_Test_Impl()
 		   //Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
 		   //send.mCuckooBins.print(1,true, true, false);
 	//   });
-   //	recv.init(numParties,setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
+   //	recv.init(opt, numParties,setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 	   //recv.hash2Bins(recvSet, recvChl);
    //	recv.getOPRFkeys(0, recvChl);
 	   //recv.revSecretSharing(0, recvPayLoads, recvChl);
@@ -605,11 +606,11 @@ void OPPRF2_EmptrySet_Test_Impl()
 		//	pThrds[pIdx] = std::thread([&, pIdx]() {
 		//		if (pIdx == 0)
 		//		{
-		//			send.init(numParties, setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
+		//			send.init(opt, numParties, setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
 
 		//		}
 		//		else if (pIdx == 1) {
-		//			recv.init(numParties, setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
+		//			recv.init(opt, numParties, setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 		//		}
 		//	});
 		//}
@@ -724,15 +725,15 @@ void OPPRF_EmptrySet_Test_Impl()
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			if (pIdx == 0)
 			{
-				send.init(numParties, setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
-				send2.init(numParties, setSize, psiSecParam, bitSize, sendChl2, otSend02, otRecv12, prng.get<block>());
+				send.init(opt, numParties, setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
+				send2.init(opt, numParties, setSize, psiSecParam, bitSize, sendChl2, otSend02, otRecv12, prng.get<block>());
 
 			}
 			else if (pIdx == 1) {
-				recv.init(numParties, setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
+				recv.init(opt, numParties, setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 			}
 			else if (pIdx == 2) {
-				recv2.init(numParties, setSize, psiSecParam, bitSize, recvChl2, otRecv02, otSend12, ZeroBlock);
+				recv2.init(opt, numParties, setSize, psiSecParam, bitSize, recvChl2, otRecv02, otSend12, ZeroBlock);
 			}
 		});
 	}
@@ -742,9 +743,9 @@ void OPPRF_EmptrySet_Test_Impl()
 
 
 		/*std::thread thrd([&]() {
-			send.init(numParties, setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
+			send.init(opt, numParties, setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
 		});
-		recv.init(numParties, setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
+		recv.init(opt, numParties, setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 
 			thrd.join();*/
 
@@ -866,17 +867,17 @@ void OPPRF3_EmptrySet_Test_Impl_draft()
 	//	pThrds[pIdx] = std::thread([&, pIdx]() {
 	//		if(pIdx==0)
 	//		{
-	//			send01.init(numParties, setSize, psiSecParam, bitSize, sendChl01, otSend0[1], otRecv0[1], prng.get<block>());
-	//		//	send02.init(numParties, setSize, psiSecParam, bitSize, sendChl02, otSend0[2], otRecv0[2], prng.get<block>());
+	//			send01.init(opt, numParties, setSize, psiSecParam, bitSize, sendChl01, otSend0[1], otRecv0[1], prng.get<block>());
+	//		//	send02.init(opt, numParties, setSize, psiSecParam, bitSize, sendChl02, otSend0[2], otRecv0[2], prng.get<block>());
 
 	//		}
 	//		else if (pIdx == 1) {
-	//			recv10.init(numParties, setSize, psiSecParam, bitSize, recvChl10, otRecv1[0], otSend1[0], ZeroBlock);
+	//			recv10.init(opt, numParties, setSize, psiSecParam, bitSize, recvChl10, otRecv1[0], otSend1[0], ZeroBlock);
 
 	//		}
 	//		else
 	//		{ 
-	//		//	recv20.init(numParties, setSize, psiSecParam, bitSize, recvChl20, otRecv2[0], otSend2[0], ZeroBlock);
+	//		//	recv20.init(opt, numParties, setSize, psiSecParam, bitSize, recvChl20, otRecv2[0], otSend2[0], ZeroBlock);
 
 	//		}
 	//	});
@@ -987,7 +988,7 @@ void OPPRF_EmptrySet_hashing_Test_Impl()
 	std::thread thrd([&]() {
 		bins[0].init(0, numParties, setSize, psiSecParam);
 		u64 otCountSend = bins[0].mSimpleBins.mBins.size();
-		send[0].init(numParties, setSize, psiSecParam, bitSize, sendChl, otCountSend, otSend[0], otRecv[0], prng.get<block>());
+		send[0].init(opt, numParties, setSize, psiSecParam, bitSize, sendChl, otCountSend, otSend[0], otRecv[0], prng.get<block>());
 
 
 		bins[0].hashing2Bins(sendSet, 2);
@@ -1022,7 +1023,7 @@ void OPPRF_EmptrySet_hashing_Test_Impl()
 	bins[1].init(1, numParties, setSize, psiSecParam);
 	u64 otCountRecv = bins[1].mCuckooBins.mBins.size();
 
-	recv[0].init(numParties, setSize, psiSecParam, bitSize, recvChl, otCountRecv, otRecv[1], otSend[1], ZeroBlock);
+	recv[0].init(opt, numParties, setSize, psiSecParam, bitSize, recvChl, otCountRecv, otRecv[1], otSend[1], ZeroBlock);
 
 	bins[1].hashing2Bins(recvSet, 2);
 
@@ -1273,10 +1274,10 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			if (pIdx < myIdx) {
 				//I am a receiver if other party idx < mine
-				recv[pIdx].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountRecv, otRecv[pIdx], otSend[pIdx], ZeroBlock, true);
+				recv[pIdx].init(opt, nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountRecv, otRecv[pIdx], otSend[pIdx], ZeroBlock, true);
 			}
 			else if (pIdx > myIdx) {
-				send[pIdx - myIdx - 1].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountSend, otSend[pIdx], otRecv[pIdx], prng.get<block>(), true);
+				send[pIdx - myIdx - 1].init(opt, nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountSend, otSend[pIdx], otRecv[pIdx], prng.get<block>(), true);
 			}
 		});
 	}
@@ -1673,12 +1674,12 @@ void party3(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			if (pIdx == nextNeibough) {
 				//I am a sender to my next neigbour
-				send.init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountSend, otSend[pIdx], otRecv[pIdx], prng.get<block>(), false);
+				send.init(opt, nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountSend, otSend[pIdx], otRecv[pIdx], prng.get<block>(), false);
 
 			}
 			else if (pIdx == prevNeibough) {
 				//I am a recv to my previous neigbour
-				recv.init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountRecv, otRecv[pIdx], otSend[pIdx], ZeroBlock, false);
+				recv.init(opt, nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountRecv, otRecv[pIdx], otSend[pIdx], ZeroBlock, false);
 			}
 		});
 	}
@@ -2082,7 +2083,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 
 
 						//prevIdx << " --> " << myIdx
-						recv[prevIdx].init(nParties, setSize, psiSecParam, bitSize, chls[prevIdx], otCountRecv, otRecv[prevIdx], otSend[prevIdx], ZeroBlock, false);
+						recv[prevIdx].init(opt, nParties, setSize, psiSecParam, bitSize, chls[prevIdx], otCountRecv, otRecv[prevIdx], otSend[prevIdx], ZeroBlock, false);
 
 					});
 
@@ -2108,7 +2109,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 							std::cout << myIdx << "| d: " << "| thr[" << pIdx << "]:" << myIdx << " <->> " << nextIdx << ": " << static_cast<int16_t>(dummy[nextIdx]) << "\n";
 							std::cout << IoStream::unlock;
 
-							send[nextIdx].init(nParties, setSize, psiSecParam, bitSize, chls[nextIdx], otCountSend, otSend[nextIdx], otRecv[nextIdx], prng.get<block>(), true);
+							send[nextIdx].init(opt, nParties, setSize, psiSecParam, bitSize, chls[nextIdx], otCountSend, otSend[nextIdx], otRecv[nextIdx], prng.get<block>(), true);
 						}
 						else if (myIdx > nextIdx) //by index
 						{
@@ -2118,7 +2119,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 							std::cout << myIdx << "| d: " << "| thr[" << pIdx << "]:" << myIdx << " <<-> " << nextIdx << ": " << static_cast<int16_t>(revDummy[nextIdx]) << "\n";
 							std::cout << IoStream::unlock;
 
-							recv[nextIdx].init(nParties, setSize, psiSecParam, bitSize, chls[nextIdx], otCountRecv, otRecv[nextIdx], otSend[nextIdx], ZeroBlock, true);
+							recv[nextIdx].init(opt, nParties, setSize, psiSecParam, bitSize, chls[nextIdx], otCountRecv, otRecv[nextIdx], otSend[nextIdx], ZeroBlock, true);
 						}
 					});
 
@@ -2131,7 +2132,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 						std::cout << IoStream::lock;
 						std::cout << myIdx << "| : " << "| thr[" << pIdx << "]:" << myIdx << " -> " << nextIdx << ": " << static_cast<int16_t>(dummy[nextIdx]) << "\n";
 						std::cout << IoStream::unlock;
-						send[nextIdx].init(nParties, setSize, psiSecParam, bitSize, chls[nextIdx], otCountSend, otSend[nextIdx], otRecv[nextIdx], prng.get<block>(), false);
+						send[nextIdx].init(opt, nParties, setSize, psiSecParam, bitSize, chls[nextIdx], otCountSend, otSend[nextIdx], otRecv[nextIdx], prng.get<block>(), false);
 					});
 				}
 			}
@@ -2146,7 +2147,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 				std::cout << myIdx << "| : " << "| thr[" << pThrds.size() - 1 << "]:" << myIdx << " --> " << leaderIdx << ": " << static_cast<int16_t>(dummy[leaderIdx]) << "\n";
 				std::cout << IoStream::unlock;
 
-				send[leaderIdx].init(nParties, setSize, psiSecParam, bitSize, chls[leaderIdx], otCountSend, otSend[leaderIdx], otRecv[leaderIdx], prng.get<block>(), false);
+				send[leaderIdx].init(opt, nParties, setSize, psiSecParam, bitSize, chls[leaderIdx], otCountSend, otSend[leaderIdx], otRecv[leaderIdx], prng.get<block>(), false);
 			});
 
 		}
@@ -2161,7 +2162,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 					std::cout << myIdx << "| : " << "| thr[" << pIdx << "]:" << pIdx << " --> " << myIdx << ": " << static_cast<int16_t>(revDummy[pIdx]) << "\n";
 					std::cout << IoStream::unlock;
 
-					recv[pIdx].init(nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountRecv, otRecv[pIdx], otSend[pIdx], ZeroBlock, false);
+					recv[pIdx].init(opt, nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountRecv, otRecv[pIdx], otSend[pIdx], ZeroBlock, false);
 				});
 
 			}
@@ -2831,13 +2832,13 @@ void OPPRF3_EmptrySet_Test_Impl()
 
 }
 
-void GF2EFromBlock(NTL::GF2E &element, block& blk) {
+void GF2EFromBlock(NTL::GF2E &element, block& blk,u64 size) {
 
 	NTL::GF2X x1;
 	NTL::BuildIrred(x1, 128);
 	NTL::GF2E::init(x1);
 	//convert the Block to GF2X element.
-	NTL::GF2XFromBytes(x1, (u8*)&blk, sizeof(block));
+	NTL::GF2XFromBytes(x1, (u8*)&blk, size);
 	element = to_GF2E(x1);
 }
 
@@ -2848,43 +2849,46 @@ void BlockFromGF2E(block& blk, NTL::GF2E & element) {
 	BytesFromGF2X((u8*)&blk, fromEl, sizeof(block));
 }
 
+
 //computes coefficients (in blocks) of f such that f(x[i]) = y[i]
 void getBlkCoefficients(u64 degree, std::vector<block>& setX, std::vector<block>& setY, std::vector<block>& coeffs)
 {
 	NTL::vec_GF2E x; NTL::vec_GF2E y;
 	NTL::GF2E e;
 
-	
-
 	for (u64 i = 0; i < setX.size(); ++i)
 	{
-		GF2EFromBlock(e, setX[i]);
+		GF2EFromBlock(e, setX[i],sizeof(block));
 		x.append(e);
 
-		GF2EFromBlock(e, setY[i]);
+		GF2EFromBlock(e, setY[i], sizeof(block));
 		y.append(e);
 	}
 
+	for (u64 i = setX.size(); i < degree; ++i)
+	{
+		NTL::random(e);
+		x.append(e);
+		NTL::random(e);
+		y.append(e);
+	}
 	//interpolate
-	NTL::GF2EX polynomial;
-	NTL::GF2EX real_polynomial = NTL::interpolate(x, y);
+	NTL::GF2EX polynomial = NTL::interpolate(x, y);
 
-	std::cout << NTL::deg(real_polynomial) << std::endl;
+	TODO("better to have dummpy_pol * real_pol");
+	//NTL::GF2EX real_polynomial = NTL::interpolate(x, y);
+	//std::cout << NTL::deg(real_polynomial) << std::endl;
 
-	NTL::GF2EX dummy_polynomial;
-	NTL::random(dummy_polynomial, 1);
+	//NTL::GF2EX dummy_polynomial= NTL::interpolate(x1, y1);
+	//NTL::random(dummy_polynomial, 1);
+	//std::cout << NTL::deg(dummy_polynomial) << std::endl;
 
-//	std::cout << NTL::deg(dummy_polynomial) << std::endl;
+	// NTL::mul(polynomial,dummy_polynomial, real_polynomial);
 
-	 NTL::mul(polynomial,dummy_polynomial, real_polynomial);
-	//NTL::sqr(polynomial, real_polynomial);
 
-	std::cout << NTL::deg(polynomial) << std::endl;
-	//polynomial = real_polynomial;
 
 	////convert coefficient to vector<block> 
 	coeffs.resize(NTL::deg(polynomial) + 1);
-
 	for (int i = 0; i < coeffs.size(); i++) {
 		//get the coefficient polynomial
 		e = NTL::coeff(polynomial, i);
@@ -2900,11 +2904,11 @@ void evalPolynomial(std::vector<block>& coeffs, block& x, block& y)
 	std::cout << coeffs.size() << std::endl;
 	for (u64 i = 0; i < coeffs.size(); ++i)
 	{
-		GF2EFromBlock(e, coeffs[i]);
+		GF2EFromBlock(e, coeffs[i], sizeof(block));
 		NTL::SetCoeff(res_polynomial, i, e); //build res_polynomial
 	}
 
-	GF2EFromBlock(e, x);
+	GF2EFromBlock(e, x, sizeof(block));
 	e = NTL::eval(res_polynomial, e); //get y=f(x) in GF2E
 	BlockFromGF2E(y, e); //convert to block 
 }
@@ -2914,7 +2918,7 @@ void polynomial_Test_Impl()
 
 	std::vector<block> mSetX, mSetY;
 
-	u64 setSize = 5;
+	u64 setSize = 10;
 	u64 MaxSetSize = 17;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	mSetX.resize(setSize);
@@ -2923,46 +2927,47 @@ void polynomial_Test_Impl()
 	{
 		mSetX[i] = prng.get<block>();
 		mSetY[i] = prng.get<block>();
-	//	std::cout << mSetY[i] << std::endl;
+		//	std::cout << mSetY[i] << std::endl;
 	}
-	std::cout <<  std::endl;
+	std::cout << std::endl;
 	std::vector<block> coeffs;
-	getBlkCoefficients(MaxSetSize-1, mSetX, mSetY, coeffs);
+	getBlkCoefficients(MaxSetSize - 1, mSetX, mSetY, coeffs);
 
 	block blkY;
 	for (int i = 0; i < mSetY.size(); ++i)
 	{
-		
+
 		evalPolynomial(coeffs, mSetX[i], blkY);
 
-		std::cout << blkY <<" -- " << mSetY[i] << std::endl;
-		//std::cout << mSetY[i] << std::endl;
+		std::cout << blkY << " -- " << mSetY[i] << std::endl;
 
-		/*if (neq(blkY, mSetY[i]))
-			throw UnitTestFail();		*/
+		if (neq(blkY, mSetY[i]))
+			throw UnitTestFail();
 	}
 	block blkX = prng.get<block>();
 	evalPolynomial(coeffs, blkX, blkY);
+	std::cout << blkX << " -- " << blkY << std::endl;
+
 	/*if (eq(blkX, blkY))
-		throw UnitTestFail();*/
+	throw UnitTestFail();*/
 
 	NTL::GF2EX p1;
 	NTL::random(p1, 1);
 	std::cout << NTL::deg(p1) << std::endl;
 
-	
-	for (u32 i = 0; i < NTL::deg(p1)+1; i++)
+
+	for (u32 i = 0; i < NTL::deg(p1) + 1; i++)
 	{
 		NTL::GF2E x1;
 		NTL::GetCoeff(x1, p1, 0);
 		std::cout << x1 << std::endl;
 	}
-	
+
 
 	NTL::GF2EX p2;
 	NTL::random(p2, 1);
 	std::cout << NTL::deg(p2) << std::endl;
-	
+
 	for (u32 i = 0; i < NTL::deg(p2) + 1; i++)
 	{
 		NTL::GF2E x1;
