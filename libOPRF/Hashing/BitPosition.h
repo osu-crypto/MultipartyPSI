@@ -13,11 +13,11 @@
 namespace osuCrypto
 {
  
-    class BitPosition
+    class BaseOPPRF
     {
     public:
-		BitPosition();
-        ~BitPosition();
+		BaseOPPRF();
+        ~BaseOPPRF();
 
     
         u64 mRealBitSize, mMaxBitSize, mNumTrial;

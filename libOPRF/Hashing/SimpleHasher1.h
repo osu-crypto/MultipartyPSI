@@ -41,7 +41,7 @@ namespace osuCrypto
 		struct Bin
 		{
 			std::vector<u64> mIdx; //have many items in the bin
-			std::vector<BitPosition> mBits;//mBits[IdxParty]
+			std::vector<BaseOPPRF> mBits;//mBits[IdxParty]
 			std::vector<std::vector<block>> mValOPRF; //mValOPRF[IdxParty][mIdx]
 		};
 		u64  mRepSize, mInputBitSize, mN;

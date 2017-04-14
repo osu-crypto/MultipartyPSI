@@ -32,7 +32,6 @@
 #include "NTL/GF2EX.h" 
 #include "NTL/GF2XFactoring.h"
 #include "Common/Log.h"
-using namespace NTL;
 
 using namespace osuCrypto;
 #define PRINT
@@ -94,7 +93,7 @@ void Bit_Position_Test_Impl()
 
 	block test = ZeroBlock;
 	test.m128i_i8[0] = 31;
-	BitPosition b;
+	BaseOPPRF b;
 	b.init(5);
 	for (int i = 0; i < 3; ++i) b.mPos.insert(i);
 	b.mPos.insert(6);
@@ -103,7 +102,7 @@ void Bit_Position_Test_Impl()
 	//std::cout << static_cast<int16_t>(b.map2(test));
 
 
-	BitPosition b2;
+	BaseOPPRF b2;
 	b2.init(setSize);
 	//std::cout << "size: " << b2.mSize << std::endl;
 
@@ -223,13 +222,13 @@ void Bit_Position_Recursive_Test_Impl()
 	//	testSet[i].m128i_u16[2] = 1 << i;
 	//}
 
-	BitPosition b;
+	BaseOPPRF b;
 
 #if 0
 	block test = ZeroBlock;
 	//test.m128i_i8[0] = 126;
 
-	BitPosition b;
+	BaseOPPRF b;
 	b.init(5, 5);
 	for (size_t i = 0; i < 8; i++)
 	{
@@ -359,7 +358,7 @@ void Bit_Position_Random_Test_Impl()
 	Log::out << "total= " << time << "\n";
 
 	mSimpleBins.print(0, true, true, true, true);
-	/*BitPosition b;
+	/*BaseOPPRF b;
 
 	std::set<int> rs;
 	b.init(4);
@@ -2832,68 +2831,74 @@ void OPPRF3_EmptrySet_Test_Impl()
 
 }
 
-NTL::GF2E convertBytesToGF2E(block& blk) {
+void GF2EFromBlock(NTL::GF2E &element, block& blk) {
 
-	//translate the bytes into a GF2X element.
-	NTL::GF2X e;
-	NTL::GF2XFromBytes(e, (u8*)&blk, sizeof(block));
-
-	//convert the GF2X to GF2E
-	return to_GF2E(e);
+	NTL::GF2X x1;
+	NTL::BuildIrred(x1, 128);
+	NTL::GF2E::init(x1);
+	//convert the Block to GF2X element.
+	NTL::GF2XFromBytes(x1, (u8*)&blk, sizeof(block));
+	element = to_GF2E(x1);
 }
 
-block convertGF2XToBytes(NTL::GF2X &element) {
-	
-	block arr;
-	//the function rep returns the representation of GF2E as the related GF2X, it returns as read only.
-	BytesFromGF2X((u8*)&arr, element, sizeof(block));
-	return arr;
-}
-
-block convertElementToBytes(NTL::GF2E & element) {
+void BlockFromGF2E(block& blk, NTL::GF2E & element) {
 	//Get the bytes of the random element.
-	NTL::GF2X fromEl = NTL::rep(element); //convert the GF2E element to GF2X element.
-	block arr;
-	//the function rep returns the representation of GF2E as the related GF2X, it returns as read only.
-	BytesFromGF2X((u8*)&arr, fromEl, sizeof(block));
-	return arr;	
+	NTL::GF2X fromEl = NTL::rep(element); //convert the GF2E element to GF2X element.	
+										  //the function rep returns the representation of GF2E as the related GF2X, it returns as read only.
+	BytesFromGF2X((u8*)&blk, fromEl, sizeof(block));
 }
 
-void getCoefficient(std::vector<std::array<block,2>>& set, std::vector<block>& coeffs)
+//computes coefficients (in blocks) of f such that f(x[i]) = y[i]
+void getBlkCoefficients(std::vector<block>& setX, std::vector<block>& setY, std::vector<block>& coeffs)
 {
-	vec_GF2E a; vec_GF2E b; 
+	NTL::vec_GF2E x; NTL::vec_GF2E y;
+	NTL::GF2E e;
 
-	for (u64 i = 0; i < set.size(); ++i)
+	coeffs.resize(setX.size());
+
+	for (u64 i = 0; i < setX.size(); ++i)
 	{
-		GF2X temp;
-		NTL::BuildIrred(temp, 127);
-		NTL::GF2E::init(temp);
-		GF2XFromBytes(temp, (u8*)&set[i][0], sizeof(block)); //a[i])
-		a.append(to_GF2E(temp));
+		GF2EFromBlock(e, setX[i]);
+		x.append(e);
 
-		GF2XFromBytes(temp, (u8*)&set[i][1], sizeof(block)); //b[i]
-		b.append(to_GF2E(temp));
+		GF2EFromBlock(e, setY[i]);
+		y.append(e);
 	}
 
-	//computes f such that f(a[i]) = b[i]
-	GF2EX polynomial = NTL::interpolate(a, b);
-	std::vector<block> resCoff(set.size());
+	//interpolate
+	NTL::GF2EX polynomial = NTL::interpolate(x, y);
 
-	for (int i = 0; i < set.size(); i++) {
-		//get the coefficient 
-		NTL::GF2E coefficient = coeff(polynomial, i);
-
-		//get the block of the coefficient.		
-		NTL::GF2X fromEl = NTL::rep(coefficient); //convert the GF2E element to GF2X element.
-		BytesFromGF2X((u8*)&resCoff[i], fromEl, sizeof(block));
+	////convert coefficient to vector<block> 
+	for (int i = 0; i < setX.size(); i++) {
+		//get the coefficient polynomial
+		e = NTL::coeff(polynomial, i);
+		BlockFromGF2E(coeffs[i], e);
 	}
 }
+
+//compute y=f(x) giving coefficients (in block)
+void evalPolynomial(std::vector<block>& coeffs, block& x, block& y)
+{
+	NTL::GF2EX res_polynomial;
+	NTL::GF2E e;
+
+	for (u64 i = 0; i < coeffs.size(); ++i)
+	{
+		GF2EFromBlock(e, coeffs[i]);
+		NTL::SetCoeff(res_polynomial, i, e); //build res_polynomial
+	}
+
+	GF2EFromBlock(e, x);
+	e = NTL::eval(res_polynomial, e); //get y=f(x) in GF2E
+	BlockFromGF2E(y, e); //convert to block 
+}
+
 void polynomial_Test_Impl()
 {
 
 	std::vector<block> mSetX, mSetY;
 
-	u64 setSize = 2;
+	u64 setSize = 10;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	mSetX.resize(setSize);
 	mSetY.resize(setSize);
@@ -2901,53 +2906,26 @@ void polynomial_Test_Impl()
 	{
 		mSetX[i] = prng.get<block>();
 		mSetY[i] = prng.get<block>();
-		std::cout << mSetX[i] << std::endl;
+	//	std::cout << mSetY[i] << std::endl;
 	}
-	vec_GF2E x; vec_GF2E y;
+	std::cout <<  std::endl;
+	std::vector<block> coeffs;
+	getBlkCoefficients(mSetX, mSetY, coeffs);	
 
-	
-	for (u64 i = 0; i < setSize; ++i)
+	block blkY;
+	for (int i = 0; i < mSetY.size(); ++i)
 	{
-		GF2X x1,y1;
-		NTL::BuildIrred(x1, 127);
-		NTL::GF2E::init(x1);
-		GF2XFromBytes(x1, (u8*)&mSetX[i], sizeof(block));
-		GF2E xe1 = to_GF2E(x1);
-		x.append(xe1);
+		
+		evalPolynomial(coeffs, mSetX[i], blkY);
 
-		NTL::BuildIrred(y1, 127);
-		NTL::GF2E::init(y1);
-		GF2XFromBytes(y1, (u8*)&mSetY[i], sizeof(block));
-		GF2E ye1 = to_GF2E(y1);
-		y.append(ye1);
+	//	std::cout << blk2 <<" -- " << mSetY[i] << std::endl;
+	//	std::cout << mSetY[i] << std::endl;
 
-		//NTL::GF2X fromElx1 = NTL::rep(xe1);
-		//NTL::GF2X fromEly1 = NTL::rep(ye1);
-		//std::cout << xe1 << std::endl;
-		//std::cout << fromElx1 << std::endl;
-		//std::cout << ye1 << std::endl;
-		//std::cout << fromEly1 << std::endl;
+		if (neq(blkY, mSetY[i]))
+			throw UnitTestFail();		
 	}
-
-
-	GF2EX polynomial = NTL::interpolate(x, y);
-	std::vector<block> resCoff(setSize);
-
-	for (int i = 0; i < setSize; i++) {
-		//get the coefficient polynomial
-		NTL::GF2E coefficient = coeff(polynomial, i);
-
-		//get the block of the coefficient.		
-		NTL::GF2X fromEl = NTL::rep(coefficient); //convert the GF2E element to GF2X element.
-		////the function rep returns the representation of GF2E as the related GF2X, it returns as read only.
-		BytesFromGF2X((u8*)&resCoff[i], fromEl, sizeof(block));
-	}
-
-	GF2X xx1;
-	GF2XFromBytes(xx1, (u8*)&mSetX[0], sizeof(block));	
-	
-	GF2E yy2=eval(polynomial, to_GF2E(xx1));
-	block blk2 = convertElementToBytes(yy2);
-	std::cout << blk2 << std::endl;
-	std::cout << mSetY[0] << std::endl;
+	block blkX = prng.get<block>();
+	evalPolynomial(coeffs, blkX, blkY);
+	if (eq(blkX, blkY))
+		throw UnitTestFail();
 }

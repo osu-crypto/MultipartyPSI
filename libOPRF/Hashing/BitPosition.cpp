@@ -32,16 +32,16 @@ namespace osuCrypto
 
 	
 
-	BitPosition::BitPosition()
+	BaseOPPRF::BaseOPPRF()
     {
     }
 
-	BitPosition::~BitPosition()
+	BaseOPPRF::~BaseOPPRF()
     {
     }
 
    
-    void BitPosition::print() const
+    void BaseOPPRF::print() const
     {
 		std::cout << "mPos: \n";
 		for (auto it = mPos.begin(); it != mPos.end(); ++it)
@@ -55,7 +55,7 @@ namespace osuCrypto
 		}
 
     }
-	void BitPosition::init(/*u64 numRealCodeWord,*/ u64 numMaxBitSize)
+	void BaseOPPRF::init(/*u64 numRealCodeWord,*/ u64 numMaxBitSize)
     {
 		/*mRealBitSize= std::floor(std::log2(numRealCodeWord)) + 1;*/
 		mMaxBitSize = numMaxBitSize;
@@ -63,7 +63,7 @@ namespace osuCrypto
     }
 	
 
-	bool BitPosition::getMasks(std::vector<block>& codeword) {
+	bool BaseOPPRF::getMasks(std::vector<block>& codeword) {
 		
 		u8 rs, idx;
 		for (int i = 0; i < codeword.size(); i++) {
@@ -90,7 +90,7 @@ namespace osuCrypto
 		}
 		return true;
 	}
-	void BitPosition::getMask(block& codeword, u8& mask) {
+	void BaseOPPRF::getMask(block& codeword, u8& mask) {
 
 		u8 rs, idx;		
 		mask = 0;
@@ -106,7 +106,7 @@ namespace osuCrypto
 			}		
 	}
 
-	int BitPosition::midIdx(std::vector<block>& codewords, int length)
+	int BaseOPPRF::midIdx(std::vector<block>& codewords, int length)
 	{
 		int temp = 0;
 		int idx = 0;
@@ -161,7 +161,7 @@ namespace osuCrypto
 
 	std::vector<std::vector<block>> testSet;
 	int idxS = -1;
-	void BitPosition::getPosHelper(std::vector<block>& codewords, int length)
+	void BaseOPPRF::getPosHelper(std::vector<block>& codewords, int length)
 	{
 		idxS++;
 		int setSize = codewords.size();
@@ -207,7 +207,7 @@ namespace osuCrypto
 		}
 	}
 
-	void BitPosition::getPos1(std::vector<block>& codewords, int length)
+	void BaseOPPRF::getPos1(std::vector<block>& codewords, int length)
 	{
 		bool isFind=false;
 
@@ -313,12 +313,12 @@ namespace osuCrypto
 			}
 		}
 	}
-	void BitPosition::getPos(std::vector<block>& codewords, int length)
+	void BaseOPPRF::getPos(std::vector<block>& codewords, int length)
 	{
 		getPosHelper(codewords, length);
 		//getRandPos();									 
 	}
-	void BitPosition::getRandPos()
+	void BaseOPPRF::getRandPos()
 	{
 		while (mPos.size()<mMaxBitSize)
 		{
@@ -334,7 +334,7 @@ namespace osuCrypto
 	
 }
 
-//void BitPosition::findPos(std::vector<block>& codewords) {
+//void BaseOPPRF::findPos(std::vector<block>& codewords) {
 //	bool isDone=false;
 //	mMasks.clear();
 //	std::set<u8>::iterator it;
@@ -375,7 +375,7 @@ namespace osuCrypto
 //	//std::cout << static_cast<int16_t>(masks[0]) << " ";
 //}
 
-//u8 BitPosition::map(block& codeword) {
+//u8 BaseOPPRF::map(block& codeword) {
 //	u8 rs = 0;
 //	u8 idx = 0;
 //	for (auto it = mPos.begin(); it != mPos.end(); ++it)

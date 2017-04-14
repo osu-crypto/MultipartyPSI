@@ -302,7 +302,7 @@ namespace osuCrypto
 		Log::out << "total= " << time << "\n";
 
 		//mSimpleBins.print(0, true, true, true, true);
-		/*BitPosition b;
+		/*BaseOPPRF b;
 
 		std::set<int> rs;
 		b.init(4);
@@ -803,7 +803,7 @@ namespace osuCrypto
 							{
 								u64 baseMaskIdx = stepIdx;
 								auto mask = maskView[baseMaskIdx];
-								BitPosition b;
+								BaseOPPRF b;
 								b.mMaxBitSize = mTheirBins_mNumBits;
 								for (u64 i = 0; i < b.mMaxBitSize; i++)
 								{
@@ -935,7 +935,7 @@ namespace osuCrypto
 							{
 								u64 baseMaskIdx = stepIdx;
 								auto mask = maskView[baseMaskIdx];
-								BitPosition b;
+								BaseOPPRF b;
 								b.mMaxBitSize = mTheirBins_mNumBits;
 								for (u64 i = 0; i < b.mMaxBitSize; i++)
 								{

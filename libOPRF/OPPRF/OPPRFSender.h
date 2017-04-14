@@ -31,7 +31,7 @@ namespace osuCrypto
 		double mPosBitsTime=0;
 
 		//std::vector<std::vector<block>> mmOPRF; //mValOPRF[bIdx][Idx]
-		//std::vector<BitPosition> mmBits;//mBits[bIdx]
+		//std::vector<BaseOPPRF> mmBits;//mBits[bIdx]
 
 
         std::vector<std::unique_ptr<NcoOtExtSender>> mOtSends;

@@ -32,7 +32,7 @@ void Bit_Position_Test()
 		testSet[i] = prng.get<block>();
 	}
 
-	BitPosition b;
+	BaseOPPRF b;
 	b.init(setSize);
 	std::cout << b.mRealBitSize << std::endl;
 	std::set<u8> masks;
@@ -72,7 +72,7 @@ void Bit_Position_Map_Test()
 		testSet[i] = prng.get<block>();
 	}
 
-	BitPosition b;
+	BaseOPPRF b;
 	b.init(setSize);
 	b.mRealBitSize= 7;
 
@@ -128,7 +128,7 @@ void Bit_Position_Recursive_Test()
 		testSet[i] = prng.get<block>();
 	}
 
-	BitPosition b;
+	BaseOPPRF b;
 	b.init(setSize);
 	std::set<int> rs;
 
