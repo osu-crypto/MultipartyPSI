@@ -56,11 +56,11 @@ namespace osuCrypto
 		void getOPRFKeys( u64 IdxTheirParty, binSet& bins, Channel& chl, bool isOtherDirectionGetOPRF=true);
 		void getOPRFKeys(u64 IdxTheirParty, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF = true);
 
-			void sendSecretSharing(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts,  Channel& chl);
-		void sendSecretSharing(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts,  const std::vector<Channel*>& chls);
+			void sendSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts,  Channel& chl);
+		void sendSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts,  const std::vector<Channel*>& chls);
 
-		void revSecretSharing(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
-		void revSecretSharing(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+		void recvSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
+		void recvSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 #if 0
 		void hash2Bins(std::vector<block>& inputs, Channel& chl);
 		void hash2Bins(std::vector<block>& inputs, const std::vector<Channel*>& chls);

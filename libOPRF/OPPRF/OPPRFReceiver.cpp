@@ -409,12 +409,12 @@ namespace osuCrypto
 
 
 
-	void OPPRFReceiver::revSecretSharing(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
+	void OPPRFReceiver::recvSSTableBased(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
 	{
-		revSecretSharing(IdxParty, bins,plaintexts, { &chl });
+		recvSSTableBased(IdxParty, bins,plaintexts, { &chl });
 	}
 
-	void OPPRFReceiver::revSecretSharing(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
+	void OPPRFReceiver::recvSSTableBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 	{
 
 		// this is the online phase.
@@ -545,12 +545,12 @@ namespace osuCrypto
 	}
 
 
-	void OPPRFReceiver::sendSecretSharing(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
+	void OPPRFReceiver::sendSSTableBased(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
 	{
-		sendSecretSharing(IdxParty, bins, plaintexts, { &chl });
+		sendSSTableBased(IdxParty, bins, plaintexts, { &chl });
 	}
 
-	void OPPRFReceiver::sendSecretSharing(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
+	void OPPRFReceiver::sendSSTableBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 	{
 		if (plaintexts.size() != mN)
 			throw std::runtime_error(LOCATION);

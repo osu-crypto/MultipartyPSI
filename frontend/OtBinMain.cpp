@@ -403,29 +403,29 @@ void party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 			pThrds[pIdx] = std::thread([&, pIdx]() {
 				if ((pIdx < myIdx && pIdx != prevNeighbor)) {
 					//I am a receiver if other party idx < mine				
-					recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
-					recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+					recv[pIdx].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+					recv[pIdx].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 				}
 				else if (pIdx > myIdx && pIdx != nextNeighbor) {
-					send[pIdx - myIdx - 1].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
-					send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+					send[pIdx - myIdx - 1].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+					send[pIdx - myIdx - 1].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 				}
 
 				else if (pIdx == prevNeighbor && myIdx != 0) {
-					recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+					recv[pIdx].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 				}
 				else if (pIdx == nextNeighbor && myIdx != nParties - 1)
 				{
-					send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+					send[pIdx - myIdx - 1].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 				}
 
 				else if (pIdx == nParties - 1 && myIdx == 0) {
-					send[pIdx - myIdx - 1].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+					send[pIdx - myIdx - 1].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 				}
 
 				else if (pIdx == 0 && myIdx == nParties - 1)
 				{
-					recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+					recv[pIdx].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 				}
 
 			});
@@ -484,13 +484,13 @@ void party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 				}
 			}
 
-			send[nextNeighbor].sendSecretSharing(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
-			send[nextNeighbor - myIdx - 1].revSecretSharing(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
+			send[nextNeighbor].sendSSTableBased(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
+			send[nextNeighbor - myIdx - 1].recvSSTableBased(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
 
 		}
 		else if (myIdx == nParties - 1)
 		{
-			recv[prevNeighbor].revSecretSharing(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
+			recv[prevNeighbor].recvSSTableBased(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
 
 			//Xor the received shares 	
 			for (u64 i = 0; i < setSize; ++i)
@@ -503,12 +503,12 @@ void party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 				}
 			}
 
-			recv[nextNeighbor].sendSecretSharing(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
+			recv[nextNeighbor].sendSSTableBased(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
 
 		}
 		else
 		{
-			recv[prevNeighbor].revSecretSharing(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
+			recv[prevNeighbor].recvSSTableBased(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
 			//Xor the received shares 	
 			for (u64 i = 0; i < setSize; ++i)
 			{
@@ -519,7 +519,7 @@ void party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 						sendPayLoads[nextNeighbor][i] = sendPayLoads[nextNeighbor][i] ^ recvPayLoads[idxP][i];
 				}
 			}
-			send[nextNeighbor - myIdx - 1].sendSecretSharing(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
+			send[nextNeighbor - myIdx - 1].sendSSTableBased(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
 		}
 
 		auto getSSDoneRound = timer.setTimePoint("getSSDoneRound");
@@ -867,15 +867,15 @@ void party3(u64 myIdx, u64 setSize, u64 nTrials)
 			//{
 			//	pThrds[pIdx] = std::thread([&, pIdx]() {
 			//		if (pIdx == 0) {
-			//			send.sendSecretSharing(nextNeibough, bins, sendPayLoads, chls[nextNeibough]);
+			//			send.sendSSTableBased(nextNeibough, bins, sendPayLoads, chls[nextNeibough]);
 			//		}
 			//		else if (pIdx == 1) {
-			//			recv.revSecretSharing(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
+			//			recv.recvSSTableBased(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
 			//		}
 			//	});
 			//}
-			send.sendSecretSharing(nextNeibough, bins, sendPayLoads, chls[nextNeibough]);
-			recv.revSecretSharing(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
+			send.sendSSTableBased(nextNeibough, bins, sendPayLoads, chls[nextNeibough]);
+			recv.recvSSTableBased(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
 		}
 		else
 		{
@@ -883,16 +883,16 @@ void party3(u64 myIdx, u64 setSize, u64 nTrials)
 			{
 				pThrds[pIdx] = std::thread([&, pIdx]() {
 					if (pIdx == 0) {
-						recv.revSecretSharing(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
+						recv.recvSSTableBased(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
 					}
 					else if (pIdx == 1) {
-						send.sendSecretSharing(nextNeibough, bins, recvPayLoads, chls[nextNeibough]);
+						send.sendSSTableBased(nextNeibough, bins, recvPayLoads, chls[nextNeibough]);
 					}
 				});
 			}	*/
-			recv.revSecretSharing(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
+			recv.recvSSTableBased(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
 			//sendPayLoads = recvPayLoads;
-			send.sendSecretSharing(nextNeibough, bins, recvPayLoads, chls[nextNeibough]);
+			send.sendSSTableBased(nextNeibough, bins, recvPayLoads, chls[nextNeibough]);
 
 		}
 
@@ -1249,15 +1249,15 @@ void party2(u64 myIdx, u64 setSize)
 	//##########################
 	if (myIdx == 0)
 	{
-		//	send.sendSecretSharing(nextNeibough, bins, sendPayLoads, chls[nextNeibough]);
-		//	recv.revSecretSharing(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
+		//	send.sendSSTableBased(nextNeibough, bins, sendPayLoads, chls[nextNeibough]);
+		//	recv.recvSSTableBased(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
 
 	}
 	else
 	{
-		//	recv.revSecretSharing(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
+		//	recv.recvSSTableBased(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
 		//sendPayLoads = recvPayLoads;
-		//	send.sendSecretSharing(nextNeibough, bins, recvPayLoads, chls[nextNeibough]);
+		//	send.sendSSTableBased(nextNeibough, bins, recvPayLoads, chls[nextNeibough]);
 	}
 
 
@@ -1885,7 +1885,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize,  u64 nTrials)
 					pThrds[thr] = std::thread([&, prevIdx, pIdx]() {
 
 						//prevIdx << " --> " << myIdx
-						recv[prevIdx].revSecretSharing(prevIdx, bins, recvPayLoads[pIdx], chls[prevIdx]);
+						recv[prevIdx].recvSSTableBased(prevIdx, bins, recvPayLoads[pIdx], chls[prevIdx]);
 
 					});
 				}
@@ -1902,15 +1902,15 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize,  u64 nTrials)
 						//send OPRF can receive payload
 						if (myIdx < nextIdx)
 						{
-							send[nextIdx].sendSecretSharing(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
+							send[nextIdx].sendSSTableBased(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
 
-							send[nextIdx].revSecretSharing(nextIdx, bins, recvPayLoads[pIdx], chls[nextIdx]);
+							send[nextIdx].recvSSTableBased(nextIdx, bins, recvPayLoads[pIdx], chls[nextIdx]);
 						}
 						else if (myIdx > nextIdx) //by index
 						{
-							recv[nextIdx].revSecretSharing(nextIdx, bins, recvPayLoads[pIdx], chls[nextIdx]);
+							recv[nextIdx].recvSSTableBased(nextIdx, bins, recvPayLoads[pIdx], chls[nextIdx]);
 
-							recv[nextIdx].sendSecretSharing(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
+							recv[nextIdx].sendSSTableBased(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
 
 						}
 					});
@@ -1919,7 +1919,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize,  u64 nTrials)
 				else
 				{
 					pThrds[pIdx] = std::thread([&, nextIdx, pIdx]() {
-						send[nextIdx].sendSecretSharing(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
+						send[nextIdx].sendSSTableBased(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
 					});
 				}
 			}
@@ -2004,7 +2004,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize,  u64 nTrials)
 				}
 			}
 			//send to leader
-			send[leaderIdx].sendSecretSharing(leaderIdx, bins, sendPayLoads[ttParties], chls[leaderIdx]);
+			send[leaderIdx].sendSSTableBased(leaderIdx, bins, sendPayLoads[ttParties], chls[leaderIdx]);
 		}
 		else
 		{
@@ -2012,7 +2012,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize,  u64 nTrials)
 
 			for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx) {
 				pThrds[pIdx] = std::thread([&, pIdx]() {
-					recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+					recv[pIdx].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 				});
 			}
 

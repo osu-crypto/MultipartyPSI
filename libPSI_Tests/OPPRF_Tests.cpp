@@ -578,8 +578,8 @@ void OPPRF2_EmptrySet_Test_Impl()
 	   //	send.init(opt, numParties,setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
 	   //	send.hash2Bins(sendSet, sendChl);
 		   //send.getOPRFKeys(1,sendChl);
-		   //send.sendSecretSharing(1, sendPayLoads, sendChl);
-	   //	send.revSecretSharing(1, recvPayLoads, sendChl);
+		   //send.sendSSTableBased(1, sendPayLoads, sendChl);
+	   //	send.recvSSTableBased(1, recvPayLoads, sendChl);
 		   //Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
 	   //	send.mSimpleBins.print(1,true, true, true, true);
 		   //Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
@@ -588,8 +588,8 @@ void OPPRF2_EmptrySet_Test_Impl()
    //	recv.init(opt, numParties,setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 	   //recv.hash2Bins(recvSet, recvChl);
    //	recv.getOPRFkeys(0, recvChl);
-	   //recv.revSecretSharing(0, recvPayLoads, recvChl);
-   //	recv.sendSecretSharing(0, sendPayLoads, recvChl);
+	   //recv.recvSSTableBased(0, recvPayLoads, recvChl);
+   //	recv.sendSSTableBased(0, sendPayLoads, recvChl);
 
 	Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
 	//	recv.mCuckooBins.print(0,true, true, false);
@@ -994,8 +994,8 @@ void OPPRF_EmptrySet_hashing_Test_Impl()
 		bins[0].hashing2Bins(sendSet, 2);
 		//send.hash2Bins(sendSet, sendChl);
 		send[0].getOPRFKeys(1, bins[0], sendChl, true);
-		send[0].sendSecretSharing(1, bins[0], sendPayLoads, sendChl);
-		//send.revSecretSharing(1, recvPayLoads, sendChl);
+		send[0].sendSSTableBased(1, bins[0], sendPayLoads, sendChl);
+		//send.recvSSTableBased(1, recvPayLoads, sendChl);
 		//Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
 		bins[0].mSimpleBins.print(1, true, true, true, true);
 		//Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
@@ -1029,8 +1029,8 @@ void OPPRF_EmptrySet_hashing_Test_Impl()
 
 	//recv.hash2Bins(recvSet, recvChl);
 	recv[0].getOPRFkeys(0, bins[1], recvChl);
-	recv[0].revSecretSharing(0, bins[1], recvPayLoads, recvChl);
-	//recv.sendSecretSharing(0, sendPayLoads, recvChl);
+	recv[0].recvSSTableBased(0, bins[1], recvPayLoads, recvChl);
+	//recv.sendSSTableBased(0, sendPayLoads, recvChl);
 
 	Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
 	bins[1].mCuckooBins.print(0, true, true, true);
@@ -1368,29 +1368,29 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			if ((pIdx < myIdx && pIdx != prevNeighbor)) {
 				//I am a receiver if other party idx < mine				
-				recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
-				recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+				recv[pIdx].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+				recv[pIdx].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 			}
 			else if (pIdx > myIdx && pIdx != nextNeighbor) {
-				send[pIdx - myIdx - 1].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
-				send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+				send[pIdx - myIdx - 1].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+				send[pIdx - myIdx - 1].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 			}
 
 			else if (pIdx == prevNeighbor && myIdx != 0) {
-				recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+				recv[pIdx].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 			}
 			else if (pIdx == nextNeighbor && myIdx != nParties - 1)
 			{
-				send[pIdx - myIdx - 1].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+				send[pIdx - myIdx - 1].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 			}
 
 			else if (pIdx == nParties - 1 && myIdx == 0) {
-				send[pIdx - myIdx - 1].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+				send[pIdx - myIdx - 1].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 			}
 
 			else if (pIdx == 0 && myIdx == nParties - 1)
 			{
-				recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+				recv[pIdx].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 			}
 
 		});
@@ -1449,13 +1449,13 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 			}
 		}
 
-		send[nextNeighbor].sendSecretSharing(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
-		send[nextNeighbor - myIdx - 1].revSecretSharing(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
+		send[nextNeighbor].sendSSTableBased(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
+		send[nextNeighbor - myIdx - 1].recvSSTableBased(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
 
 	}
 	else if (myIdx == nParties - 1)
 	{
-		recv[prevNeighbor].revSecretSharing(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
+		recv[prevNeighbor].recvSSTableBased(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
 
 		//Xor the received shares 	
 		for (u64 i = 0; i < setSize; ++i)
@@ -1468,12 +1468,12 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 			}
 		}
 
-		recv[nextNeighbor].sendSecretSharing(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
+		recv[nextNeighbor].sendSSTableBased(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
 
 	}
 	else
 	{
-		recv[prevNeighbor].revSecretSharing(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
+		recv[prevNeighbor].recvSSTableBased(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
 		//Xor the received shares 	
 		for (u64 i = 0; i < setSize; ++i)
 		{
@@ -1484,7 +1484,7 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 					sendPayLoads[nextNeighbor][i] = sendPayLoads[nextNeighbor][i] ^ recvPayLoads[idxP][i];
 			}
 		}
-		send[nextNeighbor - myIdx - 1].sendSecretSharing(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
+		send[nextNeighbor - myIdx - 1].sendSSTableBased(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
 	}
 
 	auto getSSDoneRound = timer.setTimePoint("getSSDoneRound");
@@ -1764,15 +1764,15 @@ void party3(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 	//##########################
 	if (myIdx == 0)
 	{
-		send.sendSecretSharing(nextNeibough, bins, sendPayLoads, chls[nextNeibough]);
-		recv.revSecretSharing(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
+		send.sendSSTableBased(nextNeibough, bins, sendPayLoads, chls[nextNeibough]);
+		recv.recvSSTableBased(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
 
 	}
 	else
 	{
-		recv.revSecretSharing(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
+		recv.recvSSTableBased(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
 		//sendPayLoads = recvPayLoads;
-		send.sendSecretSharing(nextNeibough, bins, recvPayLoads, chls[nextNeibough]);
+		send.sendSSTableBased(nextNeibough, bins, recvPayLoads, chls[nextNeibough]);
 	}
 
 	std::cout << IoStream::lock;
@@ -2363,7 +2363,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 					pThrds[thr] = std::thread([&, prevIdx, pIdx]() {
 
 						//prevIdx << " --> " << myIdx
-						recv[prevIdx].revSecretSharing(prevIdx, bins, recvPayLoads[pIdx], chls[prevIdx]);
+						recv[prevIdx].recvSSTableBased(prevIdx, bins, recvPayLoads[pIdx], chls[prevIdx]);
 
 					});
 				}
@@ -2380,15 +2380,15 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 						//send OPRF can receive payload
 						if (myIdx < nextIdx)
 						{
-							send[nextIdx].sendSecretSharing(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
+							send[nextIdx].sendSSTableBased(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
 
-							send[nextIdx].revSecretSharing(nextIdx, bins, recvPayLoads[pIdx], chls[nextIdx]);
+							send[nextIdx].recvSSTableBased(nextIdx, bins, recvPayLoads[pIdx], chls[nextIdx]);
 						}
 						else if (myIdx > nextIdx) //by index
 						{
-							recv[nextIdx].revSecretSharing(nextIdx, bins, recvPayLoads[pIdx], chls[nextIdx]);
+							recv[nextIdx].recvSSTableBased(nextIdx, bins, recvPayLoads[pIdx], chls[nextIdx]);
 
-							recv[nextIdx].sendSecretSharing(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
+							recv[nextIdx].sendSSTableBased(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
 
 						}
 					});
@@ -2397,7 +2397,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 				else
 				{
 					pThrds[pIdx] = std::thread([&, nextIdx, pIdx]() {
-						send[nextIdx].sendSecretSharing(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
+						send[nextIdx].sendSSTableBased(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
 					});
 				}
 			}
@@ -2482,7 +2482,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 				}
 			}
 			//send to leader
-			send[leaderIdx].sendSecretSharing(leaderIdx, bins, sendPayLoads[tParties], chls[leaderIdx]);
+			send[leaderIdx].sendSSTableBased(leaderIdx, bins, sendPayLoads[tParties], chls[leaderIdx]);
 		}
 		else
 		{
@@ -2490,7 +2490,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 
 			for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx) {
 				pThrds[pIdx] = std::thread([&, pIdx]() {
-					recv[pIdx].revSecretSharing(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+					recv[pIdx].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 				});
 			}
 

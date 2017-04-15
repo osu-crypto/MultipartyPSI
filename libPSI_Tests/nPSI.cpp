@@ -69,8 +69,8 @@ void nOPPRF2_EmptrySet_Test_Impl()
 	//	send.init(opt, numParties,setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
 	//	send.hash2Bins(sendSet, sendChl);
 		//send.getOPRFKeys(1,sendChl);
-		//send.sendSecretSharing(1, sendPayLoads, sendChl);
-	//	send.revSecretSharing(1, recvPayLoads, sendChl);
+		//send.sendSSTableBased(1, sendPayLoads, sendChl);
+	//	send.recvSSTableBased(1, recvPayLoads, sendChl);
 		//Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
 	//	send.mSimpleBins.print(1,true, true, true, true);
 		//Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
@@ -79,8 +79,8 @@ void nOPPRF2_EmptrySet_Test_Impl()
 //	recv.init(opt, numParties,setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 	//recv.hash2Bins(recvSet, recvChl);
 //	recv.getOPRFkeys(0, recvChl);
-	//recv.revSecretSharing(0, recvPayLoads, recvChl);
-//	recv.sendSecretSharing(0, sendPayLoads, recvChl);
+	//recv.recvSSTableBased(0, recvPayLoads, recvChl);
+//	recv.sendSSTableBased(0, sendPayLoads, recvChl);
 
 	Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
 //	recv.mCuckooBins.print(0,true, true, false);
@@ -532,8 +532,8 @@ void nOPPRF_EmptrySet_hashing_Test_Impl()
 		bins[0].hashing2Bins(sendSet, 2);
 		//send.hash2Bins(sendSet, sendChl);
 		send[0].getOPRFKeys(1, bins[0], sendChl,true);
-		send[0].sendSecretSharing(1, bins[0], sendPayLoads, sendChl);
-		//send.revSecretSharing(1, recvPayLoads, sendChl);
+		send[0].sendSSTableBased(1, bins[0], sendPayLoads, sendChl);
+		//send.recvSSTableBased(1, recvPayLoads, sendChl);
 		//Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
 		bins[0].mSimpleBins.print(1, true, true, true, true);
 		//Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
@@ -568,8 +568,8 @@ void nOPPRF_EmptrySet_hashing_Test_Impl()
 
 	//recv.hash2Bins(recvSet, recvChl);
 	recv[0].getOPRFkeys(0, bins[1], recvChl);
-	recv[0].revSecretSharing(0, bins[1], recvPayLoads, recvChl);
-	//recv.sendSecretSharing(0, sendPayLoads, recvChl);
+	recv[0].recvSSTableBased(0, bins[1], recvPayLoads, recvChl);
+	//recv.sendSSTableBased(0, sendPayLoads, recvChl);
 
 	Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
 	bins[1].mCuckooBins.print(0, true, true, true);
@@ -761,11 +761,11 @@ void nParty(u64 myIdx)
 	//	pThrds[pIdx] = std::thread([&, pIdx]() {
 	//		if (pIdx < myIdx) {
 	//			//I am a receiver if other party idx < mine
-	//			recv[myIdx].revSecretSharing(myIdx, bins,recvPayLoads[pIdx], chls[pIdx]);
-	//			//	recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+	//			recv[myIdx].recvSSTableBased(myIdx, bins,recvPayLoads[pIdx], chls[pIdx]);
+	//			//	recv[pIdx].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 	//			}
 	//		else if (pIdx > myIdx) {
-	//			send[myIdx].sendSecretSharing(myIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+	//			send[myIdx].sendSSTableBased(myIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 	//		}
 	//	});
 	//}
@@ -782,11 +782,11 @@ void nParty(u64 myIdx)
 	//	pThrds[pIdx] = std::thread([&, pIdx]() {
 	//		if (pIdx < myIdx) {
 	//			//I am a receiver if other party idx < mine
-	//			recv[myIdx].revSecretSharing(myIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
-	//			//	recv[pIdx].sendSecretSharing(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+	//			recv[myIdx].recvSSTableBased(myIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+	//			//	recv[pIdx].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 	//		}
 	//		else if (pIdx > myIdx) {
-	//			send[myIdx].sendSecretSharing(myIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+	//			send[myIdx].sendSSTableBased(myIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 	//		}
 	//	});
 	//}
