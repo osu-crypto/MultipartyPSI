@@ -111,6 +111,11 @@ namespace WeGarbleTests
 			polynomial_Test_Impl();
 		}
 
+		TEST_METHOD(GBF_Test)
+		{
+			InitDebugPrinting();
+			GBF_Test_Impl();
+		}
 
 		/*TEST_METHOD(Channel_Test)
 		{

@@ -2986,3 +2986,148 @@ void polynomial_Test_Impl()
 		std::cout << x1 << std::endl;
 	}
 }
+
+void Unconditional_0_Sharing_Test_Impl()
+{
+	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+	
+	//std::vector<std::vector<block>> prngSeeds;
+
+	block x=prng.get<block>();
+	//block z = prng.get<block>();
+	block y = ZeroBlock^x;// ^z;
+
+	block test = x^y;// ^z;
+	std::cout << test<< std::endl;
+
+	PRNG prng1, prng2, prng3;
+	prng1.SetSeed(x);
+	prng2.SetSeed(y);
+	//prng3.SetSeed(z);
+
+	for (u32 i = 0; i < 10; i++)
+	{
+		block test1 = prng1.get<block>();
+		block test2 = prng2.get<block>();
+		//	block test3= prng3.get<block>();
+		test = test1^test2;// ^test3;
+		std::cout << test << std::endl;
+	}
+
+}
+
+void getGBF(u64 bfBitCount, std::vector<block>& setX, std::vector<block>& setY, std::vector<block>& garbledBF) {
+
+}
+void GBF_Test_Impl()
+{
+
+	u64 numHashFunctions = 4;
+	u64 setSize = 10;
+	u64 mBfBitCount = numHashFunctions * 2 * setSize;
+	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+
+	std::vector<block> mSetX(setSize),mSetY(setSize), garbledBF(mBfBitCount); //h(x) and value y
+	
+	for (u64 i = 0; i < setSize; ++i)
+	{
+		mSetX[i] = prng.get<block>();
+		mSetY[i] = prng.get<block>();
+	}
+
+	//create hash
+	std::vector<SHA1> ncoInputHasher(numHashFunctions);
+	std::vector<std::vector<block>> mNcoInputBuff(numHashFunctions);
+
+	for (u64 hashIdx = 0; hashIdx < ncoInputHasher.size(); ++hashIdx)
+		mNcoInputBuff.resize(setSize);
+	
+	PRNG hashSeedGen(prng.get<block>());
+
+	for (u64 i = 0; i < ncoInputHasher.size(); ++i)
+	{
+		ncoInputHasher[i].Update(hashSeedGen.get<block>());
+	}
+
+	u8 hashOut[SHA1::HashSize];
+	
+
+	std::vector<std::set<u64>> idxs(setSize);
+	for (u64 i = 0; i < 1; ++i)
+	{
+		u64 firstFreeIdx(-1);
+		block sum = ZeroBlock;
+
+		//std::cout << "input[" << i << "] " << inputs[i] << std::endl;
+
+		//idxs.clear();
+		for (u64 hashIdx = 0; hashIdx < ncoInputHasher.size(); ++hashIdx)
+		{			
+			ncoInputHasher[hashIdx].Update(mSetX[i]);
+			ncoInputHasher[hashIdx].Final(hashOut);
+			u64& idx = *(u64*)hashOut; //h_j(x_i)
+
+			idx %= mBfBitCount;
+			idxs[i].emplace(idx);
+
+			std::cout << idx << " ";
+		}
+		std::cout << "\n";
+
+		block test=ZeroBlock;
+		for (auto idx : idxs[i])
+		{
+			if (eq(garbledBF[idx], ZeroBlock))
+			{
+				if (firstFreeIdx == u64(-1))
+				{
+					firstFreeIdx = idx;
+					std::cout << "firstFreeIdx: " << firstFreeIdx << std::endl;
+
+				}
+				else
+				{
+					garbledBF[idx] = _mm_set_epi64x(idx,idx);
+				//	std::cout << garbledBF[idx] <<"\n";
+					test = test^garbledBF[idx];
+					sum = sum ^ garbledBF[idx];
+					std::cout << idx << " " << garbledBF[idx] << std::endl;
+				}
+			}			
+			else
+			{
+				sum = sum ^ garbledBF[idx];
+				test = test^garbledBF[idx];
+				std::cout << idx << " " << garbledBF[idx] << std::endl;
+			}
+			
+		}
+
+		garbledBF[firstFreeIdx] = sum^mSetY[i];
+		std::cout << firstFreeIdx << " " << garbledBF[firstFreeIdx] << std::endl;
+		test = test^garbledBF[firstFreeIdx];
+		std::cout << test << "\n";
+		//std::cout << "sender " << i << " *   " << garbledBF[firstFreeIdx] << "    " << firstFreeIdx << std::endl;
+	}
+
+	//test
+	for (u64 i = 0; i < 1; ++i)
+	{
+		std::cout <<"mSetY["<<i<<"]= "<< mSetY[i] << std::endl;
+	//	std::cout << mSetX[i] << std::endl;
+
+		block sum=ZeroBlock;
+		for (auto idx : idxs[i])
+		{
+			std::cout << idx << " " << garbledBF[idx] << std::endl;
+			sum = sum^garbledBF[idx];
+		}
+		std::cout << sum << std::endl;
+	}
+	/*for (u64 i = 0; i < garbledBF.size(); ++i)
+	{
+		if (eq(garbledBF[i], ZeroBlock))
+			garbledBF[i] = prng.get<block>();
+	}*/
+
+}

@@ -15,6 +15,7 @@ void Bit_Position_Random_Test_Impl();
 void testShareValue();
 void OPPRFnt_EmptrySet_Test_Impl();
 void polynomial_Test_Impl();
+void GBF_Test_Impl();
 //void OPPRF_FullSet_Test_Impl    ();
 //void OPPRF_SingltonSet_Test_Impl();
 
