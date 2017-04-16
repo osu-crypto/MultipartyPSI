@@ -21,7 +21,7 @@ namespace osuCrypto
         OPPRFSender();
         ~OPPRFSender();
 
-		u32 mOpt;
+		u32 mOpt=0;
         u64 mN, mParties, mStatSecParam, mNcoInputBlkSize,  mOtMsgBlkSize;
         block mHashingSeed;
 		//SimpleHasher1 mSimpleBins;
@@ -56,16 +56,24 @@ namespace osuCrypto
 		void getOPRFKeys( u64 IdxTheirParty, binSet& bins, Channel& chl, bool isOtherDirectionGetOPRF=true);
 		void getOPRFKeys(u64 IdxTheirParty, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF = true);
 
-			void sendSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts,  Channel& chl);
+		void sendSS(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
+		void recvSS(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
+		void sendSS(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+		void recvSS(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+
+		void sendSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts,  Channel& chl);
 		void sendSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts,  const std::vector<Channel*>& chls);
+		void sendSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
+		void sendSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+
 
 		void recvSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
 		void recvSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
-#if 0
-		void hash2Bins(std::vector<block>& inputs, Channel& chl);
-		void hash2Bins(std::vector<block>& inputs, const std::vector<Channel*>& chls);
 
-#endif
+		void recvSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
+		void recvSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+
+
     };
 
 }

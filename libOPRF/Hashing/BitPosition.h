@@ -31,7 +31,6 @@ namespace osuCrypto
 
     
         u64 mRealBitSize, mMaxBitSize, mNumTrial;
-
 		std::vector<u8> mPos; //key: bit location; value: index of 
 		std::vector<u8> mMaps;
 

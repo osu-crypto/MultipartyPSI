@@ -19,7 +19,7 @@ namespace osuCrypto
         //static const u64 CodeWordSize = 7;
         //static const u64 hasherStepSize;
 
-		u32 mOpt;
+		u32 mOpt=0;
         u64 mN, mParties, mStatSecParam, mNcoInputBlkSize;// , mOtMsgBlkSize;
         block mHashingSeed;
         std::vector<u64> mIntersection;
@@ -42,17 +42,23 @@ namespace osuCrypto
 		void getOPRFkeys( u64 IdxTheirParty, binSet& bins, Channel& chl, bool isOtherDirectionGetOPRF=true);
 		void getOPRFkeys(u64 IdxTheirParty, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF = true);
 
+		void recvSS(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
+		void sendSS(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
+		void sendSS(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+		void recvSS(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+
+
 		void recvSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
 		void recvSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
-
+		void recvSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
+		void recvSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+				
 		void sendSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
 		void sendSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+		void sendSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
+		void sendSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 
-#if 0
-		void hash2Bins(std::vector<block>& inputs, Channel& chl);
-		void hash2Bins(std::vector<block>& inputs, const std::vector<Channel*>& chls);
 
-		#endif
     };
 
 

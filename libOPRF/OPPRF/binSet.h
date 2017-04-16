@@ -19,7 +19,8 @@ namespace osuCrypto
         u64 mN, mParties, mMyIdx, mStatSecParam, mNcoInputBlkSize;// , mOtMsgBlkSize;
         block mHashingSeed;
 
-		std::vector<std::vector<block>> mNcoInputBuff;
+		std::vector<std::vector<block>> mNcoInputBuff; //hash(x)
+		//std::vector<std::vector<block>> mSetX;//x
 
 	//	OPPRFSender aaa;
 		

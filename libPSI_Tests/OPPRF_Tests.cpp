@@ -37,7 +37,7 @@ using namespace osuCrypto;
 #define PRINT
 //#define BIN_PRINT
 
-u32 opt = 0;
+u32 opt = 1;
 void testPointer(std::vector<block>* test)
 {
 	//int length = test->size();
@@ -578,8 +578,8 @@ void OPPRF2_EmptrySet_Test_Impl()
 	   //	send.init(opt, numParties,setSize, psiSecParam, bitSize, sendChl, otSend0, otRecv1, prng.get<block>());
 	   //	send.hash2Bins(sendSet, sendChl);
 		   //send.getOPRFKeys(1,sendChl);
-		   //send.sendSSTableBased(1, sendPayLoads, sendChl);
-	   //	send.recvSSTableBased(1, recvPayLoads, sendChl);
+		   //send.sendSS(1, sendPayLoads, sendChl);
+	   //	send.recvSS(1, recvPayLoads, sendChl);
 		   //Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
 	   //	send.mSimpleBins.print(1,true, true, true, true);
 		   //Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
@@ -588,8 +588,8 @@ void OPPRF2_EmptrySet_Test_Impl()
    //	recv.init(opt, numParties,setSize, psiSecParam, bitSize, recvChl, otRecv0, otSend1, ZeroBlock);
 	   //recv.hash2Bins(recvSet, recvChl);
    //	recv.getOPRFkeys(0, recvChl);
-	   //recv.recvSSTableBased(0, recvPayLoads, recvChl);
-   //	recv.sendSSTableBased(0, sendPayLoads, recvChl);
+	   //recv.recvSS(0, recvPayLoads, recvChl);
+   //	recv.sendSS(0, sendPayLoads, recvChl);
 
 	Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
 	//	recv.mCuckooBins.print(0,true, true, false);
@@ -994,8 +994,8 @@ void OPPRF_EmptrySet_hashing_Test_Impl()
 		bins[0].hashing2Bins(sendSet, 2);
 		//send.hash2Bins(sendSet, sendChl);
 		send[0].getOPRFKeys(1, bins[0], sendChl, true);
-		send[0].sendSSTableBased(1, bins[0], sendPayLoads, sendChl);
-		//send.recvSSTableBased(1, recvPayLoads, sendChl);
+		send[0].sendSS(1, bins[0], sendPayLoads, sendChl);
+		//send.recvSS(1, recvPayLoads, sendChl);
 		//Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
 		bins[0].mSimpleBins.print(1, true, true, true, true);
 		//Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
@@ -1029,8 +1029,8 @@ void OPPRF_EmptrySet_hashing_Test_Impl()
 
 	//recv.hash2Bins(recvSet, recvChl);
 	recv[0].getOPRFkeys(0, bins[1], recvChl);
-	recv[0].recvSSTableBased(0, bins[1], recvPayLoads, recvChl);
-	//recv.sendSSTableBased(0, sendPayLoads, recvChl);
+	recv[0].recvSS(0, bins[1], recvPayLoads, recvChl);
+	//recv.sendSS(0, sendPayLoads, recvChl);
 
 	Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
 	bins[1].mCuckooBins.print(0, true, true, true);
@@ -1368,29 +1368,29 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			if ((pIdx < myIdx && pIdx != prevNeighbor)) {
 				//I am a receiver if other party idx < mine				
-				recv[pIdx].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
-				recv[pIdx].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+				recv[pIdx].recvSS(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+				recv[pIdx].sendSS(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 			}
 			else if (pIdx > myIdx && pIdx != nextNeighbor) {
-				send[pIdx - myIdx - 1].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
-				send[pIdx - myIdx - 1].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+				send[pIdx - myIdx - 1].sendSS(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+				send[pIdx - myIdx - 1].recvSS(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 			}
 
 			else if (pIdx == prevNeighbor && myIdx != 0) {
-				recv[pIdx].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+				recv[pIdx].sendSS(pIdx, bins, sendPayLoads[pIdx], { chls[pIdx] });
 			}
 			else if (pIdx == nextNeighbor && myIdx != nParties - 1)
 			{
-				send[pIdx - myIdx - 1].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+				send[pIdx - myIdx - 1].recvSS(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 			}
 
 			else if (pIdx == nParties - 1 && myIdx == 0) {
-				send[pIdx - myIdx - 1].sendSSTableBased(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
+				send[pIdx - myIdx - 1].sendSS(pIdx, bins, sendPayLoads[pIdx], chls[pIdx]);
 			}
 
 			else if (pIdx == 0 && myIdx == nParties - 1)
 			{
-				recv[pIdx].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+				recv[pIdx].recvSS(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 			}
 
 		});
@@ -1449,13 +1449,13 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 			}
 		}
 
-		send[nextNeighbor].sendSSTableBased(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
-		send[nextNeighbor - myIdx - 1].recvSSTableBased(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
+		send[nextNeighbor].sendSS(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
+		send[nextNeighbor - myIdx - 1].recvSS(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
 
 	}
 	else if (myIdx == nParties - 1)
 	{
-		recv[prevNeighbor].recvSSTableBased(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
+		recv[prevNeighbor].recvSS(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
 
 		//Xor the received shares 	
 		for (u64 i = 0; i < setSize; ++i)
@@ -1468,12 +1468,12 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 			}
 		}
 
-		recv[nextNeighbor].sendSSTableBased(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
+		recv[nextNeighbor].sendSS(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
 
 	}
 	else
 	{
-		recv[prevNeighbor].recvSSTableBased(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
+		recv[prevNeighbor].recvSS(prevNeighbor, bins, recvPayLoads[prevNeighbor], chls[prevNeighbor]);
 		//Xor the received shares 	
 		for (u64 i = 0; i < setSize; ++i)
 		{
@@ -1484,7 +1484,7 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 					sendPayLoads[nextNeighbor][i] = sendPayLoads[nextNeighbor][i] ^ recvPayLoads[idxP][i];
 			}
 		}
-		send[nextNeighbor - myIdx - 1].sendSSTableBased(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
+		send[nextNeighbor - myIdx - 1].sendSS(nextNeighbor, bins, sendPayLoads[nextNeighbor], chls[nextNeighbor]);
 	}
 
 	auto getSSDoneRound = timer.setTimePoint("getSSDoneRound");
@@ -1764,15 +1764,15 @@ void party3(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 	//##########################
 	if (myIdx == 0)
 	{
-		send.sendSSTableBased(nextNeibough, bins, sendPayLoads, chls[nextNeibough]);
-		recv.recvSSTableBased(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
+		send.sendSS(nextNeibough, bins, sendPayLoads, chls[nextNeibough]);
+		recv.recvSS(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
 
 	}
 	else
 	{
-		recv.recvSSTableBased(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
+		recv.recvSS(prevNeibough, bins, recvPayLoads, chls[prevNeibough]);
 		//sendPayLoads = recvPayLoads;
-		send.sendSSTableBased(nextNeibough, bins, recvPayLoads, chls[nextNeibough]);
+		send.sendSS(nextNeibough, bins, recvPayLoads, chls[nextNeibough]);
 	}
 
 	std::cout << IoStream::lock;
@@ -2363,7 +2363,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 					pThrds[thr] = std::thread([&, prevIdx, pIdx]() {
 
 						//prevIdx << " --> " << myIdx
-						recv[prevIdx].recvSSTableBased(prevIdx, bins, recvPayLoads[pIdx], chls[prevIdx]);
+						recv[prevIdx].recvSS(prevIdx, bins, recvPayLoads[pIdx], chls[prevIdx]);
 
 					});
 				}
@@ -2380,15 +2380,15 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 						//send OPRF can receive payload
 						if (myIdx < nextIdx)
 						{
-							send[nextIdx].sendSSTableBased(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
+							send[nextIdx].sendSS(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
 
-							send[nextIdx].recvSSTableBased(nextIdx, bins, recvPayLoads[pIdx], chls[nextIdx]);
+							send[nextIdx].recvSS(nextIdx, bins, recvPayLoads[pIdx], chls[nextIdx]);
 						}
 						else if (myIdx > nextIdx) //by index
 						{
-							recv[nextIdx].recvSSTableBased(nextIdx, bins, recvPayLoads[pIdx], chls[nextIdx]);
+							recv[nextIdx].recvSS(nextIdx, bins, recvPayLoads[pIdx], chls[nextIdx]);
 
-							recv[nextIdx].sendSSTableBased(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
+							recv[nextIdx].sendSS(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
 
 						}
 					});
@@ -2397,7 +2397,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 				else
 				{
 					pThrds[pIdx] = std::thread([&, nextIdx, pIdx]() {
-						send[nextIdx].sendSSTableBased(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
+						send[nextIdx].sendSS(nextIdx, bins, sendPayLoads[pIdx], chls[nextIdx]);
 					});
 				}
 			}
@@ -2482,7 +2482,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 				}
 			}
 			//send to leader
-			send[leaderIdx].sendSSTableBased(leaderIdx, bins, sendPayLoads[tParties], chls[leaderIdx]);
+			send[leaderIdx].sendSS(leaderIdx, bins, sendPayLoads[tParties], chls[leaderIdx]);
 		}
 		else
 		{
@@ -2490,7 +2490,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 
 			for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx) {
 				pThrds[pIdx] = std::thread([&, pIdx]() {
-					recv[pIdx].recvSSTableBased(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+					recv[pIdx].recvSS(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 				});
 			}
 
@@ -2919,7 +2919,7 @@ void polynomial_Test_Impl()
 	std::vector<block> mSetX, mSetY;
 
 	u64 setSize = 10;
-	u64 MaxSetSize = 17;
+	u64 MaxSetSize = 32;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	mSetX.resize(setSize);
 	mSetY.resize(setSize);
@@ -2931,7 +2931,7 @@ void polynomial_Test_Impl()
 	}
 	std::cout << std::endl;
 	std::vector<block> coeffs;
-	getBlkCoefficients(MaxSetSize - 1, mSetX, mSetY, coeffs);
+	getBlkCoefficients(MaxSetSize, mSetX, mSetY, coeffs);
 
 	block blkY;
 	for (int i = 0; i < mSetY.size(); ++i)
@@ -2985,7 +2985,134 @@ void polynomial_Test_Impl()
 		NTL::GetCoeff(x1, p3, 0);
 		std::cout << x1 << std::endl;
 	}
+
+	block test = prng.get<block>();
+	NTL::GF2X xi;
+	NTL::GF2XFromBytes(xi, (u8*)&test, sizeof(block));
+
 }
+
+//void PlainMul(GF2EX&, const GF2EX&, const GF2EX&);
+//
+//void GF2X_Test_Impl()
+//{
+//	NTL::GF2X p;
+//
+//	NTL::BuildIrred(p, 200);
+//
+//	NTL::GF2E::init(p);
+//
+//	NTL::GF2EX f;
+//
+//	NTL::SetCoeff(f, 41);
+//	NTL::SetCoeff(f, 1);
+//	NTL::SetCoeff(f, 0);
+//
+//	NTL::GF2X a;
+//	NTL::SetCoeff(a, 117);
+//	NTL::SetCoeff(a, 10);
+//	NTL::SetCoeff(a, 0);
+//
+//	NTL::GF2EX g, h;
+//	NTL::SetX(g);
+//	NTL::SetCoeff(g, 0, to_GF2E(a));
+//
+//	MinPolyMod(h, g, f);
+//
+//	f = h;
+//
+//	vec_pair_GF2EX_long u;
+//
+//	CanZass(u, f, 1);
+//
+//	cerr << "factorization pattern:";
+//	long i;
+//
+//	for (i = 0; i < u.length(); i++) {
+//		cerr << " ";
+//		long k = u[i].b;
+//		if (k > 1)
+//			cerr << k << "*";
+//		cerr << deg(u[i].a);
+//	}
+//
+//	cerr << "\n\n\n";
+//
+//	GF2EX ff;
+//	mul(ff, u);
+//
+//	if (f != ff || u.length() != 11) {
+//		cerr << "GF2EXTest NOT OK\n";
+//		return 1;
+//	}
+//
+//	{
+//
+//		cerr << "multiplication test...\n";
+//
+//		NTL::BuildIrred(p, 512);
+//		NTL::GF2E::init(p);
+//
+//		NTL::GF2EX A, B, C, C1;
+//
+//
+//		NTL::random(A, 512);
+//		NTL::random(B, 512);
+//
+//		double t;
+//		long i;
+//
+//		
+//		for (i = 0; i < 10; i++) PlainMul(C, A, B);
+//		t = GetTime() - t;
+//		cerr << "time for plain mul of degree 511 over GF(2^512): " << (t / 10) << "s\n";
+//
+//		t = GetTime();
+//		for (i = 0; i < 10; i++) mul(C1, A, B);
+//		t = GetTime() - t;
+//		cerr << "time for karatsuba mul of degree 511 over GF(2^512): " << (t / 10) << "s\n";
+//
+//		if (C != C1) {
+//			cerr << "GF2EXTest NOT OK\n";
+//			return 1;
+//		}
+//
+//	}
+//
+//	{
+//
+//		cerr << "multiplication test...\n";
+//
+//		BuildIrred(p, 16);
+//		GF2E::init(p);
+//
+//		GF2EX A, B, C, C1;
+//
+//
+//		random(A, 512);
+//		random(B, 512);
+//
+//		double t;
+//
+//		t = GetTime();
+//		for (i = 0; i < 10; i++) PlainMul(C, A, B);
+//		t = GetTime() - t;
+//		cerr << "time for plain mul of degree 511 over GF(2^16): " << (t / 10) << "s\n";
+//
+//		t = GetTime();
+//		for (i = 0; i < 10; i++) mul(C1, A, B);
+//		t = GetTime() - t;
+//		cerr << "time for karatsuba mul of degree 511 over GF(2^16): " << (t / 10) << "s\n";
+//
+//		if (C != C1) {
+//			std::cout << "GF2EXTest NOT OK\n";
+//			return 1;
+//		}
+//
+//	}
+//
+//	std::cout << "GF2EXTest OK\n";
+//}
 
 void Unconditional_0_Sharing_Test_Impl()
 {

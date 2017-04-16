@@ -358,8 +358,15 @@ namespace osuCrypto
 		NTL::vec_GF2E x; NTL::vec_GF2E y;
 		NTL::GF2E e;
 
+		//Log::out << "-----Poly------" << Log::endl;
+
+
 		for (u64 i = 0; i < setX.size(); ++i)
 		{
+		//	Log::out << "setX["<<i<<"]: " << setX[i] << Log::endl;
+		//	Log::out << "setY[" << i << "]: " << setX[i] << Log::endl;
+
+
 			GF2EFromBlock(e, setX[i]);
 			x.append(e);
 
