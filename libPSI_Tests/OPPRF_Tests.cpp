@@ -1712,7 +1712,7 @@ void party2(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 		//		mIntersection.push_back(i);
 		//	}
 		}
-		Log::out << "mIntersection.size(): "<<mIntersection.size() << Log::endl;
+		//Log::out << "mIntersection.size(): "<<mIntersection.size() << Log::endl;
 	}
 
 #endif // 0
@@ -3317,11 +3317,11 @@ void OPPRF2_EmptrySet_Test_Impl()
 void GF2EFromBlock(NTL::GF2E &element, block& blk,u64 size) {
 
 	NTL::GF2X x1;
-	NTL::BuildIrred(x1, 128);
-	NTL::GF2E::init(x1);
+	//NTL::BuildIrred(x1, 128);
+	//NTL::GF2E::init(x1);
 	//convert the Block to GF2X element.
 	NTL::GF2XFromBytes(x1, (u8*)&blk, size);
-	element = to_GF2E(x1);
+//	element = to_GF2E(x1);
 }
 
 void BlockFromGF2E(block& blk, NTL::GF2E & element) {
@@ -3397,8 +3397,7 @@ void evalPolynomial(std::vector<block>& coeffs, block& x, block& y)
 
 void polynomial_Test_Impl()
 {
-	/*OPPRFReceiver rr;
-	rr.testReceiver();
+	
 
 	PRNG prng111(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	std::vector<block> coeffs(32);
@@ -3408,10 +3407,18 @@ void polynomial_Test_Impl()
 		coeffs[i] = prng111.get<block>();
 	}
 
-	block blkX = prng111.get<block>();
-	block blkY;
-	BaseOPPRF b;
-			b.evalPolynomial(coeffs, blkX, blkY);*/
+	block blkX = OneBlock;
+	NTL::GF2E e;
+
+	
+	NTL::GF2X x1;
+	//NTL::BuildIrred(x1, 128);
+	//NTL::GF2E::init(x1);
+	//convert the Block to GF2X element.
+	NTL::GF2XFromBytes(x1, (u8*)&blkX, sizeof(block));
+	std::cout << x1;
+	e = NTL::to_GF2E(x1);
+
 
 	//PRNG prng111(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	//	std::vector<block> test1(32);
@@ -3446,7 +3453,7 @@ void polynomial_Test_Impl()
 	//		std::cout << e1 << std::endl;
 
 		//b.evalPolynomial(test, blkX, blkY);
-#if 1
+#if 0
 	std::vector<block> mSetX, mSetY;
 
 	u64 setSize = 10;

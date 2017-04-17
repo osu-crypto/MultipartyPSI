@@ -405,11 +405,25 @@ namespace osuCrypto
 
 	void OPPRFSender::sendSS(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
 	{
-		sendSS(IdxParty, bins, plaintexts, { &chl });
+		if (mOpt == 0)
+			sendSSTableBased(IdxParty, bins, plaintexts, { &chl });
+		else if (mOpt == 1)
+			sendSSPolyBased(IdxParty, bins, plaintexts, { &chl });
+		else if (mOpt == 2)
+			sendFullPolyBased(IdxParty, bins, plaintexts, { &chl });
+		else if (mOpt == 3)
+			sendBFBased(IdxParty, bins, plaintexts, { &chl });
 	}
 	void OPPRFSender::recvSS(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
 	{
-		recvSS(IdxParty, bins, plaintexts, { &chl });
+		if (mOpt == 0)
+			recvSSTableBased(IdxParty, bins, plaintexts, { &chl });
+		else if (mOpt == 1)
+			recvSSPolyBased(IdxParty, bins, plaintexts, { &chl });
+		else if (mOpt == 2)
+			recvFullPolyBased(IdxParty, bins, plaintexts, { &chl });
+		else if (mOpt == 3)
+			recvBFBased(IdxParty, bins, plaintexts, { &chl });
 	}
 
 	void OPPRFSender::sendSS(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
@@ -418,6 +432,10 @@ namespace osuCrypto
 			sendSSTableBased(IdxParty, bins, plaintexts, chls);
 		else if (mOpt == 1)
 			sendSSPolyBased(IdxParty, bins, plaintexts, chls);
+		else if (mOpt == 2)
+			sendFullPolyBased(IdxParty, bins, plaintexts, chls);
+		else if (mOpt == 3)
+			sendBFBased(IdxParty, bins, plaintexts, chls);
 	}
 
 	void OPPRFSender::recvSS(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
@@ -426,13 +444,13 @@ namespace osuCrypto
 			recvSSTableBased(IdxParty, bins, plaintexts, chls);
 		else if (mOpt == 1)
 			recvSSPolyBased(IdxParty, bins, plaintexts, chls);
+		else if (mOpt == 2)
+			recvFullPolyBased(IdxParty, bins, plaintexts, chls);
+		else if (mOpt == 3)
+			recvBFBased(IdxParty, bins, plaintexts, chls);
 	}
 
 	
-	void OPPRFSender::sendSSTableBased(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
-	{
-		sendSSTableBased(IdxParty, bins,plaintexts,{ &chl });
-	}
 
 	void OPPRFSender::sendSSTableBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts,const std::vector<Channel*>& chls)
 	{
@@ -648,12 +666,6 @@ namespace osuCrypto
 
 
 	}
-
-	void OPPRFSender::sendSSPolyBased(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
-	{
-		sendSSPolyBased(IdxParty, bins, plaintexts, { &chl });
-	}
-
 	void OPPRFSender::sendSSPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 	{
 		if (plaintexts.size() != mN)
@@ -830,15 +842,360 @@ namespace osuCrypto
 
 
 	}
-
-	
-
-
-
-	void OPPRFSender::recvSSTableBased(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
+	void OPPRFSender::sendFullPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 	{
-		recvSSTableBased(IdxParty, bins, plaintexts, { &chl });
+		if (plaintexts.size() != mN)
+			throw std::runtime_error(LOCATION);
+
+
+		//TODO: double check
+		//	u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		u64 maskSize = sizeof(block);
+		//u64 maskSize = 7;
+		if (maskSize > sizeof(block))
+			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
+
+		std::vector<std::thread>  thrds(chls.size());
+		// std::vector<std::thread>  thrds(1);        
+
+		std::mutex mtx;
+		NTL::vec_GF2E x; NTL::vec_GF2E y;
+		NTL::GF2E e;
+
+		gTimer.setTimePoint("online.send.spaw");
+
+		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+		{
+			auto seed = mPrng.get<block>();
+			thrds[tIdx] = std::thread([&, tIdx, seed]() {
+
+				PRNG prng(seed);
+
+				if (tIdx == 0) gTimer.setTimePoint("online.send.thrdStart");
+
+				auto& chl = *chls[tIdx];
+				const u64 stepSize = 16;
+
+#pragma region sendShare
+#if 1
+				if (tIdx == 0) gTimer.setTimePoint("online.send.sendShare");
+
+				//2 type of bins: normal bin in inital step + stash bin
+				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
+				{
+					auto binCountSend = bins.mSimpleBins.mBinCount[bIdxType];
+					u64 binStart, binEnd;
+					if (bIdxType == 0)
+					{
+						binStart = tIdx       * binCountSend / thrds.size();
+						binEnd = (tIdx + 1) * binCountSend / thrds.size();
+					}
+					else
+					{
+						binStart = tIdx       * binCountSend / thrds.size() + bins.mSimpleBins.mBinCount[0];
+						binEnd = (tIdx + 1) * binCountSend / thrds.size() + bins.mSimpleBins.mBinCount[0];
+					}
+
+					if (tIdx == 0) gTimer.setTimePoint("online.send.masks.init.step");
+
+					for (u64 bIdx = binStart; bIdx < binEnd;)
+					{
+						u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
+						uPtr<Buff> sendMaskBuff(new Buff);
+						sendMaskBuff->resize(currentStepSize * (bins.mSimpleBins.mMaxBinSize[bIdxType] * maskSize));
+						auto maskView = sendMaskBuff->getMatrixView<u8>(bins.mSimpleBins.mMaxBinSize[bIdxType] * maskSize);
+
+						for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
+						{
+							//Log::out << "sBin #" << bIdx << Log::endl;
+
+							auto& bin = bins.mSimpleBins.mBins[bIdx];
+							u64 baseMaskIdx = stepIdx;
+							int MaskIdx = 0;
+
+							//	Log::out << "bin.mIdx[" << bIdx << "]: " <<  Log::endl;
+
+							if (bin.mIdx.size() > 0)
+							{
+
+								//get y[i]
+								std::vector<block> setY(bin.mIdx.size());
+								for (u64 i = 0; i < bin.mIdx.size(); ++i)
+								{
+									u64 inputIdx = bin.mIdx[i];
+									//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
+
+									setY[i] = plaintexts[inputIdx] ^ bin.mValOPRF[IdxP][i];
+									if (bIdx == 0)
+									{
+										std::cout << "s bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP][i];
+										std::cout << "-----------" << setY[i] << std::endl;
+									}
+								}
+
+								std::vector<block> coeffs;
+								//computes coefficients (in blocks) of p such that p(x[i]) = y[i]
+								//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
+								bin.mBits[IdxP].getBlkCoefficients(bins.mSimpleBins.mMaxBinSize[bIdxType],
+									bin.mValOPRF[IdxP], setY, coeffs);
+
+								//if (bIdx == 0)
+								//{
+								//	Log::out << "coeffs.size(): " << coeffs.size()<< Log::endl;
+
+								//	for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
+								//		Log::out << IdxP << "s-coeffs[" << i << "] #" << coeffs[i] << Log::endl;
+								//}
+
+								//it already contain a dummy item
+								for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
+								{
+									memcpy(
+										maskView[baseMaskIdx].data() + i* maskSize,
+										(u8*)&coeffs[i],  //make randome
+														  //(u8*)&ZeroBlock,  //make randome
+										maskSize);
+								}
+
+							}
+							else //pad all dummy
+							{
+								for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
+								{
+									memcpy(
+										maskView[baseMaskIdx].data() + i* maskSize,
+										(u8*)&ZeroBlock,  //make randome
+										maskSize);
+								}
+							}
+						}
+
+#ifdef PRINT
+						Log::out << "maskSize: ";
+						for (size_t i = 0; i < maskView.size()[0]; i++)
+						{
+							for (size_t j = 0; j < mSimpleBins.mNumBits[bIdxType]; j++)
+							{
+								Log::out << static_cast<int16_t>(maskView[i][j]) << " ";
+							}
+							Log::out << Log::endl;
+
+							for (size_t j = 0; j < mSimpleBins.mMaxBinSize[bIdxType]; j++) {
+								auto theirMask = ZeroBlock;
+								memcpy(&theirMask, maskView[i].data() + j*maskSize + mSimpleBins.mNumBits[bIdxType], maskSize);
+								if (theirMask != ZeroBlock)
+								{
+									Log::out << theirMask << " " << Log::endl;
+								}
+							}
+						}
+#endif
+						chl.asyncSend(std::move(sendMaskBuff));
+
+					}
+				}
+				if (tIdx == 0) gTimer.setTimePoint("online.send.sendMask");
+
+				//	otSend.check(chl);
+
+
+
+				/* if (tIdx == 0)
+				chl.asyncSend(std::move(sendMaskBuff));*/
+
+				if (tIdx == 0) gTimer.setTimePoint("online.send.finalMask");
+#endif
+#pragma endregion
+
+			});
+		}
+
+		for (auto& thrd : thrds)
+			thrd.join();
+
+		//    permThrd.join();
+
+
+
 	}
+	void OPPRFSender::sendBFBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
+	{
+		if (plaintexts.size() != mN)
+			throw std::runtime_error(LOCATION);
+
+
+		//TODO: double check
+		//	u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		u64 maskSize = sizeof(block);
+		//u64 maskSize = 7;
+		if (maskSize > sizeof(block))
+			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
+
+		std::vector<std::thread>  thrds(chls.size());
+		// std::vector<std::thread>  thrds(1);        
+
+		std::mutex mtx;
+		NTL::vec_GF2E x; NTL::vec_GF2E y;
+		NTL::GF2E e;
+
+		gTimer.setTimePoint("online.send.spaw");
+
+		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+		{
+			auto seed = mPrng.get<block>();
+			thrds[tIdx] = std::thread([&, tIdx, seed]() {
+
+				PRNG prng(seed);
+
+				if (tIdx == 0) gTimer.setTimePoint("online.send.thrdStart");
+
+				auto& chl = *chls[tIdx];
+				const u64 stepSize = 16;
+
+#pragma region sendShare
+#if 1
+				if (tIdx == 0) gTimer.setTimePoint("online.send.sendShare");
+
+				//2 type of bins: normal bin in inital step + stash bin
+				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
+				{
+					auto binCountSend = bins.mSimpleBins.mBinCount[bIdxType];
+					u64 binStart, binEnd;
+					if (bIdxType == 0)
+					{
+						binStart = tIdx       * binCountSend / thrds.size();
+						binEnd = (tIdx + 1) * binCountSend / thrds.size();
+					}
+					else
+					{
+						binStart = tIdx       * binCountSend / thrds.size() + bins.mSimpleBins.mBinCount[0];
+						binEnd = (tIdx + 1) * binCountSend / thrds.size() + bins.mSimpleBins.mBinCount[0];
+					}
+
+					if (tIdx == 0) gTimer.setTimePoint("online.send.masks.init.step");
+
+					for (u64 bIdx = binStart; bIdx < binEnd;)
+					{
+						u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
+						uPtr<Buff> sendMaskBuff(new Buff);
+						sendMaskBuff->resize(currentStepSize * (bins.mSimpleBins.mMaxBinSize[bIdxType] * maskSize));
+						auto maskView = sendMaskBuff->getMatrixView<u8>(bins.mSimpleBins.mMaxBinSize[bIdxType] * maskSize);
+
+						for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
+						{
+							//Log::out << "sBin #" << bIdx << Log::endl;
+
+							auto& bin = bins.mSimpleBins.mBins[bIdx];
+							u64 baseMaskIdx = stepIdx;
+							int MaskIdx = 0;
+
+							//	Log::out << "bin.mIdx[" << bIdx << "]: " <<  Log::endl;
+
+							if (bin.mIdx.size() > 0)
+							{
+
+								//get y[i]
+								std::vector<block> setY(bin.mIdx.size());
+								for (u64 i = 0; i < bin.mIdx.size(); ++i)
+								{
+									u64 inputIdx = bin.mIdx[i];
+									//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
+
+									setY[i] = plaintexts[inputIdx] ^ bin.mValOPRF[IdxP][i];
+									if (bIdx == 0)
+									{
+										std::cout << "s bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP][i];
+										std::cout << "-----------" << setY[i] << std::endl;
+									}
+								}
+
+								std::vector<block> coeffs;
+								//computes coefficients (in blocks) of p such that p(x[i]) = y[i]
+								//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
+								bin.mBits[IdxP].getBlkCoefficients(bins.mSimpleBins.mMaxBinSize[bIdxType],
+									bin.mValOPRF[IdxP], setY, coeffs);
+
+								//if (bIdx == 0)
+								//{
+								//	Log::out << "coeffs.size(): " << coeffs.size()<< Log::endl;
+
+								//	for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
+								//		Log::out << IdxP << "s-coeffs[" << i << "] #" << coeffs[i] << Log::endl;
+								//}
+
+								//it already contain a dummy item
+								for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
+								{
+									memcpy(
+										maskView[baseMaskIdx].data() + i* maskSize,
+										(u8*)&coeffs[i],  //make randome
+														  //(u8*)&ZeroBlock,  //make randome
+										maskSize);
+								}
+
+							}
+							else //pad all dummy
+							{
+								for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
+								{
+									memcpy(
+										maskView[baseMaskIdx].data() + i* maskSize,
+										(u8*)&ZeroBlock,  //make randome
+										maskSize);
+								}
+							}
+						}
+
+#ifdef PRINT
+						Log::out << "maskSize: ";
+						for (size_t i = 0; i < maskView.size()[0]; i++)
+						{
+							for (size_t j = 0; j < mSimpleBins.mNumBits[bIdxType]; j++)
+							{
+								Log::out << static_cast<int16_t>(maskView[i][j]) << " ";
+							}
+							Log::out << Log::endl;
+
+							for (size_t j = 0; j < mSimpleBins.mMaxBinSize[bIdxType]; j++) {
+								auto theirMask = ZeroBlock;
+								memcpy(&theirMask, maskView[i].data() + j*maskSize + mSimpleBins.mNumBits[bIdxType], maskSize);
+								if (theirMask != ZeroBlock)
+								{
+									Log::out << theirMask << " " << Log::endl;
+								}
+							}
+						}
+#endif
+						chl.asyncSend(std::move(sendMaskBuff));
+
+					}
+				}
+				if (tIdx == 0) gTimer.setTimePoint("online.send.sendMask");
+
+				//	otSend.check(chl);
+
+
+
+				/* if (tIdx == 0)
+				chl.asyncSend(std::move(sendMaskBuff));*/
+
+				if (tIdx == 0) gTimer.setTimePoint("online.send.finalMask");
+#endif
+#pragma endregion
+
+			});
+		}
+
+		for (auto& thrd : thrds)
+			thrd.join();
+
+		//    permThrd.join();
+
+
+
+	}
+
+
 
 	void OPPRFSender::recvSSTableBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 	{
@@ -969,14 +1326,349 @@ namespace osuCrypto
 
 
 	}
-
-	void OPPRFSender::recvSSPolyBased(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
-	{
-		recvSSPolyBased(IdxParty, bins, plaintexts, { &chl });
-	}
-
-	
 	void OPPRFSender::recvSSPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
+	{
+
+		// this is the online phase.
+		gTimer.setTimePoint("online.recv.start");
+
+		//u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		u64 maskSize = sizeof(block);
+
+		if (maskSize > sizeof(block))
+			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
+
+
+		std::vector<std::thread>  thrds(chls.size());
+		// this mutex is used to guard inserting things into the intersection vector.
+		std::mutex mInsertMtx;
+
+		// fr each thread, spawn it.
+		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+		{
+			auto seed = mPrng.get<block>();
+			thrds[tIdx] = std::thread([&, tIdx, seed]()
+			{
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
+
+				auto& chl = *chls[tIdx];
+				const u64 stepSize = 16;
+
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
+
+				//2 type of bins: normal bin in inital step + stash bin
+				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
+				{
+					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
+
+					u64 binStart, binEnd;
+					if (bIdxType == 0)
+					{
+						binStart = tIdx       * binCountRecv / thrds.size();
+						binEnd = (tIdx + 1) * binCountRecv / thrds.size();
+					}
+					else
+					{
+						binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+						binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+					}
+					//use the params of the simple hashing as their params
+					u64 mTheirBins_mMaxBinSize = bins.mSimpleBins.mMaxBinSize[bIdxType];
+
+					for (u64 bIdx = binStart; bIdx < binEnd;)
+					{
+						u64 curStepSize = std::min(stepSize, binEnd - bIdx);
+
+						MatrixView<block> maskView;
+						ByteStream maskBuffer;
+						chl.recv(maskBuffer);
+
+						maskView = maskBuffer.getMatrixView<block>(mTheirBins_mMaxBinSize);
+
+						if (maskView.size()[0] != curStepSize)
+							throw std::runtime_error("size not expedted");
+
+						for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
+						{
+
+							auto& bin = bins.mCuckooBins.mBins[bIdx];
+							if (!bin.isEmpty())
+							{
+								bin.mCoeffs[IdxP].resize(mTheirBins_mMaxBinSize);
+
+								u64 baseMaskIdx = stepIdx;
+
+								u64 inputIdx = bin.idx();
+
+								//compute p(x*)
+
+								for (u64 i = 0; i < mTheirBins_mMaxBinSize; i++)
+								{
+									memcpy(&bin.mCoeffs[IdxP][i], maskView[baseMaskIdx].data() + i, sizeof(block));
+
+									if (bIdx == 0)
+									{
+										//	Log::out << "r-coeffs[" << i << "] #" << bin.mCoeffs[IdxP][i] << Log::endl;
+
+									}
+								}
+
+								//TODO{ "can't call eval poly here..." };
+							}
+						}
+					}
+				}
+
+
+			});
+			//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
+		}
+		// join the threads.
+		for (auto& thrd : thrds)
+			thrd.join();
+
+		// check that the number of inputs is as expected.
+		//if (plaintexts.size() != mN)
+		//	throw std::runtime_error(LOCATION);
+
+
+		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+		{
+			auto seed = mPrng.get<block>();
+			thrds[tIdx] = std::thread([&, tIdx, seed]()
+			{
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
+
+				auto& chl = *chls[tIdx];
+				const u64 stepSize = 16;
+
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
+
+				//2 type of bins: normal bin in inital step + stash bin
+				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
+				{
+					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
+
+					u64 binStart, binEnd;
+					if (bIdxType == 0)
+					{
+						binStart = tIdx       * binCountRecv / thrds.size();
+						binEnd = (tIdx + 1) * binCountRecv / thrds.size();
+					}
+					else
+					{
+						binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+						binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+					}
+
+
+					for (u64 bIdx = binStart; bIdx < binEnd;)
+					{
+						u64 curStepSize = std::min(stepSize, binEnd - bIdx);
+
+						for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
+						{
+							auto& bin = bins.mCuckooBins.mBins[bIdx];
+							if (!bin.isEmpty())
+							{
+								u64 inputIdx = bin.idx();
+								block blkY;
+								BaseOPPRF b;
+								b.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
+
+								if (bIdx == 0)
+								{
+									std::cout << "r bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
+									std::cout << "-----------" << blkY << std::endl;
+								}
+								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
+							}
+						}
+					}
+				}
+
+
+			});
+			//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
+		}
+		// join the threads.
+		for (auto& thrd : thrds)
+			thrd.join();
+
+
+	}
+	void OPPRFSender::recvFullPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
+	{
+
+		// this is the online phase.
+		gTimer.setTimePoint("online.recv.start");
+
+		//u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		u64 maskSize = sizeof(block);
+
+		if (maskSize > sizeof(block))
+			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
+
+
+		std::vector<std::thread>  thrds(chls.size());
+		// this mutex is used to guard inserting things into the intersection vector.
+		std::mutex mInsertMtx;
+
+		// fr each thread, spawn it.
+		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+		{
+			auto seed = mPrng.get<block>();
+			thrds[tIdx] = std::thread([&, tIdx, seed]()
+			{
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
+
+				auto& chl = *chls[tIdx];
+				const u64 stepSize = 16;
+
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
+
+				//2 type of bins: normal bin in inital step + stash bin
+				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
+				{
+					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
+
+					u64 binStart, binEnd;
+					if (bIdxType == 0)
+					{
+						binStart = tIdx       * binCountRecv / thrds.size();
+						binEnd = (tIdx + 1) * binCountRecv / thrds.size();
+					}
+					else
+					{
+						binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+						binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+					}
+					//use the params of the simple hashing as their params
+					u64 mTheirBins_mMaxBinSize = bins.mSimpleBins.mMaxBinSize[bIdxType];
+
+					for (u64 bIdx = binStart; bIdx < binEnd;)
+					{
+						u64 curStepSize = std::min(stepSize, binEnd - bIdx);
+
+						MatrixView<block> maskView;
+						ByteStream maskBuffer;
+						chl.recv(maskBuffer);
+
+						maskView = maskBuffer.getMatrixView<block>(mTheirBins_mMaxBinSize);
+
+						if (maskView.size()[0] != curStepSize)
+							throw std::runtime_error("size not expedted");
+
+						for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
+						{
+
+							auto& bin = bins.mCuckooBins.mBins[bIdx];
+							if (!bin.isEmpty())
+							{
+								bin.mCoeffs[IdxP].resize(mTheirBins_mMaxBinSize);
+
+								u64 baseMaskIdx = stepIdx;
+
+								u64 inputIdx = bin.idx();
+
+								//compute p(x*)
+
+								for (u64 i = 0; i < mTheirBins_mMaxBinSize; i++)
+								{
+									memcpy(&bin.mCoeffs[IdxP][i], maskView[baseMaskIdx].data() + i, sizeof(block));
+
+									if (bIdx == 0)
+									{
+										//	Log::out << "r-coeffs[" << i << "] #" << bin.mCoeffs[IdxP][i] << Log::endl;
+
+									}
+								}
+
+								//TODO{ "can't call eval poly here..." };
+							}
+						}
+					}
+				}
+
+
+			});
+			//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
+		}
+		// join the threads.
+		for (auto& thrd : thrds)
+			thrd.join();
+
+		// check that the number of inputs is as expected.
+		//if (plaintexts.size() != mN)
+		//	throw std::runtime_error(LOCATION);
+
+
+		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+		{
+			auto seed = mPrng.get<block>();
+			thrds[tIdx] = std::thread([&, tIdx, seed]()
+			{
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
+
+				auto& chl = *chls[tIdx];
+				const u64 stepSize = 16;
+
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
+
+				//2 type of bins: normal bin in inital step + stash bin
+				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
+				{
+					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
+
+					u64 binStart, binEnd;
+					if (bIdxType == 0)
+					{
+						binStart = tIdx       * binCountRecv / thrds.size();
+						binEnd = (tIdx + 1) * binCountRecv / thrds.size();
+					}
+					else
+					{
+						binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+						binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+					}
+
+
+					for (u64 bIdx = binStart; bIdx < binEnd;)
+					{
+						u64 curStepSize = std::min(stepSize, binEnd - bIdx);
+
+						for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
+						{
+							auto& bin = bins.mCuckooBins.mBins[bIdx];
+							if (!bin.isEmpty())
+							{
+								u64 inputIdx = bin.idx();
+								block blkY;
+								BaseOPPRF b;
+								b.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
+
+								if (bIdx == 0)
+								{
+									std::cout << "r bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
+									std::cout << "-----------" << blkY << std::endl;
+								}
+								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
+							}
+						}
+					}
+				}
+
+
+			});
+			//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
+		}
+		// join the threads.
+		for (auto& thrd : thrds)
+			thrd.join();
+
+
+	}
+	void OPPRFSender::recvBFBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 	{
 
 		// this is the online phase.

@@ -59,17 +59,16 @@ namespace osuCrypto
 		void sendSS(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 		void recvSS(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 
-		void sendSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts,  Channel& chl);
 		void sendSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts,  const std::vector<Channel*>& chls);
-		void sendSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
 		void sendSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+		void sendFullPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+		void sendBFBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 
 
-		void recvSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
 		void recvSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
-
-		void recvSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
 		void recvSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+		void recvFullPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
+		void recvBFBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 
 
     };
