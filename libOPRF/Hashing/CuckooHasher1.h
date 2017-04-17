@@ -52,7 +52,7 @@ namespace osuCrypto
 			std::vector<block> mValOPRF;
 			std::vector<u8> mValMap;
 
-			
+			std::vector<std::vector<block>> mCoeffs;//mBits[IdxParty][mIdx]
 #endif
         };
         struct Workspace

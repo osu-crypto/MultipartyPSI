@@ -32,6 +32,8 @@ namespace osuCrypto
 		//SimpleHasher1 mSimpleBins;
         PRNG mPrng;
 
+		void r_evalPolynomial(std::vector<block>& coeffs, block& x, block& y);
+
 		void init(u32 opt, u64 numParties, u64 n, u64 statSecParam, u64 inputBitSize, Channel& chl0, u64 otCounts, NcoOtExtReceiver& otRecv, NcoOtExtSender& otSend, block seed, bool isOtherDirection=true);
 		void init(u32 opt, u64 numParties, u64 n, u64 statSecParam, u64 inputBitSize, const std::vector<Channel*>& chls, u64 otCounts, NcoOtExtReceiver& ots, NcoOtExtSender& otSend, block seed, bool isOtherDirection=true);
 

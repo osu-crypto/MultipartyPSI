@@ -51,7 +51,7 @@ namespace osuCrypto
 			NcoOtExtReceiver& otRecv,
             block seed, bool isOtherDirection=true);
 
-		
+		void testSender();
 
 		void getOPRFKeys( u64 IdxTheirParty, binSet& bins, Channel& chl, bool isOtherDirectionGetOPRF=true);
 		void getOPRFKeys(u64 IdxTheirParty, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF = true);

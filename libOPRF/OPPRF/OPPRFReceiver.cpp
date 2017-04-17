@@ -12,6 +12,8 @@
 #include "TwoChooseOne/IknpOtExtReceiver.h"
 #include "TwoChooseOne/IknpOtExtSender.h"
 #include "Hashing/BitPosition.h"
+#include "MPSI\Dcw\ShamirSSScheme.h" 
+
 //#define PRINT
 namespace osuCrypto
 {
@@ -35,6 +37,7 @@ namespace osuCrypto
         init(opt,numParties,n, statSec, inputBitSize, { &chl0 }, otCounts, otRecv, otSend, seed, isOtherDirection);
     }
 
+	
     void OPPRFReceiver::init(u32 opt, u64 numParties,
 			u64 n,
 			u64 statSecParam,
@@ -44,7 +47,8 @@ namespace osuCrypto
 			NcoOtExtSender& otSend,
 			block seed, bool isOtherDirection)
 	{
-
+		
+		//testReceiver();
 		// this is the offline function for doing binning and then performing the OtPsi* between the bins.
 		mOpt = opt;
 		mParties = numParties;
@@ -73,19 +77,19 @@ namespace osuCrypto
 
 		// we need a random hash function, so we will both commit to a seed and then later decommit. 
 		//This is the commitments phase
-		Commit comm(myHashSeed), theirComm;
-		chl0.asyncSend(comm.data(), comm.size());
-		chl0.recv(theirComm.data(), theirComm.size());
+		//Commit comm(myHashSeed), theirComm;
+		//chl0.asyncSend(comm.data(), comm.size());
+		//chl0.recv(theirComm.data(), theirComm.size());
 
-		// ok, now decommit to the seed.
-		chl0.asyncSend(&myHashSeed, sizeof(block));
-		block theirHashingSeed;
-		chl0.recv(&theirHashingSeed, sizeof(block));
+		//// ok, now decommit to the seed.
+		//chl0.asyncSend(&myHashSeed, sizeof(block));
+		//block theirHashingSeed;
+		//chl0.recv(&theirHashingSeed, sizeof(block));
 
-		gTimer.setTimePoint("Init.recv.hashSeed");
+		//gTimer.setTimePoint("Init.recv.hashSeed");
 
-		// compute the hashing seed as the xor of both of ours seeds.
-		mHashingSeed = myHashSeed ^ theirHashingSeed;
+		//// compute the hashing seed as the xor of both of ours seeds.
+		//mHashingSeed = myHashSeed ^ theirHashingSeed;
 
 
 		// how many OTs we need in total.
@@ -428,18 +432,24 @@ namespace osuCrypto
 		if (mOpt == 0)
 			recvSSTableBased(IdxParty, bins, plaintexts, chls);
 		else if (mOpt == 1)
+		{
 			recvSSPolyBased(IdxParty, bins, plaintexts, chls);
+			block blkX = ZeroBlock;
+			block blkY;
+			BaseOPPRF b;
+			r_evalPolynomial(plaintexts, blkX, blkY);
+		}
 	}
 
-	void GF2EFromBlock1(NTL::GF2E &element, block& blk, u64 size) {
+	//void GF2EFromBlock1(NTL::GF2E &element, block& blk, u64 size) {
 
-		NTL::GF2X x1;
-		NTL::BuildIrred(x1, 128);
-		NTL::GF2E::init(x1);
-		//convert the Block to GF2X element.
-		NTL::GF2XFromBytes(x1, (u8*)&blk, size);
-		element = to_GF2E(x1);
-	}
+	//	NTL::GF2X x1;
+	//	NTL::BuildIrred(x1, 128);
+	//	NTL::GF2E::init(x1);
+	//	//convert the Block to GF2X element.
+	//	NTL::GF2XFromBytes(x1, (u8*)&blk, size);
+	//	element = to_GF2E(x1);
+	//}
 
 
 	
@@ -583,7 +593,7 @@ namespace osuCrypto
 	}
 
 	void OPPRFReceiver::recvSSPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
-	{
+	{	
 
 		// this is the online phase.
 		gTimer.setTimePoint("online.recv.start");
@@ -650,73 +660,52 @@ namespace osuCrypto
 							auto& bin = bins.mCuckooBins.mBins[bIdx];
 							if (!bin.isEmpty())
 							{
+								bin.mCoeffs[IdxP].resize(mTheirBins_mMaxBinSize);
+
 								u64 baseMaskIdx = stepIdx;
 
 								u64 inputIdx = bin.idx();
 								block myY=ZeroBlock;
 
-								BaseOPPRF b;
-
+								
 								//compute p(x*)
 								std::vector<block> coeffs;
 
 								for (u64 i = 0; i < mTheirBins_mMaxBinSize; i++)
 								{
 									coeffs.push_back(maskView[baseMaskIdx][i]);
-									if(bIdx==0 && IdxP==2)
-										Log::out << "r-coeffs["<<i<<"] #" << coeffs[i] << Log::endl;
+									bin.mCoeffs[IdxP][i] = maskView[baseMaskIdx][i];
+
+									if (bIdx == 0)
+									{
+										Log::out << "r-coeffs[" << i << "] #" << bin.mCoeffs[IdxP][i] << Log::endl;
+										
+									}
 								}
+								block blkX = mPrng.get<block>();
+								block blkY;
+								BaseOPPRF b;
+								//r_evalPolynomial(bins.mCuckooBins.mBins[0].mCoeffs[IdxP], blkX, blkY);
+
+								//std::cout << "blkY  111" << blkY << std::endl;
+								
 
 								//it is fine to compute p(oprf(x))
-								if (bIdx == 0 && IdxP == 2)
-								{
-									std::cout << coeffs.size() << std::endl;
-									Log::out << "bin.mValOPRF[IdxP]: " << bin.mValOPRF[IdxP] << Log::endl;
-								}
 
+							//	block blkX = ZeroBlock;
+								//block blkY = ZeroBlock;
+								//BaseOPPRF bb;
+								//bb.evalPolynomial(coeffs, blkX, blkY);
 
-
-								NTL::GF2EX res_polynomial;
-								
-								NTL::GF2E e;
-								for (u64 i = 0; i < coeffs.size(); ++i)
-								{
-									if (bIdx == 0)
-										Log::out << IdxP << ": r-coeffs[" << i << "] #" << coeffs[i] << Log::endl;
-									
-									
-									//NTL::GF2X x1;
-									NTL::GF2X a;
-									//NTL::SetCoeff(a, 117);
-									NTL::SetCoeff(a, 10);
-									//NTL::SetCoeff(a, 0);
-								//  NTL::BuildIrred(x1, 128);
-								//	NTL::GF2E::init(x1);
-									//convert the Block to GF2X element.
-									NTL::GF2XFromBytes(a, (u8*)&coeffs[i], sizeof(block));
-									e = to_GF2E(a);
-									NTL::SetCoeff(res_polynomial, i, e); //build res_polynomial
-								//	NTL::GF2X xi;
-									//NTL::BuildIrred(xi, 128);
-									//NTL::GF2XFromBytes(xi, (u8*)&coeffs[i], sizeof(block));
-
-									
-									
-									//GF2EFromBlock1(e, coeffs[i], sizeof(block));
-									//NTL::SetCoeff(res_polynomial, i, e); //build res_polynomial
-								}
-								NTL::GF2E e1;
-								b.GF2EFromBlock(e, bin.mValOPRF[IdxP]);
-							//	e1 = NTL::eval(res_polynomial, e); //get y=f(x) in GF2E
-							//	b.BlockFromGF2E(myY, e); //convert to block 
-
-
+								//ShamirSSScheme ss;
+								//NTL::GF2X mPrime;
+								//NTL::GF2XFromBytes(mPrime, (u8*)&blkY, sizeof(block));
 
 
 								//b.evalPolynomial(coeffs, bin.mValOPRF[IdxP], myY);
 							//	myY = ZeroBlock;
 
-								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ myY;
+								//plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ myY;
 
 
 								//}
@@ -734,8 +723,22 @@ namespace osuCrypto
 			thrd.join();
 
 		// check that the number of inputs is as expected.
-		if (plaintexts.size() != mN)
-			throw std::runtime_error(LOCATION);
+		//if (plaintexts.size() != mN)
+		//	throw std::runtime_error(LOCATION);
+
+		for (size_t i = 0; i < 32; i++)
+		{
+			if (!bins.mCuckooBins.mBins[i].isEmpty())
+			{
+				block blkX = mPrng.get<block>();
+				block blkY;
+				BaseOPPRF b;
+				r_evalPolynomial(bins.mCuckooBins.mBins[i].mCoeffs[IdxP], blkX, blkY);
+
+				std::cout << "blkY  222" << blkY << std::endl;
+			}
+		}
+			
 
 
 
@@ -987,8 +990,8 @@ namespace osuCrypto
 		// std::vector<std::thread>  thrds(1);        
 
 		std::mutex mtx;
-		NTL::vec_GF2E x; NTL::vec_GF2E y;
-		NTL::GF2E e;
+		//NTL::vec_GF2E x; NTL::vec_GF2E y;
+		//NTL::GF2E e;
 
 		gTimer.setTimePoint("online.send.spaw");
 
@@ -1055,16 +1058,16 @@ namespace osuCrypto
 								std::vector<block> coeffs;
 								//computes coefficients (in blocks) of p such that p(x[i]) = y[i]
 								//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
-								bin.mBits[IdxP].getBlkCoefficients(bins.mSimpleBins.mMaxBinSize[bIdxType],
-									bin.mValOPRF[IdxP], setY, coeffs);
+								//bin.mBits[IdxP].getBlkCoefficients(bins.mSimpleBins.mMaxBinSize[bIdxType],
+								//	bin.mValOPRF[IdxP], setY, coeffs);
 
 								//it already contain a dummy item
 								for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
 								{
 									memcpy(
 										maskView[baseMaskIdx].data() + i* maskSize,
-										(u8*)&coeffs[i],  //make randome
-										//(u8*)&ZeroBlock,  //make randome
+										//(u8*)&coeffs[i],  //make randome
+										(u8*)&ZeroBlock,  //make randome
 										maskSize);
 								}
 
@@ -1132,5 +1135,21 @@ namespace osuCrypto
 
 	}
 
+	void OPPRFReceiver::r_evalPolynomial(std::vector<block>& coeffs, block& x, block& y)
+	{
+		BaseOPPRF b;
+		NTL::GF2EX res_polynomial;
+		NTL::GF2E e;
+		std::cout << coeffs.size() << std::endl;
+		for (u64 i = 0; i < coeffs.size(); ++i)
+		{
+			b.GF2EFromBlock(e, coeffs[i]);
+			NTL::SetCoeff(res_polynomial, i, e); //build res_polynomial
+		}
+
+		b.GF2EFromBlock(e, x);
+		e = NTL::eval(res_polynomial, e); //get y=f(x) in GF2E
+		b.BlockFromGF2E(y, e); //convert to block 
+	}
 
 }

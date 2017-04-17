@@ -116,7 +116,12 @@ namespace WeGarbleTests
 			InitDebugPrinting();
 			GBF_Test_Impl();
 		}
-
+		TEST_METHOD(OPPRF2_EmptrySet_Test)
+		{
+			InitDebugPrinting();
+			OPPRF2_EmptrySet_Test_Impl();
+		}
+		
 		/*TEST_METHOD(Channel_Test)
 		{
 			InitDebugPrinting();

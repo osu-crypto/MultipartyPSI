@@ -209,6 +209,7 @@ namespace osuCrypto
 						{
 							cbin.mValOPRF.resize(mParties);
 							cbin.mValMap.resize(mParties);
+							cbin.mCoeffs.resize(mParties);
 						}
 						auto& sbin = mSimpleBins.mBins[bIdx];
 

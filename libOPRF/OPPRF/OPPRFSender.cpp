@@ -31,12 +31,28 @@ namespace osuCrypto
         init(opt, numParties, setSize,  statSec, inputBitSize, { &chl0 }, otCounts, otSend, otRecv, seed, isOtherDirection);
     }
 
+	void OPPRFSender::testSender() {
+		PRNG prng111(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+		std::vector<block> coeffs(32);
+
+		for (int i = 0; i < coeffs.size(); ++i)
+		{
+			coeffs[i] = prng111.get<block>();
+		}
+
+		block blkX = prng111.get<block>();
+		block blkY;
+		BaseOPPRF b;
+		b.evalPolynomial(coeffs, blkX, blkY);
+	}
+
     void OPPRFSender::init(u32 opt, u64 numParties, u64 setSize,  u64 statSec, u64 inputBitSize,
         const std::vector<Channel*>& chls, u64 otCounts,
         NcoOtExtSender& otSend,
 		NcoOtExtReceiver& otRecv,
         block seed, bool isOtherDirection)
 	{
+		//testSender();
 		mOpt = opt;
 		mStatSecParam = statSec;
 		mN = setSize;
@@ -62,7 +78,7 @@ namespace osuCrypto
 		auto& chl0 = *chls[0];
 
 
-		Commit comm(myHashSeed), theirComm;
+	/*	Commit comm(myHashSeed), theirComm;
 		chl0.asyncSend(comm.data(), comm.size());
 		chl0.recv(theirComm.data(), theirComm.size());
 
@@ -71,7 +87,7 @@ namespace osuCrypto
 		block theirHashingSeed;
 		chl0.recv(&theirHashingSeed, sizeof(block));
 
-		mHashingSeed = myHashSeed ^ theirHashingSeed;
+		mHashingSeed = myHashSeed ^ theirHashingSeed;*/
 
 		gTimer.setTimePoint("init.send.hashSeed");
 
@@ -401,6 +417,7 @@ namespace osuCrypto
 	}
 	
 
+
 	void OPPRFSender::sendSS(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
 	{
 		sendSS(IdxParty, bins, plaintexts, { &chl });
@@ -426,6 +443,22 @@ namespace osuCrypto
 			recvSSPolyBased(IdxParty, bins, plaintexts, chls);
 	}
 
+	void evalPolynomial111(std::vector<block>& coeffs, block& x, block& y)
+	{
+		BaseOPPRF b;
+		NTL::GF2EX res_polynomial;
+		NTL::GF2E e;
+		std::cout << coeffs.size() << std::endl;
+		for (u64 i = 0; i < coeffs.size(); ++i)
+		{
+			b.GF2EFromBlock(e, coeffs[i]);
+			NTL::SetCoeff(res_polynomial, i, e); //build res_polynomial
+		}
+
+		b.GF2EFromBlock(e, x);
+		e = NTL::eval(res_polynomial, e); //get y=f(x) in GF2E
+		b.BlockFromGF2E(y, e); //convert to block 
+	}
 
 
 	void OPPRFSender::sendSSTableBased(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
@@ -738,7 +771,7 @@ namespace osuCrypto
 								//	Log::out << "setY[" << i << "]: " << setY[i] << Log::endl;
 
 								}
-
+								//Log::out << "setY[0]: " << setY[i] << Log::endl;
 								
 
 								std::vector<block> coeffs;
@@ -766,6 +799,18 @@ namespace osuCrypto
 								}						
 
 								
+								//block blkY = ZeroBlock;
+								//block blkX = OneBlock;
+
+								//for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
+								//{
+								//	coeffs[i]= mPrng.get<block>();
+								//}
+
+							/*	evalPolynomial111(coeffs, blkX, blkY);
+
+								Log::out << blkX<< "---------" << blkY << Log::endl;*/
+
 							}
 							else //pad all dummy
 							{
