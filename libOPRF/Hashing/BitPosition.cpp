@@ -410,7 +410,7 @@ namespace osuCrypto
 	{
 		NTL::GF2EX res_polynomial;
 		NTL::GF2E e;
-		std::cout << coeffs.size() << std::endl;
+		//std::cout << coeffs.size() << std::endl;
 		for (u64 i = 0; i < coeffs.size(); ++i)
 		{
 			GF2EFromBlock(e, coeffs[i]);

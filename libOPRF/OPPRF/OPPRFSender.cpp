@@ -31,20 +31,6 @@ namespace osuCrypto
         init(opt, numParties, setSize,  statSec, inputBitSize, { &chl0 }, otCounts, otSend, otRecv, seed, isOtherDirection);
     }
 
-	void OPPRFSender::testSender() {
-		PRNG prng111(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
-		std::vector<block> coeffs(32);
-
-		for (int i = 0; i < coeffs.size(); ++i)
-		{
-			coeffs[i] = prng111.get<block>();
-		}
-
-		block blkX = prng111.get<block>();
-		block blkY;
-		BaseOPPRF b;
-		b.evalPolynomial(coeffs, blkX, blkY);
-	}
 
     void OPPRFSender::init(u32 opt, u64 numParties, u64 setSize,  u64 statSec, u64 inputBitSize,
         const std::vector<Channel*>& chls, u64 otCounts,
@@ -52,7 +38,6 @@ namespace osuCrypto
 		NcoOtExtReceiver& otRecv,
         block seed, bool isOtherDirection)
 	{
-		//testSender();
 		mOpt = opt;
 		mStatSecParam = statSec;
 		mN = setSize;
@@ -443,24 +428,7 @@ namespace osuCrypto
 			recvSSPolyBased(IdxParty, bins, plaintexts, chls);
 	}
 
-	void evalPolynomial111(std::vector<block>& coeffs, block& x, block& y)
-	{
-		BaseOPPRF b;
-		NTL::GF2EX res_polynomial;
-		NTL::GF2E e;
-		std::cout << coeffs.size() << std::endl;
-		for (u64 i = 0; i < coeffs.size(); ++i)
-		{
-			b.GF2EFromBlock(e, coeffs[i]);
-			NTL::SetCoeff(res_polynomial, i, e); //build res_polynomial
-		}
-
-		b.GF2EFromBlock(e, x);
-		e = NTL::eval(res_polynomial, e); //get y=f(x) in GF2E
-		b.BlockFromGF2E(y, e); //convert to block 
-	}
-
-
+	
 	void OPPRFSender::sendSSTableBased(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
 	{
 		sendSSTableBased(IdxParty, bins,plaintexts,{ &chl });
@@ -767,12 +735,15 @@ namespace osuCrypto
 								for (u64 i = 0; i < bin.mIdx.size(); ++i)
 								{
 									u64 inputIdx = bin.mIdx[i];
-									setY[i]=plaintexts[inputIdx];
-								//	Log::out << "setY[" << i << "]: " << setY[i] << Log::endl;
+									//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
 
-								}
-								//Log::out << "setY[0]: " << setY[i] << Log::endl;
-								
+									setY[i]=plaintexts[inputIdx]^ bin.mValOPRF[IdxP][i];
+									if (bIdx == 0)
+									{										
+											std::cout << "s bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP][i];
+											std::cout << "-----------" << setY[i] << std::endl;
+									}
+								}							
 
 								std::vector<block> coeffs;
 								//computes coefficients (in blocks) of p such that p(x[i]) = y[i]
@@ -780,13 +751,13 @@ namespace osuCrypto
 								bin.mBits[IdxP].getBlkCoefficients(bins.mSimpleBins.mMaxBinSize[bIdxType],
 									bin.mValOPRF[IdxP], setY, coeffs);
 
-								if (bIdx == 0)
-								{
-									Log::out << "coeffs.size(): " << coeffs.size()<< Log::endl;
+								//if (bIdx == 0)
+								//{
+								//	Log::out << "coeffs.size(): " << coeffs.size()<< Log::endl;
 
-									for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
-										Log::out << IdxP << "s-coeffs[" << i << "] #" << coeffs[i] << Log::endl;
-								}
+								//	for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
+								//		Log::out << IdxP << "s-coeffs[" << i << "] #" << coeffs[i] << Log::endl;
+								//}
 
 								//it already contain a dummy item
 								for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
@@ -796,25 +767,11 @@ namespace osuCrypto
 										(u8*)&coeffs[i],  //make randome
 										//(u8*)&ZeroBlock,  //make randome
 										maskSize);
-								}						
-
-								
-								//block blkY = ZeroBlock;
-								//block blkX = OneBlock;
-
-								//for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
-								//{
-								//	coeffs[i]= mPrng.get<block>();
-								//}
-
-							/*	evalPolynomial111(coeffs, blkX, blkY);
-
-								Log::out << blkX<< "---------" << blkY << Log::endl;*/
+								}
 
 							}
 							else //pad all dummy
-							{
-								
+							{								
 								for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
 								{								
 									memcpy(
@@ -1018,6 +975,7 @@ namespace osuCrypto
 		recvSSPolyBased(IdxParty, bins, plaintexts, { &chl });
 	}
 
+	
 	void OPPRFSender::recvSSPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 	{
 
@@ -1074,9 +1032,9 @@ namespace osuCrypto
 						MatrixView<block> maskView;
 						ByteStream maskBuffer;
 						chl.recv(maskBuffer);
-						
+
 						maskView = maskBuffer.getMatrixView<block>(mTheirBins_mMaxBinSize);
-					
+
 						if (maskView.size()[0] != curStepSize)
 							throw std::runtime_error("size not expedted");
 
@@ -1086,29 +1044,26 @@ namespace osuCrypto
 							auto& bin = bins.mCuckooBins.mBins[bIdx];
 							if (!bin.isEmpty())
 							{
+								bin.mCoeffs[IdxP].resize(mTheirBins_mMaxBinSize);
+
 								u64 baseMaskIdx = stepIdx;
 
 								u64 inputIdx = bin.idx();
-								block myY;							
-								
-								BaseOPPRF b;
 
 								//compute p(x*)
-								std::vector<block> coeffs;
-								
+
 								for (u64 i = 0; i < mTheirBins_mMaxBinSize; i++)
 								{
-									coeffs.push_back(maskView[baseMaskIdx][i]);
+									memcpy(&bin.mCoeffs[IdxP][i], maskView[baseMaskIdx].data() + i, sizeof(block));
+
+									if (bIdx == 0)
+									{
+										//	Log::out << "r-coeffs[" << i << "] #" << bin.mCoeffs[IdxP][i] << Log::endl;
+
+									}
 								}
-								
-								//it is fine to compute p(oprf(x))
-								//b.evalPolynomial(coeffs, bin.mValOPRF[IdxP], myY);
-								myY = ZeroBlock;
 
-								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^myY;
-
-
-								//}
+								//TODO{ "can't call eval poly here..." };
 							}
 						}
 					}
@@ -1123,12 +1078,76 @@ namespace osuCrypto
 			thrd.join();
 
 		// check that the number of inputs is as expected.
-		if (plaintexts.size() != mN)
-			throw std::runtime_error(LOCATION);
+		//if (plaintexts.size() != mN)
+		//	throw std::runtime_error(LOCATION);
 
+
+		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+		{
+			auto seed = mPrng.get<block>();
+			thrds[tIdx] = std::thread([&, tIdx, seed]()
+			{
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
+
+				auto& chl = *chls[tIdx];
+				const u64 stepSize = 16;
+
+				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
+
+				//2 type of bins: normal bin in inital step + stash bin
+				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
+				{
+					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
+
+					u64 binStart, binEnd;
+					if (bIdxType == 0)
+					{
+						binStart = tIdx       * binCountRecv / thrds.size();
+						binEnd = (tIdx + 1) * binCountRecv / thrds.size();
+					}
+					else
+					{
+						binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+						binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+					}
+
+
+					for (u64 bIdx = binStart; bIdx < binEnd;)
+					{
+						u64 curStepSize = std::min(stepSize, binEnd - bIdx);
+
+						for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
+						{
+							auto& bin = bins.mCuckooBins.mBins[bIdx];
+							if (!bin.isEmpty())
+							{
+								u64 inputIdx = bin.idx();
+								block blkY;
+								BaseOPPRF b;
+								b.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
+
+								if (bIdx == 0)
+								{
+									std::cout << "r bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
+									std::cout << "-----------" << blkY << std::endl;
+								}
+								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
+							}
+						}
+					}
+				}
+
+
+			});
+			//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
+		}
+		// join the threads.
+		for (auto& thrd : thrds)
+			thrd.join();
 
 
 	}
+
 
 }
 
