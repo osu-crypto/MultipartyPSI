@@ -35,6 +35,12 @@ namespace WeGarbleTests
 			OPPRFn_EmptrySet_Test_Impl();
 		}
 
+		TEST_METHOD(OPPRFn_Aug_EmptrySet_Test)
+		{
+			InitDebugPrinting();
+			OPPRFn_Aug_EmptrySet_Test_Impl();
+		}
+
    //     TEST_METHOD(OPPRF_FullSet_Test)
    //     {
    //         InitDebugPrinting();

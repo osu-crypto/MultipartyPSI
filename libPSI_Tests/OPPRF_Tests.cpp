@@ -1737,8 +1737,10 @@ void party2(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 	ios.stop();
 }
 
+
 void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 {
+	u64 pIdxTest = 1;
 	u64 psiSecParam = 40, bitSize = 128, numThreads = 1;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 
@@ -1749,13 +1751,16 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 	PRNG prng1(_mm_set_epi32(4253465, 3434565, 234435, myIdx)); //for test
 	set[0] = prng1.get<block>();;
 
-	std::vector<block> sendPayLoads, recvPayLoads;
+	std::vector<block> sendPayLoads;
+	std::vector<std::vector<block>> recvPayLoads(nParties); //leader
 
-
-		sendPayLoads.resize(setSize);
+	sendPayLoads.resize(setSize);
 	
-		if (myIdx == 0) //leader
-		recvPayLoads.resize(setSize);
+	if (myIdx == 0) //leader
+		for (u32 i = 0; i < recvPayLoads.size(); i++)
+		{
+			recvPayLoads[i].resize(setSize);
+		}
 
 	//only P0 genaretes secret sharing
 	if (myIdx !=0)
@@ -1806,8 +1811,10 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 	std::vector<KkrtNcoOtSender> otSend(nParties);
 
 	OPPRFSender send;
-	OPPRFReceiver recv;
 	binSet bins;
+
+	std::vector<OPPRFReceiver> recv(nParties);
+
 
 	std::vector<std::thread>  pThrds(nParties);
 
@@ -1819,14 +1826,32 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 	u64 otCountSend = bins.mSimpleBins.mBins.size();
 	u64 otCountRecv = bins.mCuckooBins.mBins.size();
 
+
+
+
+
 	if (myIdx != 0) {
 		//I am a sender to my next neigbour
 		send.init(opt, nParties, setSize, psiSecParam, bitSize, chls[0], otCountSend, otSend[0], otRecv[0], prng.get<block>(), false);
 		//send.testSender();
 	}
 	else if (myIdx == 0) {
+
+		std::vector<std::thread>  pThrds(nParties);
+
+		for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+		{
+			pThrds[pIdx] = std::thread([&, pIdx]() {
+				if (pIdx != 0)
+				{
+					recv[pIdx].init(opt, nParties, setSize, psiSecParam, bitSize, chls[pIdx], otCountRecv, otRecv[pIdx], otSend[pIdx], ZeroBlock, false);
+				}
+			});
+		}
+		for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+			pThrds[pIdx].join();
 		//I am a recv to my previous neigbour
-		recv.init(opt, nParties, setSize, psiSecParam, bitSize, chls[1], otCountRecv, otRecv[1], otSend[1], ZeroBlock, false);
+		
 		//recv.testReceiver();
 	}
 
@@ -1837,12 +1862,12 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 	if (myIdx == 0)
 	{
 		Log::out << "------0------" << Log::endl;
-		Log::out << otRecv[1].mGens[0][0].get<block>() << Log::endl;
-		Log::out << otRecv[1].mGens[0][1].get<block>() << Log::endl;
+		Log::out << otRecv[pIdxTest].mGens[0][0].get<block>() << Log::endl;
+		Log::out << otRecv[pIdxTest].mGens[0][1].get<block>() << Log::endl;
 	}
-	if (myIdx == 1)
+	if (myIdx == pIdxTest)
 	{
-		Log::out << "------1------" << Log::endl;
+		Log::out << "------"<< pIdxTest<<"------" << Log::endl;
 		Log::out << otSend[0].mGens[0].get<block>() << Log::endl;
 	}
 
@@ -1861,16 +1886,25 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 	//### Online Phasing - compute OPRF
 	//##########################
 
-	pThrds.clear();
-	pThrds.resize(nParties);
+	
 
-	if (myIdx == 1) {
+	if (myIdx == 0) {
 		//I am a sender to my next neigbour
-		send.getOPRFKeys(0, bins, chls[0], false);
+		std::vector<std::thread>  pThrds(nParties);
+
+		for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+		{
+			pThrds[pIdx] = std::thread([&, pIdx]() {
+				if(pIdx!=0)
+				recv[pIdx].getOPRFkeys(pIdx, bins, chls[pIdx], false);
+			});
+		}
+		for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+			pThrds[pIdx].join();	
 	}
-	else if (myIdx == 0) {
+	else {
 		//I am a recv to my previous neigbour
-		recv.getOPRFkeys(1, bins, chls[1], false);
+		send.getOPRFKeys(0, bins, chls[0], false);		
 	}
 
 
@@ -1880,7 +1914,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 	//	bins.mCuckooBins.print(1, true, true, false);
 	//	Log::out << "------------" << Log::endl;
 	//}
-	//if (myIdx == 1)
+	//if (myIdx == 2)
 	//{
 	//	bins.mSimpleBins.print(0, true, true, false, false);
 	//	//bins.mCuckooBins.print(0, true, true, false);
@@ -1894,9 +1928,23 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 
 	if (myIdx == 0)
 	{
-		recv.recvSS(1, bins, recvPayLoads, chls[1]);
+		//I am a sender to my next neigbour
+		std::vector<std::thread>  pThrds(nParties);
+
+		for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+		{
+
+			pThrds[pIdx] = std::thread([&, pIdx]() {
+				if(pIdx!=0)
+				recv[pIdx].recvSS(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+			});
+		}
+		for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+			pThrds[pIdx].join();
+
+		
 	}
-	else if (myIdx == 1)
+	else 
 	{
 		send.sendSS(0, bins, sendPayLoads, chls[0]);
 	}
@@ -1911,11 +1959,11 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 		for (int i = 0; i < 5; i++)
 		{
 
-			Log::out << myIdx << "r-" << recvPayLoads[i] << Log::endl;
+			Log::out << myIdx << "r-" << recvPayLoads[pIdxTest][i] << Log::endl;
 		}
 		Log::out << "------------" << Log::endl;
 	}
-	if (myIdx == 1)
+	if (myIdx == pIdxTest)
 	{
 		for (int i = 0; i < 5; i++)
 		{
@@ -1926,7 +1974,9 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 
 	std::cout << IoStream::unlock;
 
-#if 1
+#if 0
+#endif // 0
+#if 0
 	//##########################
 	//### online phasing - compute intersection
 	//##########################
@@ -3062,6 +3112,32 @@ void OPPRFnt_EmptrySet_Test_Impl()
 
 }
 
+void OPPRFn_Aug_EmptrySet_Test_Impl()
+{
+	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128;
+	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+	mSet.resize(setSize);
+	for (u64 i = 0; i < setSize; ++i)
+	{
+		mSet[i] = prng.get<block>();
+	}
+	nParties = 3;
+	
+	std::vector<std::thread>  pThrds(nParties);
+	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+	{
+		pThrds[pIdx] = std::thread([&, pIdx]() {
+				//	Channel_party_test(pIdx);
+			aug_party(pIdx, nParties, mSet.size(), mSet);
+			});
+	}
+	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+		pThrds[pIdx].join();
+
+
+}
+
+
 void Channel_party_test(u64 myIdx)
 {
 	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128, numThreads = 1;
@@ -3241,8 +3317,8 @@ void OPPRF2_EmptrySet_Test_Impl()
 void GF2EFromBlock(NTL::GF2E &element, block& blk,u64 size) {
 
 	NTL::GF2X x1;
-//	NTL::BuildIrred(x1, 128);
-	//NTL::GF2E::init(x1);
+	NTL::BuildIrred(x1, 128);
+	NTL::GF2E::init(x1);
 	//convert the Block to GF2X element.
 	NTL::GF2XFromBytes(x1, (u8*)&blk, size);
 	element = to_GF2E(x1);
@@ -3386,14 +3462,14 @@ void polynomial_Test_Impl()
 	}
 	std::cout << std::endl;
 	std::vector<block> coeffs;
-	BaseOPPRF b;
-	b.getBlkCoefficients(MaxSetSize, mSetX, mSetY, coeffs);
+	//BaseOPPRF b;
+	getBlkCoefficients(MaxSetSize, mSetX, mSetY, coeffs);
 
 	block blkY;
 	for (int i = 0; i < mSetY.size(); ++i)
 	{
 
-		b.evalPolynomial(coeffs, mSetX[i], blkY);
+	//	evalPolynomial(coeffs, mSetX[i], blkY);
 
 		std::cout << blkY << " -- " << mSetY[i] << std::endl;
 
@@ -3401,7 +3477,7 @@ void polynomial_Test_Impl()
 		//	throw UnitTestFail();
 	}
 	block blkX = prng.get<block>();
-	b.evalPolynomial(coeffs, blkX, blkY);
+	//evalPolynomial(coeffs, blkX, blkY);
 	std::cout << blkX << " -- " << blkY << std::endl;
 
 	/*if (eq(blkX, blkY))
