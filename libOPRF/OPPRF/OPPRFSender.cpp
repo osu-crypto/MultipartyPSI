@@ -57,7 +57,15 @@ namespace osuCrypto
 
 		mOtMsgBlkSize = (baseOtCount + 127) / 128;
 
-		mBfBitCount = mNumBFhashs * 2 * mN;
+		if (opt == 3)
+		{
+			mBfSize = mNumBFhashs * mN*2;// / std::log(2);
+			//######create hash
+			mBFHasher.resize(mNumBFhashs);
+			for (u64 i = 0; i < mBFHasher.size(); ++i)
+				mBFHasher[i].setKey(_mm_set1_epi64x(i));// ^ mHashingSeed);
+
+		}
 
 		mPrng.SetSeed(seed);
 		auto myHashSeed = mPrng.get<block>();
@@ -1046,14 +1054,11 @@ namespace osuCrypto
 		// std::vector<std::thread>  thrds(1);        
 
 		
-//######create hash
-		std::vector<AES> nBFHasher(mNumBFhashs);
-		for (u64 i = 0; i < nBFHasher.size(); ++i)
-			nBFHasher[i].setKey(_mm_set1_epi64x(i));// ^ mHashingSeed);
+
 
 
 		uPtr<Buff> sendMaskBuff(new Buff);
-		sendMaskBuff->resize(mBfBitCount* maskSize);
+		sendMaskBuff->resize(mBfSize* maskSize);
 		auto maskBFView = sendMaskBuff->getArrayView<block>();
 
 
@@ -1119,11 +1124,11 @@ namespace osuCrypto
 									idxs.clear();
 
 									//NOTE that it is fine to compute BF on (oprf(x),y) as long as receiver reconstruct y*=BF(oprf(x*))
-									for (u64 hashIdx = 0; hashIdx < nBFHasher.size(); ++hashIdx)
+									for (u64 hashIdx = 0; hashIdx < mBFHasher.size(); ++hashIdx)
 									{
-										block hashOut=nBFHasher[hashIdx].ecbEncBlock(bin.mValOPRF[IdxP][i]);
+										block hashOut=mBFHasher[hashIdx].ecbEncBlock(bin.mValOPRF[IdxP][i]);
 										u64& idx = *(u64*)&hashOut;
-										idx %= mBfBitCount;
+										idx %= mBfSize;
 										idxs.emplace(idx);
 									}
 

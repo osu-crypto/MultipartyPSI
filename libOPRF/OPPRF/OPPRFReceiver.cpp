@@ -55,7 +55,7 @@ namespace osuCrypto
 		mStatSecParam = statSecParam;
 		mN = n;
 
-		mBfBitCount = mNumBFhashs * 2 * mN;
+		
 
 		// must be a multiple of 128...
 		u64 baseOtCount;// = 128 * CodeWordSize;
@@ -67,8 +67,14 @@ namespace osuCrypto
 			mNcoInputBlkSize, baseOtCount); // output
 
 											//mOtMsgBlkSize = (baseOtCount + 127) / 128;
-
-
+		if (opt == 3)
+		{
+			mBfSize = mNumBFhashs * mN*2;//;/ std::log(2);
+			//######create hash
+			mBFHasher.resize(mNumBFhashs);
+			for (u64 i = 0; i < mBFHasher.size(); ++i)
+				mBFHasher[i].setKey(_mm_set1_epi64x(i));// ^ mHashingSeed);
+		}
 		gTimer.setTimePoint("Init.recv.start");
 		mPrng.SetSeed(seed);
 		auto& prng = mPrng;
@@ -905,10 +911,7 @@ namespace osuCrypto
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
 
-		//######create hash
-		std::vector<AES> nBFHasher(mNumBFhashs);
-		for (u64 i = 0; i < nBFHasher.size(); ++i)
-			nBFHasher[i].setKey(_mm_set1_epi64x(i));// ^ mHashingSeed);
+		
 
 		std::vector<std::thread>  thrds(chls.size());
 		// this mutex is used to guard inserting things into the intersection vector.
@@ -922,7 +925,7 @@ namespace osuCrypto
 		auto maskBFView = maskBuffer.getArrayView<block>();
 
 		std::cout << "\nr[" << IdxP << "]-maskBFView.size() " << maskBFView.size() << "\n";
-		std::cout << "\nr[" << IdxP << "]-mBfBitCount " << mBfBitCount << "\n";
+		std::cout << "\nr[" << IdxP << "]-mBfBitCount " << mBfSize << "\n";
 		//std::cout << "totalMask: " << totalMask << "\n";
 
 		std::cout << "\nr[" << IdxP << "]-maskBFView[3]" << maskBFView[3] << "\n";
@@ -973,11 +976,11 @@ namespace osuCrypto
 								block blkY=ZeroBlock;
 
 								//NOTE that it is fine to compute BF on (oprf(x),y) as long as receiver reconstruct y*=BF(oprf(x*))
-								for (u64 hashIdx = 0; hashIdx < nBFHasher.size(); ++hashIdx)
+								for (u64 hashIdx = 0; hashIdx < mBFHasher.size(); ++hashIdx)
 								{
-									block hashOut = nBFHasher[hashIdx].ecbEncBlock(bin.mValOPRF[IdxP]);
+									block hashOut = mBFHasher[hashIdx].ecbEncBlock(bin.mValOPRF[IdxP]);
 									u64& idx = *(u64*)&hashOut;
-									idx %= mBfBitCount;
+									idx %= mBfSize;
 									blkY = blkY ^ maskBFView[idx];
 								}								
 

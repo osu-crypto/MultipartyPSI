@@ -3692,7 +3692,7 @@ void GBF_Test_Impl()
 
 	u64 numHashFunctions = 4;
 	u64 setSize = 10;
-	u64 mBfBitCount = numHashFunctions * 2 * setSize;
+	u64 mBfBitCount = numHashFunctions * setSize;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 
 	std::vector<block> mSetX(setSize),mSetY(setSize), garbledBF(mBfBitCount); //h(x) and value y
@@ -3705,9 +3705,9 @@ void GBF_Test_Impl()
 
 	//create hash
 	
-	std::vector<AES> nBFHasher(numHashFunctions);
-	for (u64 i = 0; i < nBFHasher.size(); ++i)
-		nBFHasher[i].setKey(_mm_set1_epi64x(i));
+	std::vector<AES> mBFHasher(numHashFunctions);
+	for (u64 i = 0; i < mBFHasher.size(); ++i)
+		mBFHasher[i].setKey(_mm_set1_epi64x(i));
 
 		
 
@@ -3720,10 +3720,10 @@ void GBF_Test_Impl()
 		//std::cout << "input[" << i << "] " << inputs[i] << std::endl;
 
 		//idxs.clear();
-		for (u64 hashIdx = 0; hashIdx < nBFHasher.size(); ++hashIdx)
+		for (u64 hashIdx = 0; hashIdx < mBFHasher.size(); ++hashIdx)
 		{	
 
-			block hashOut = nBFHasher[hashIdx].ecbEncBlock(mSetX[i]);
+			block hashOut = mBFHasher[hashIdx].ecbEncBlock(mSetX[i]);
 			u64& idx = *(u64*)&hashOut;
 			idx %= mBfBitCount;
 			idxs[i].emplace(idx);
