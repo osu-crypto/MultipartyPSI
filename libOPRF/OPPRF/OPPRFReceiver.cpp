@@ -55,6 +55,8 @@ namespace osuCrypto
 		mStatSecParam = statSecParam;
 		mN = n;
 
+		mBfBitCount = mNumBFhashs * 2 * mN;
+
 		// must be a multiple of 128...
 		u64 baseOtCount;// = 128 * CodeWordSize;
 		u64 compSecParam = 128;
@@ -892,7 +894,7 @@ namespace osuCrypto
 	}
 	void OPPRFReceiver::recvBFBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 	{
-		bins.mBfBitCount = bins.mNumBFhashs * 2 * bins.mN;
+		
 		// this is the online phase.
 		gTimer.setTimePoint("online.recv.start");
 
@@ -904,7 +906,7 @@ namespace osuCrypto
 
 
 		//######create hash
-		std::vector<AES> nBFHasher(bins.mNumBFhashs);
+		std::vector<AES> nBFHasher(mNumBFhashs);
 		for (u64 i = 0; i < nBFHasher.size(); ++i)
 			nBFHasher[i].setKey(_mm_set1_epi64x(i));// ^ mHashingSeed);
 
@@ -920,7 +922,7 @@ namespace osuCrypto
 		auto maskBFView = maskBuffer.getArrayView<block>();
 
 		std::cout << "\nr[" << IdxP << "]-maskBFView.size() " << maskBFView.size() << "\n";
-		std::cout << "\nr[" << IdxP << "]-bins.mBfBitCount " << bins.mBfBitCount << "\n";
+		std::cout << "\nr[" << IdxP << "]-mBfBitCount " << mBfBitCount << "\n";
 		//std::cout << "totalMask: " << totalMask << "\n";
 
 		std::cout << "\nr[" << IdxP << "]-maskBFView[3]" << maskBFView[3] << "\n";
@@ -975,7 +977,7 @@ namespace osuCrypto
 								{
 									block hashOut = nBFHasher[hashIdx].ecbEncBlock(bin.mValOPRF[IdxP]);
 									u64& idx = *(u64*)&hashOut;
-									idx %= bins.mBfBitCount;
+									idx %= mBfBitCount;
 									blkY = blkY ^ maskBFView[idx];
 								}								
 

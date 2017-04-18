@@ -27,6 +27,10 @@ namespace osuCrypto
 		//SimpleHasher1 mSimpleBins;
 		//CuckooHasher1 mCuckooBins;
 
+		u64 mNumBFhashs = 60;
+		u64 mBfBitCount;
+
+
         PRNG mPrng;
 		Timer mTimer;
 		double mPosBitsTime=0;

@@ -25,8 +25,7 @@ namespace osuCrypto
     public:
 		binSet();
         ~binSet();
-		u64 mNumBFhashs = 60;
-		u64 mBfBitCount;
+		
 
         u64 mN, mParties, mMyIdx, mStatSecParam, mNcoInputBlkSize;// , mOtMsgBlkSize;
         block mHashingSeed;

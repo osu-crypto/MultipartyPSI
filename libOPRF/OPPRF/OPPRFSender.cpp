@@ -57,6 +57,7 @@ namespace osuCrypto
 
 		mOtMsgBlkSize = (baseOtCount + 127) / 128;
 
+		mBfBitCount = mNumBFhashs * 2 * mN;
 
 		mPrng.SetSeed(seed);
 		auto myHashSeed = mPrng.get<block>();
@@ -1033,7 +1034,7 @@ namespace osuCrypto
 		if (plaintexts.size() != mN)
 			throw std::runtime_error(LOCATION);
 
-		bins.mBfBitCount= bins.mNumBFhashs * 2 * bins.mN;
+		
 		//TODO: double check
 		//	u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 		u64 maskSize = sizeof(block);
@@ -1046,13 +1047,13 @@ namespace osuCrypto
 
 		
 //######create hash
-		std::vector<AES> nBFHasher(bins.mNumBFhashs);
+		std::vector<AES> nBFHasher(mNumBFhashs);
 		for (u64 i = 0; i < nBFHasher.size(); ++i)
 			nBFHasher[i].setKey(_mm_set1_epi64x(i));// ^ mHashingSeed);
 
 
 		uPtr<Buff> sendMaskBuff(new Buff);
-		sendMaskBuff->resize(bins.mBfBitCount* maskSize);
+		sendMaskBuff->resize(mBfBitCount* maskSize);
 		auto maskBFView = sendMaskBuff->getArrayView<block>();
 
 
@@ -1122,7 +1123,7 @@ namespace osuCrypto
 									{
 										block hashOut=nBFHasher[hashIdx].ecbEncBlock(bin.mValOPRF[IdxP][i]);
 										u64& idx = *(u64*)&hashOut;
-										idx %= bins.mBfBitCount;
+										idx %= mBfBitCount;
 										idxs.emplace(idx);
 									}
 
