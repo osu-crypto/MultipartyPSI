@@ -38,17 +38,28 @@ int main(int argc, char** argv)
 	//return 0;
 	//OPPRFnt_EmptrySet_Test_Main();
 	//OPPRFnt_EmptrySet_Test_Main();
+	//OPPRFn_Aug_EmptrySet_Test_Impl();
+	//return 0;
 
 	u64 trials=1;
 
 	std::vector<block> mSet;
-	 u64 setSize = 1 << 20, psiSecParam = 40, bitSize = 128;
+	 u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128;
 	 u64 nParties, tParties;
 	 u64 roundOPPRF;
 	 PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	 mSet.resize(setSize);
 	 for (u64 i = 0; i < setSize; ++i)
 		 mSet[i] = prng.get<block>();
+
+	
+	 nParties = atoi(argv[1]);
+	 u64 pIdx = atoi(argv[2]);
+	 std::cout << "pIdx:  " << pIdx << "\n";
+	 std::cout << "nParties:  " << nParties << "\n";
+
+	 aug_party(pIdx, nParties, mSet.size(), mSet);
+	 return 0;
 
 	 if (argc == 7) {
 		 if (argv[1][0] == '-' && argv[1][1] == 'n')
@@ -62,10 +73,18 @@ int main(int argc, char** argv)
 
 			 if (argv[5][0] == '-' && argv[5][1] == 'p') {
 				 u64 pIdx = atoi(argv[6]);
-				 if(roundOPPRF==1)
-					party3(pIdx, setSize, trials);
+				 if (roundOPPRF == 1)
+				 {
+					// party3(pIdx, setSize, trials);
+					 aug_party(pIdx, nParties, setSize, mSet);
+				 }
 				 else
-					 tparty(pIdx, nParties, 2, setSize, trials);
+				 {
+					// tparty(pIdx, nParties, 2, setSize, trials);
+					 std::cout << "aug_party";
+					aug_party(pIdx, 2, mSet.size(), mSet);
+				 }
+			 
 			 }
 		 }
 		 else

@@ -353,6 +353,36 @@ namespace osuCrypto
 
 
 	//computes coefficients (in blocks) of f such that f(x[i]) = y[i]
+	void BaseOPPRF::getBlkCoefficients(NTL::vec_GF2E& vecX, NTL::vec_GF2E& vecY, std::vector<block>& coeffs)
+	{
+		
+		NTL::GF2E e;
+
+		//interpolate
+		NTL::GF2EX polynomial = NTL::interpolate(vecX, vecY);
+
+		TODO("better to have dummpy_pol * real_pol");
+		//NTL::GF2EX real_polynomial = NTL::interpolate(x, y);
+		//std::cout << NTL::deg(real_polynomial) << std::endl;
+
+		//NTL::GF2EX dummy_polynomial= NTL::interpolate(x1, y1);
+		//NTL::random(dummy_polynomial, 1);
+		//std::cout << NTL::deg(dummy_polynomial) << std::endl;
+
+		// NTL::mul(polynomial,dummy_polynomial, real_polynomial);
+
+
+
+		////convert coefficient to vector<block> 
+		coeffs.resize(NTL::deg(polynomial) + 1);
+		for (int i = 0; i < coeffs.size(); i++) {
+			//get the coefficient polynomial
+			e = NTL::coeff(polynomial, i);
+			BlockFromGF2E(coeffs[i], e);
+		}
+	}
+
+
 	void BaseOPPRF::getBlkCoefficients(u64 degree, std::vector<block>& setX, std::vector<block>& setY, std::vector<block>& coeffs)
 	{
 		NTL::vec_GF2E x; NTL::vec_GF2E y;
@@ -421,6 +451,20 @@ namespace osuCrypto
 		e = NTL::eval(res_polynomial, e); //get y=f(x) in GF2E
 		BlockFromGF2E(y, e); //convert to block 
 	}
+
+	NTL::GF2EX BaseOPPRF::buildPolynomial(std::vector<block>& coeffs)
+	{
+		NTL::GF2EX res_polynomial;
+		NTL::GF2E e;
+		//std::cout << coeffs.size() << std::endl;
+		for (u64 i = 0; i < coeffs.size(); ++i)
+		{
+			GF2EFromBlock(e, coeffs[i]);
+			NTL::SetCoeff(res_polynomial, i, e); //build res_polynomial
+		}
+		return res_polynomial;		
+	}
+
 
 
 }

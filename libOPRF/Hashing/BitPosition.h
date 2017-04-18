@@ -53,9 +53,12 @@ namespace osuCrypto
 		void GF2EFromBlock(NTL::GF2E &element, block& blk);
 		void BlockFromGF2E(block& blk, NTL::GF2E & element);
 		//computes coefficients (in blocks) of f such that f(x[i]) = y[i]
+		void getBlkCoefficients(NTL::vec_GF2E& setX, NTL::vec_GF2E& setY, std::vector<block>& coeffs);
+
 		void getBlkCoefficients(u64 degree, std::vector<block>& setX, std::vector<block>& setY, std::vector<block>& coeffs);
 		//compute y=f(x) giving coefficients (in block)
 		void evalPolynomial(std::vector<block>& coeffs, block& x, block& y);
+		NTL::GF2EX buildPolynomial(std::vector<block>& coeffs);
     };
 
 }

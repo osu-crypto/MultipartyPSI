@@ -12,7 +12,7 @@
 #include "TwoChooseOne/IknpOtExtReceiver.h"
 #include "TwoChooseOne/IknpOtExtSender.h"
 #include "Hashing/BitPosition.h"
-#include "MPSI\Dcw\ShamirSSScheme.h" 
+
 
 //#define PRINT
 namespace osuCrypto
@@ -679,24 +679,24 @@ namespace osuCrypto
 								{
 									memcpy(&bin.mCoeffs[IdxP][i],maskView[baseMaskIdx].data()+i,sizeof(block));
 
-									if (bIdx == 0)
+									if (bIdx == 0 && i==3)
 									{
-									//	Log::out << "r-coeffs[" << i << "] #" << bin.mCoeffs[IdxP][i] << Log::endl;
+										Log::out << "r["<< IdxP<<"]-coeffs[" << i << "] #" << bin.mCoeffs[IdxP][i] << Log::endl;
 										
 									}
 								}
 							
 								//TODO{ "can't call eval poly here..." };
 
-								block blkY;
-								BaseOPPRF b;
+								//block blkY;
+								//BaseOPPRF b;
 								//b.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
 
-								if (bIdx == 0)
+								/*if (bIdx == 0)
 								{
-									std::cout << "r bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
+									std::cout << "r["<<IdxP<<"]-bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
 									std::cout << "-----------" << blkY << std::endl;
-								}
+								}*/
 
 							}
 						}
@@ -756,14 +756,14 @@ namespace osuCrypto
 							if (!bin.isEmpty())
 							{
 								u64 inputIdx = bin.idx();
-								block blkY;
+								block blkY=ZeroBlock;
 								BaseOPPRF b;
 								b.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
 								
 								if (bIdx == 0)
 								{
-									std::cout << "r bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
-									std::cout << "-----------" << blkY << std::endl;
+								//	std::cout << "r["<< IdxP<<"]-bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
+								//	std::cout << "----" << blkY << std::endl;
 								}
 								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
 							}
@@ -798,105 +798,29 @@ namespace osuCrypto
 		// this mutex is used to guard inserting things into the intersection vector.
 		std::mutex mInsertMtx;
 
-		// fr each thread, spawn it.
-		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+		auto& chl = *chls[0];
+
+		ByteStream maskBuffer;
+		chl.recv(maskBuffer);
+		BaseOPPRF b;
+		NTL::GF2E e;
+		NTL::GF2EX polynomial;
+
+		auto maskView = maskBuffer.getArrayView<block>();
+
+			//std::cout << "maskView.size()" << maskView.size() << "\n";
+			//std::cout << "totalMask: " << totalMask << "\n";
+
+		std::cout << "\nr[" << IdxP << "]-coeffs[3]" << maskView[3] << "\n";
+
+
+		for (u64 i = 0; i < maskView.size(); ++i)
 		{
-			auto seed = mPrng.get<block>();
-			thrds[tIdx] = std::thread([&, tIdx, seed]()
-			{
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
-
-				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
-
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
-
-				//2 type of bins: normal bin in inital step + stash bin
-				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
-				{
-					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
-
-					u64 binStart, binEnd;
-					if (bIdxType == 0)
-					{
-						binStart = tIdx       * binCountRecv / thrds.size();
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size();
-					}
-					else
-					{
-						binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-					}
-					//use the params of the simple hashing as their params
-					u64 mTheirBins_mMaxBinSize = bins.mSimpleBins.mMaxBinSize[bIdxType];
-
-					for (u64 bIdx = binStart; bIdx < binEnd;)
-					{
-						u64 curStepSize = std::min(stepSize, binEnd - bIdx);
-
-						MatrixView<block> maskView;
-						ByteStream maskBuffer;
-						chl.recv(maskBuffer);
-
-						maskView = maskBuffer.getMatrixView<block>(mTheirBins_mMaxBinSize);
-
-						if (maskView.size()[0] != curStepSize)
-							throw std::runtime_error("size not expedted");
-
-						for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
-						{
-
-							auto& bin = bins.mCuckooBins.mBins[bIdx];
-							if (!bin.isEmpty())
-							{
-								bin.mCoeffs[IdxP].resize(mTheirBins_mMaxBinSize);
-
-								u64 baseMaskIdx = stepIdx;
-
-								u64 inputIdx = bin.idx();
-
-								//compute p(x*)
-
-								for (u64 i = 0; i < mTheirBins_mMaxBinSize; i++)
-								{
-									memcpy(&bin.mCoeffs[IdxP][i], maskView[baseMaskIdx].data() + i, sizeof(block));
-
-									if (bIdx == 0)
-									{
-										//	Log::out << "r-coeffs[" << i << "] #" << bin.mCoeffs[IdxP][i] << Log::endl;
-
-									}
-								}
-
-								//TODO{ "can't call eval poly here..." };
-
-								block blkY;
-								BaseOPPRF b;
-								//b.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
-
-								if (bIdx == 0)
-								{
-									std::cout << "r bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
-									std::cout << "-----------" << blkY << std::endl;
-								}
-
-							}
-						}
-					}
-				}
-
-
-			});
-			//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
+			b.GF2EFromBlock(e, maskView[i]);
+			NTL::SetCoeff(polynomial, i, e); //build res_polynomial
 		}
-		// join the threads.
-		for (auto& thrd : thrds)
-			thrd.join();
 
-		// check that the number of inputs is as expected.
-		//if (plaintexts.size() != mN)
-		//	throw std::runtime_error(LOCATION);
-
+#if 1
 
 		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
 		{
@@ -939,12 +863,13 @@ namespace osuCrypto
 							{
 								u64 inputIdx = bin.idx();
 								block blkY;
-								BaseOPPRF b;
-								b.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
+								b.GF2EFromBlock(e, bin.mValOPRF[IdxP]);
+								e = NTL::eval(polynomial, e); //get y=f(x) in GF2E
+								b.BlockFromGF2E(blkY, e); 
 
 								if (bIdx == 0)
 								{
-									std::cout << "r bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
+									std::cout << "r["<< IdxP<<"]-bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
 									std::cout << "-----------" << blkY << std::endl;
 								}
 								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
@@ -960,6 +885,8 @@ namespace osuCrypto
 		// join the threads.
 		for (auto& thrd : thrds)
 			thrd.join();
+
+#endif // 0
 
 
 	}
@@ -1477,7 +1404,7 @@ namespace osuCrypto
 									memcpy(
 										maskView[baseMaskIdx].data() + i* maskSize,
 										(u8*)&coeffs[i],  //make randome
-														  //(u8*)&ZeroBlock,  //make randome
+										//	(u8*)&ZeroBlock,  //make randome
 										maskSize);
 								}
 

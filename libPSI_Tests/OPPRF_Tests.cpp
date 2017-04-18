@@ -37,7 +37,7 @@ using namespace osuCrypto;
 #define PRINT
 //#define BIN_PRINT
 
-u32 opt = 1;
+u32 opt = 2;
 void testPointer(std::vector<block>* test)
 {
 	//int length = test->size();
@@ -1510,6 +1510,7 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 
 void party2(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 {
+	opt = 2;
 	nParties = 2;
 	u64 psiSecParam = 40, bitSize = 128, numThreads = 1;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
@@ -1740,6 +1741,7 @@ void party2(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 
 void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 {
+	//opt = 1;
 	u64 pIdxTest = 1;
 	u64 psiSecParam = 40, bitSize = 128, numThreads = 1;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
@@ -1934,13 +1936,13 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 		for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
 		{
 
-			pThrds[pIdx] = std::thread([&, pIdx]() {
+			//pThrds[pIdx] = std::thread([&, pIdx]() {
 				if(pIdx!=0)
 				recv[pIdx].recvSS(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
-			});
+			//});
 		}
-		for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
-			pThrds[pIdx].join();
+	//	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+		//	pThrds[pIdx].join();
 
 		
 	}
@@ -3121,7 +3123,7 @@ void OPPRFn_Aug_EmptrySet_Test_Impl()
 	{
 		mSet[i] = prng.get<block>();
 	}
-	nParties = 3;
+	nParties =2;
 	
 	std::vector<std::thread>  pThrds(nParties);
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
