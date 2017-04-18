@@ -22,6 +22,7 @@
 
 namespace osuCrypto
 {
+	
  
     class BaseOPPRF
     {

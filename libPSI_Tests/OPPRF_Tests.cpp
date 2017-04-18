@@ -37,7 +37,7 @@ using namespace osuCrypto;
 #define PRINT
 //#define BIN_PRINT
 
-u32 opt = 2;
+u32 opt = 3;
 void testPointer(std::vector<block>* test)
 {
 	//int length = test->size();
@@ -1510,7 +1510,7 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 
 void party2(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 {
-	opt = 2;
+	
 	nParties = 2;
 	u64 psiSecParam = 40, bitSize = 128, numThreads = 1;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
@@ -3123,7 +3123,7 @@ void OPPRFn_Aug_EmptrySet_Test_Impl()
 	{
 		mSet[i] = prng.get<block>();
 	}
-	nParties =2;
+	nParties =5;
 	
 	std::vector<std::thread>  pThrds(nParties);
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
@@ -3704,21 +3704,12 @@ void GBF_Test_Impl()
 	}
 
 	//create hash
-	std::vector<SHA1> ncoInputHasher(numHashFunctions);
-	std::vector<std::vector<block>> mNcoInputBuff(numHashFunctions);
-
-	for (u64 hashIdx = 0; hashIdx < ncoInputHasher.size(); ++hashIdx)
-		mNcoInputBuff.resize(setSize);
 	
-	PRNG hashSeedGen(prng.get<block>());
+	std::vector<AES> nBFHasher(numHashFunctions);
+	for (u64 i = 0; i < nBFHasher.size(); ++i)
+		nBFHasher[i].setKey(_mm_set1_epi64x(i));
 
-	for (u64 i = 0; i < ncoInputHasher.size(); ++i)
-	{
-		ncoInputHasher[i].Update(hashSeedGen.get<block>());
-	}
-
-	u8 hashOut[SHA1::HashSize];
-	
+		
 
 	std::vector<std::set<u64>> idxs(setSize);
 	for (u64 i = 0; i < 1; ++i)
@@ -3729,12 +3720,11 @@ void GBF_Test_Impl()
 		//std::cout << "input[" << i << "] " << inputs[i] << std::endl;
 
 		//idxs.clear();
-		for (u64 hashIdx = 0; hashIdx < ncoInputHasher.size(); ++hashIdx)
-		{			
-			ncoInputHasher[hashIdx].Update(mSetX[i]);
-			ncoInputHasher[hashIdx].Final(hashOut);
-			u64& idx = *(u64*)hashOut; //h_j(x_i)
+		for (u64 hashIdx = 0; hashIdx < nBFHasher.size(); ++hashIdx)
+		{	
 
+			block hashOut = nBFHasher[hashIdx].ecbEncBlock(mSetX[i]);
+			u64& idx = *(u64*)&hashOut;
 			idx %= mBfBitCount;
 			idxs[i].emplace(idx);
 
@@ -3767,8 +3757,7 @@ void GBF_Test_Impl()
 				sum = sum ^ garbledBF[idx];
 				test = test^garbledBF[idx];
 				std::cout << idx << " " << garbledBF[idx] << std::endl;
-			}
-			
+			}		
 		}
 
 		garbledBF[firstFreeIdx] = sum^mSetY[i];

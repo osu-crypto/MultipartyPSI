@@ -9,12 +9,24 @@
 namespace osuCrypto
 {
 
+	//struct BFParam
+	//{
+	//	double mBinScaler[2]; //first index is for init step, 2nd index for stash step
+	//	u64 mNumHashes[2];
+	//	u64 mSenderBinSize[2];
+	//	/*
+	//	double mBinStashScaler;
+	//	u64 mNumStashHashes;
+	//	u64 mSenderBinStashSize;*/
+	//};
+
     class binSet
     {
     public:
 		binSet();
         ~binSet();
-        
+		u64 mNumBFhashs = 60;
+		u64 mBfBitCount;
 
         u64 mN, mParties, mMyIdx, mStatSecParam, mNcoInputBlkSize;// , mOtMsgBlkSize;
         block mHashingSeed;

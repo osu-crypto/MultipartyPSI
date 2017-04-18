@@ -1033,7 +1033,7 @@ namespace osuCrypto
 		if (plaintexts.size() != mN)
 			throw std::runtime_error(LOCATION);
 
-
+		bins.mBfBitCount= bins.mNumBFhashs * 2 * bins.mN;
 		//TODO: double check
 		//	u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 		u64 maskSize = sizeof(block);
@@ -1044,9 +1044,18 @@ namespace osuCrypto
 		std::vector<std::thread>  thrds(chls.size());
 		// std::vector<std::thread>  thrds(1);        
 
-		std::mutex mtx;
-		NTL::vec_GF2E x; NTL::vec_GF2E y;
-		NTL::GF2E e;
+		
+//######create hash
+		std::vector<AES> nBFHasher(bins.mNumBFhashs);
+		for (u64 i = 0; i < nBFHasher.size(); ++i)
+			nBFHasher[i].setKey(_mm_set1_epi64x(i));// ^ mHashingSeed);
+
+
+		uPtr<Buff> sendMaskBuff(new Buff);
+		sendMaskBuff->resize(bins.mBfBitCount* maskSize);
+		auto maskBFView = sendMaskBuff->getArrayView<block>();
+
+
 
 		gTimer.setTimePoint("online.send.spaw");
 
@@ -1087,9 +1096,6 @@ namespace osuCrypto
 					for (u64 bIdx = binStart; bIdx < binEnd;)
 					{
 						u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
-						uPtr<Buff> sendMaskBuff(new Buff);
-						sendMaskBuff->resize(currentStepSize * (bins.mSimpleBins.mMaxBinSize[bIdxType] * maskSize));
-						auto maskView = sendMaskBuff->getMatrixView<u8>(bins.mSimpleBins.mMaxBinSize[bIdxType] * maskSize);
 
 						for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
 						{
@@ -1103,93 +1109,57 @@ namespace osuCrypto
 
 							if (bin.mIdx.size() > 0)
 							{
-
-								//get y[i]
-								std::vector<block> setY(bin.mIdx.size());
+								std::set<u64> idxs;
 								for (u64 i = 0; i < bin.mIdx.size(); ++i)
 								{
 									u64 inputIdx = bin.mIdx[i];
-									//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
+									u64 firstFreeIdx(-1);
+									block sum = ZeroBlock;
+									idxs.clear();
 
-									setY[i] = plaintexts[inputIdx] ^ bin.mValOPRF[IdxP][i];
-									if (bIdx == 0)
+									//NOTE that it is fine to compute BF on (oprf(x),y) as long as receiver reconstruct y*=BF(oprf(x*))
+									for (u64 hashIdx = 0; hashIdx < nBFHasher.size(); ++hashIdx)
 									{
-										std::cout << "s bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP][i];
-										std::cout << "-----------" << setY[i] << std::endl;
+										block hashOut=nBFHasher[hashIdx].ecbEncBlock(bin.mValOPRF[IdxP][i]);
+										u64& idx = *(u64*)&hashOut;
+										idx %= bins.mBfBitCount;
+										idxs.emplace(idx);
 									}
-								}
 
-								std::vector<block> coeffs;
-								//computes coefficients (in blocks) of p such that p(x[i]) = y[i]
-								//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
-								bin.mBits[IdxP].getBlkCoefficients(bins.mSimpleBins.mMaxBinSize[bIdxType],
-									bin.mValOPRF[IdxP], setY, coeffs);
+									for (auto idx : idxs)
+									{
+										if (eq(maskBFView[idx], ZeroBlock))
+										{
+											if (firstFreeIdx == u64(-1))
+											{
+												firstFreeIdx = idx;
+											//	std::cout << "firstFreeIdx: " << firstFreeIdx << std::endl;
 
-								//if (bIdx == 0)
-								//{
-								//	Log::out << "coeffs.size(): " << coeffs.size()<< Log::endl;
+											}
+											else
+											{
+												maskBFView[idx] = mPrng.get<block>();
+												//	std::cout << garbledBF[idx] <<"\n";
+												sum = sum ^ maskBFView[idx];
+												//std::cout << idx << " " << maskBFView[idx] << std::endl;
+											}
+										}
+										else
+										{
+											sum = sum ^ maskBFView[idx];
+										//	std::cout << idx << " " << maskBFView[idx] << std::endl;
+										}
+									}
 
-								//	for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
-								//		Log::out << IdxP << "s-coeffs[" << i << "] #" << coeffs[i] << Log::endl;
-								//}
-
-								//it already contain a dummy item
-								for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
-								{
-									memcpy(
-										maskView[baseMaskIdx].data() + i* maskSize,
-										(u8*)&coeffs[i],  //make randome
-														  //(u8*)&ZeroBlock,  //make randome
-										maskSize);
-								}
-
-							}
-							else //pad all dummy
-							{
-								for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
-								{
-									memcpy(
-										maskView[baseMaskIdx].data() + i* maskSize,
-										(u8*)&ZeroBlock,  //make randome
-										maskSize);
+									maskBFView[firstFreeIdx] = sum^plaintexts[inputIdx]^ bin.mValOPRF[IdxP][i];
 								}
 							}
-						}
 
-#ifdef PRINT
-						Log::out << "maskSize: ";
-						for (size_t i = 0; i < maskView.size()[0]; i++)
-						{
-							for (size_t j = 0; j < mSimpleBins.mNumBits[bIdxType]; j++)
-							{
-								Log::out << static_cast<int16_t>(maskView[i][j]) << " ";
-							}
-							Log::out << Log::endl;
-
-							for (size_t j = 0; j < mSimpleBins.mMaxBinSize[bIdxType]; j++) {
-								auto theirMask = ZeroBlock;
-								memcpy(&theirMask, maskView[i].data() + j*maskSize + mSimpleBins.mNumBits[bIdxType], maskSize);
-								if (theirMask != ZeroBlock)
-								{
-									Log::out << theirMask << " " << Log::endl;
-								}
-							}
-						}
-#endif
-						chl.asyncSend(std::move(sendMaskBuff));
-
+						}			
 					}
 				}
-				if (tIdx == 0) gTimer.setTimePoint("online.send.sendMask");
 
-				//	otSend.check(chl);
-
-
-
-				/* if (tIdx == 0)
-				chl.asyncSend(std::move(sendMaskBuff));*/
-
-				if (tIdx == 0) gTimer.setTimePoint("online.send.finalMask");
+				if (tIdx == 0) gTimer.setTimePoint("online.compute x y");
 #endif
 #pragma endregion
 
@@ -1199,11 +1169,25 @@ namespace osuCrypto
 		for (auto& thrd : thrds)
 			thrd.join();
 
-		//    permThrd.join();
+		for (u64 i = 0; i < maskBFView.size(); ++i)
+		{
+			if (eq(maskBFView[i], ZeroBlock))
+				maskBFView[i] = mPrng.get<block>();
+		}	
+
+		std::cout << "\ns[" << IdxP << "]-maskBFView.size()" << maskBFView.size() << "\n";
+
+		std::cout << "\ns[" << IdxP << "]-maskBFView[3]" << maskBFView[3] << "\n";
 
 
+#if 1
 
-	}
+		auto& chl = *chls[0];
+		chl.asyncSend(std::move(sendMaskBuff));
+
+#endif // 0
+
+			}
 
 
 
