@@ -361,18 +361,6 @@ namespace osuCrypto
 		//interpolate
 		NTL::GF2EX polynomial = NTL::interpolate(vecX, vecY);
 
-		TODO("better to have dummpy_pol * real_pol");
-		//NTL::GF2EX real_polynomial = NTL::interpolate(x, y);
-		//std::cout << NTL::deg(real_polynomial) << std::endl;
-
-		//NTL::GF2EX dummy_polynomial= NTL::interpolate(x1, y1);
-		//NTL::random(dummy_polynomial, 1);
-		//std::cout << NTL::deg(dummy_polynomial) << std::endl;
-
-		// NTL::mul(polynomial,dummy_polynomial, real_polynomial);
-
-
-
 		////convert coefficient to vector<block> 
 		coeffs.resize(NTL::deg(polynomial) + 1);
 		for (int i = 0; i < coeffs.size(); i++) {

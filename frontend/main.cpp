@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 	u64 trials=1;
 
 	std::vector<block> mSet;
-	 u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128;
+	 u64 setSize = 1 << 16, psiSecParam = 40, bitSize = 128;
 	 u64 nParties, tParties;
 	 u64 roundOPPRF;
 	 PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
@@ -58,7 +58,32 @@ int main(int argc, char** argv)
 	 std::cout << "pIdx:  " << pIdx << "\n";
 	 std::cout << "nParties:  " << nParties << "\n";
 
-	 aug_party(pIdx, nParties, mSet.size(), mSet);
+	 //TODO(remove this hash: unconditional zero-sharing
+	 //only one time => very mirror effect on perfomance
+	 std::vector<std::vector<block>> mSeeds(nParties);
+	 std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
+	 for (u64 i = 0; i < nParties; ++i)
+	 {
+		 mSeeds[i].resize(nParties);
+		 for (u64 j = 0; j < nParties; ++j)
+		 {
+			 if (i <= j)
+				 mSeeds[i][j] = prng.get<block>();
+			 else
+				 mSeeds[i][j] = mSeeds[j][i];
+		 }
+	 }
+	 for (u64 i = 0; i < nParties; ++i)
+	 {
+		 mPRNGSeeds[i].resize(nParties);
+		 for (u64 j = 0; j < nParties; ++j)
+		 {
+			 mPRNGSeeds[i][j].SetSeed(mSeeds[i][j]);
+		 }
+	 }
+
+
+	 aug_party(pIdx, nParties, mSet.size(), mSet, mPRNGSeeds[pIdx]);
 	 return 0;
 
 	 if (argc == 7) {
@@ -76,13 +101,13 @@ int main(int argc, char** argv)
 				 if (roundOPPRF == 1)
 				 {
 					// party3(pIdx, setSize, trials);
-					 aug_party(pIdx, nParties, setSize, mSet);
+					 aug_party(pIdx, nParties, setSize, mSet, mPRNGSeeds[pIdx]);
 				 }
 				 else
 				 {
 					// tparty(pIdx, nParties, 2, setSize, trials);
 					 std::cout << "aug_party";
-					aug_party(pIdx, 2, mSet.size(), mSet);
+					aug_party(pIdx, 2, mSet.size(), mSet, mPRNGSeeds[pIdx]);
 				 }
 			 
 			 }

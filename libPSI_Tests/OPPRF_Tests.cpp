@@ -1739,7 +1739,7 @@ void party2(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 }
 
 
-void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
+void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, std::vector<PRNG>& mSeedPrng)
 {
 	//opt = 1;
 	u64 pIdxTest = 1;
@@ -1751,7 +1751,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 		set[i] = mSet[i];
 
 	PRNG prng1(_mm_set_epi32(4253465, 3434565, 234435, myIdx)); //for test
-	set[0] = prng1.get<block>();;
+	//set[0] = prng1.get<block>();;
 
 	std::vector<block> sendPayLoads;
 	std::vector<std::vector<block>> recvPayLoads(nParties); //leader
@@ -1765,11 +1765,17 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 		}
 
 	//only P0 genaretes secret sharing
-	if (myIdx !=0)
+	//if (myIdx !=0)
 	{
 		for (u64 i = 0; i < setSize; ++i)
 		{
-			sendPayLoads[i] = prng.get<block>();
+			sendPayLoads[i] = ZeroBlock;
+			for (u64 pIdx = 0; pIdx < nParties; pIdx++)
+			{
+				if(pIdx!=myIdx)
+					sendPayLoads[i] = sendPayLoads[i]^ mSeedPrng[pIdx].get<block>();
+			}
+			
 		}
 	}
 
@@ -1784,15 +1790,16 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 	{
 		if (i < myIdx)
 		{
-			u32 port = i * 10 + myIdx;//get the same port; i=1 & pIdx=2 =>port=102
+			u32 port = 1120 + i * 100 + myIdx;//get the same port; i=1 & pIdx=2 =>port=102
 			ep[i].start(ios, "localhost", port, false, name); //channel bwt i and pIdx, where i is sender
 		}
 		else if (i > myIdx)
 		{
-			u32 port = myIdx * 10 + i;//get the same port; i=2 & pIdx=1 =>port=102
+			u32 port = 1120 + myIdx * 100 + i;//get the same port; i=2 & pIdx=1 =>port=102
 			ep[i].start(ios, "localhost", port, true, name); //channel bwt i and pIdx, where i is receiver
 		}
 	}
+	
 
 
 	std::vector<std::vector<Channel*>> chls(nParties);
@@ -1958,19 +1965,23 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 		//u64 
 		//block x0= set[bins.mCuckooBins.mBins[0].idx()];
 
-		for (int i = 0; i < 5; i++)
+		//for (int i = 0; i < 5; i++)
 		{
 
-			Log::out << myIdx << "r-" << recvPayLoads[pIdxTest][i] << Log::endl;
+			Log::out << myIdx << "r-5" << recvPayLoads[pIdxTest][5] << Log::endl;
+			Log::out << myIdx << "r-4" << recvPayLoads[pIdxTest][4] << Log::endl;
+			Log::out << myIdx << "r-13" << recvPayLoads[pIdxTest][13] << Log::endl;
 		}
 		Log::out << "------------" << Log::endl;
 	}
 	if (myIdx == pIdxTest)
 	{
-		for (int i = 0; i < 5; i++)
+		//for (int i = 0; i < 5; i++)
 		{
 			//Log::out << recvPayLoads[i] << Log::endl;
-			Log::out << myIdx << "s-" << sendPayLoads[i] << Log::endl;
+			Log::out << myIdx << "s-5" << sendPayLoads[5] << Log::endl;
+			Log::out << myIdx << "s-4" << sendPayLoads[4] << Log::endl;
+			Log::out << myIdx << "s-13" << sendPayLoads[13] << Log::endl;
 		}
 	}
 
@@ -1978,21 +1989,40 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 
 #if 0
 #endif // 0
-#if 0
+#if 1
 	//##########################
 	//### online phasing - compute intersection
 	//##########################
 
 	if (myIdx == 0) {
 		std::vector<u64> mIntersection;
-		u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+		u64 maskSize;
+		if(opt==0)
+			maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+		else if(opt==1)
+			maskSize = sizeof(block);
+		else if (opt ==2)
+			maskSize = sizeof(block);
+		else if (opt == 3)
+			maskSize = sizeof(block);
+
 		for (u64 i = 0; i < setSize; ++i)
 		{
-			//	if (sendPayLoads[i]== recvPayLoads[i])
-			//	if (!memcmp((u8*)&sendPayLoads[i], &recvPayLoads[i], maskSize))
-			//	{
-			//		mIntersection.push_back(i);
-			//	}
+			block sum = sendPayLoads[i];
+			for (u64 pIdx = 0; pIdx < nParties; pIdx++)
+			{
+				if (pIdx != myIdx)
+				{
+					//sum = sum ^ mSeedPrng[pIdx].get<block>();
+					sum = sum^recvPayLoads[pIdx][i];
+				}
+			}
+			//std::cout << sum << std::endl;
+							
+				if (!memcmp((u8*)&sum, (u8*)&ZeroBlock, maskSize))
+				{
+					mIntersection.push_back(i);
+				}
 		}
 		Log::out << "mIntersection.size(): " << mIntersection.size() << Log::endl;
 	}
@@ -3116,21 +3146,70 @@ void OPPRFnt_EmptrySet_Test_Impl()
 
 void OPPRFn_Aug_EmptrySet_Test_Impl()
 {
-	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128;
+	u64 setSize = 1 <<5, psiSecParam = 40, bitSize = 128;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	mSet.resize(setSize);
 	for (u64 i = 0; i < setSize; ++i)
 	{
 		mSet[i] = prng.get<block>();
 	}
-	nParties =5;
 	
+	nParties = 4;
+
+	std::vector<std::vector<block>> mSeeds(nParties);
+	std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
+	for (u64 i = 0; i < nParties; ++i)
+	{
+		mSeeds[i].resize(nParties);
+		for (u64 j = 0; j < nParties; ++j)
+		{
+			if (i <= j)
+				mSeeds[i][j] = prng.get<block>();
+			else
+				mSeeds[i][j] = mSeeds[j][i];
+		}
+	}
+	for (u64 i = 0; i < nParties; ++i)
+	{		
+		mPRNGSeeds[i].resize(nParties);
+		for (u64 j = 0; j < nParties; ++j)
+		{
+			mPRNGSeeds[i][j].SetSeed(mSeeds[i][j]);
+		}
+	}
+
+	for (u64 i = 0; i < 1; ++i)
+	{
+		std::vector<block> sum(nParties);
+		for (u64 mIdx = 0;mIdx < nParties; mIdx++)
+		{
+			sum[mIdx] = ZeroBlock;
+			for (u64 pIdx = 0; pIdx < nParties; pIdx++)
+			{
+				if (pIdx != mIdx)
+				{
+					//sum = sum ^ mSeedPrng[pIdx].get<block>();
+					sum[mIdx] = sum[mIdx]^ mPRNGSeeds[mIdx][pIdx].get<block>();
+				}
+			}
+		}
+		block final_sum = ZeroBlock;
+		for (u64 mIdx = 0; mIdx < nParties; mIdx++)
+		{
+			final_sum = final_sum^sum[mIdx];
+		}
+		std::cout << final_sum << std::endl;
+
+		
+	}
+
+
 	std::vector<std::thread>  pThrds(nParties);
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
 	{
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 				//	Channel_party_test(pIdx);
-			aug_party(pIdx, nParties, mSet.size(), mSet);
+			aug_party(pIdx, nParties, mSet.size(), mSet, mPRNGSeeds[pIdx]);
 			});
 	}
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
