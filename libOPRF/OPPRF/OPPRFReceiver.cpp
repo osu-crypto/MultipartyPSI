@@ -483,7 +483,7 @@ namespace osuCrypto
 		// this is the online phase.
 		gTimer.setTimePoint("online.recv.start");
 
-		//u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		//u64 mMaskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 		//u64 numBitLoc = bins.mSimpleBins.mNumBits[1];
 		u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1 + bins.mSimpleBins.mNumBits[1], 8) / 8;
 		if (maskSize > sizeof(block))
@@ -536,7 +536,7 @@ namespace osuCrypto
 						MatrixView<u8> maskView;
 						ByteStream maskBuffer;
 						chl.recv(maskBuffer);
-						//maskView = maskBuffer.getMatrixView<u8>(mTheirBins_mMaxBinSize * maskSize + mTheirBins_mNumBits * sizeof(u8));
+						//maskView = maskBuffer.getMatrixView<u8>(mTheirBins_mMaxBinSize * mMaskSize + mTheirBins_mNumBits * sizeof(u8));
 						maskView = maskBuffer.getMatrixView<u8>(mTheirBins_mMaxBinSize * maskSize + mTheirBins_mNumBits * sizeof(u8));
 						if (maskView.size()[0] != curStepSize)
 							throw std::runtime_error("size not expedted");
@@ -576,7 +576,7 @@ namespace osuCrypto
 								auto theirMask = ZeroBlock;
 								memcpy(&theirMask, maskView[baseMaskIdx].data() + MaskIdx, maskSize);
 
-								//if (!memcmp((u8*)&myMask, &theirMask, maskSize))
+								//if (!memcmp((u8*)&myMask, &theirMask, mMaskSize))
 								//{
 								//Log::out << "inputIdx: " << inputIdx << Log::endl;
 								//	Log::out << "myMask: " << myMask << Log::endl;
@@ -612,7 +612,7 @@ namespace osuCrypto
 		// this is the online phase.
 		gTimer.setTimePoint("online.recv.start");
 
-		//u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		//u64 mMaskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 		u64 maskSize = sizeof(block);
 
 		if (maskSize > sizeof(block))
@@ -794,7 +794,7 @@ namespace osuCrypto
 		// this is the online phase.
 		gTimer.setTimePoint("online.recv.start");
 
-		//u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		//u64 mMaskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 		u64 maskSize = sizeof(block);
 
 		if (maskSize > sizeof(block))
@@ -903,15 +903,17 @@ namespace osuCrypto
 		// this is the online phase.
 		gTimer.setTimePoint("online.recv.start");
 
-		//u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		//u64 mMaskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 
-		mBfSize = mNumBFhashs * mN * (bins.mCuckooBins.mParams.mNumHashes[0] + bins.mCuckooBins.mParams.mNumHashes[1]) / std::log(2);
-		//u64 maskSize = roundUpTo(mStatSecParam + std::log(mN) + std::log(mBfSize) - 1, 8) / 8;
+		u64 nNN = mN * (bins.mCuckooBins.mParams.mNumHashes[0] + bins.mCuckooBins.mParams.mNumHashes[1]);
+		mBfSize = mNumBFhashs * nNN / std::log(2);
+		
+		bins.mMaskSize = roundUpTo(mStatSecParam + std::log(mN) + std::log(nNN) - 1, 8) / 8;		
 
 		
-		u64 maskSize = sizeof(block);
+		//u64 mMaskSize = sizeof(block);
 
-		if (maskSize > sizeof(block))
+		if (bins.mMaskSize > sizeof(block))
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
 		
@@ -926,9 +928,9 @@ namespace osuCrypto
 		ByteStream maskBuffer;
 		chl.recv(maskBuffer);
 
-		auto maskBFView = maskBuffer.getArrayView<block>();
+		auto maskBFView = maskBuffer.getMatrixView<u8>(bins.mMaskSize);
 
-	//	std::cout << "\nr[" << IdxP << "]-maskBFView.size() " << maskBFView.size() << "\n";
+		std::cout << "\nr[" << IdxP << "]-maskBFView.size() " << maskBFView.size()[0] << "\n";
 	//	std::cout << "\nr[" << IdxP << "]-mBfBitCount " << mBfSize << "\n";
 		//std::cout << "totalMask: " << totalMask << "\n";
 
@@ -985,7 +987,10 @@ namespace osuCrypto
 									block hashOut = mBFHasher[hashIdx].ecbEncBlock(bin.mValOPRF[IdxP]);
 									u64& idx = *(u64*)&hashOut;
 									idx %= mBfSize;
-									blkY = blkY ^ maskBFView[idx];
+									auto theirBFMask = ZeroBlock;
+									memcpy(&theirBFMask, maskBFView[idx].data(), bins.mMaskSize);
+
+									blkY = blkY ^ theirBFMask;
 								}								
 
 								if (bIdx == 0)
@@ -1021,7 +1026,7 @@ namespace osuCrypto
 
 		//TODO: double check
 		u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1 + bins.mSimpleBins.mNumBits[1], 8) / 8;
-									 //u64 maskSize = 7;
+									 //u64 mMaskSize = 7;
 		if (maskSize > sizeof(block))
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
@@ -1185,7 +1190,7 @@ namespace osuCrypto
 						}
 
 #ifdef PRINT
-						Log::out << "maskSize: ";
+						Log::out << "mMaskSize: ";
 						for (size_t i = 0; i < maskView.size()[0]; i++)
 						{
 							for (size_t j = 0; j < mSimpleBins.mNumBits[bIdxType]; j++)
@@ -1239,9 +1244,9 @@ namespace osuCrypto
 
 
 		//TODO: double check
-		//	u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+		//	u64 mMaskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 		u64 maskSize = sizeof(block);
-		//u64 maskSize = 7;
+		//u64 mMaskSize = 7;
 		if (maskSize > sizeof(block))
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
@@ -1361,7 +1366,7 @@ namespace osuCrypto
 						}
 
 #ifdef PRINT
-						Log::out << "maskSize: ";
+						Log::out << "mMaskSize: ";
 						for (size_t i = 0; i < maskView.size()[0]; i++)
 						{
 							for (size_t j = 0; j < mSimpleBins.mNumBits[bIdxType]; j++)
@@ -1415,9 +1420,9 @@ namespace osuCrypto
 
 
 					//TODO: double check
-					//	u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+					//	u64 mMaskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 					u64 maskSize = sizeof(block);
-					//u64 maskSize = 7;
+					//u64 mMaskSize = 7;
 					if (maskSize > sizeof(block))
 						throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
@@ -1510,7 +1515,7 @@ namespace osuCrypto
 									}
 
 #ifdef PRINT
-									Log::out << "maskSize: ";
+									Log::out << "mMaskSize: ";
 									for (size_t i = 0; i < maskView.size()[0]; i++)
 									{
 										for (size_t j = 0; j < mSimpleBins.mNumBits[bIdxType]; j++)
@@ -1601,9 +1606,9 @@ namespace osuCrypto
 
 
 																																				 //TODO: double check
-																																				 //	u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+																																				 //	u64 mMaskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 					u64 maskSize = sizeof(block);
-					//u64 maskSize = 7;
+					//u64 mMaskSize = 7;
 					if (maskSize > sizeof(block))
 						throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 

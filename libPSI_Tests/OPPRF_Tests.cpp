@@ -37,7 +37,7 @@ using namespace osuCrypto;
 #define PRINT
 //#define BIN_PRINT
 
-u32 opt = 3;
+u32 opt = 0;
 void testPointer(std::vector<block>* test)
 {
 	//int length = test->size();
@@ -2004,7 +2004,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 		else if (opt ==2)
 			maskSize = sizeof(block);
 		else if (opt == 3)
-			maskSize = sizeof(block);
+			maskSize = bins.mMaskSize;
 
 		for (u64 i = 0; i < setSize; ++i)
 		{
@@ -3493,12 +3493,28 @@ void polynomial_Test_Impl()
 
 	
 	NTL::GF2X x1;
-	//NTL::BuildIrred(x1, 128);
-	//NTL::GF2E::init(x1);
+	NTL::SetCoeff(x1, 1);
+	//NTL::BuildIrred(x1, 1);
+	NTL::GF2E::init(x1);
 	//convert the Block to GF2X element.
 	NTL::GF2XFromBytes(x1, (u8*)&blkX, sizeof(block));
 	std::cout << x1;
 	e = NTL::to_GF2E(x1);
+
+
+	std::vector<block> x(3);
+
+	for (u64 i = 0; i < x.size(); ++i)
+	{
+		if (eq(x[i], ZeroBlock))
+		{
+
+			std::cout << x[i]<<std::endl;
+
+		}
+	}
+
+
 
 
 	//PRNG prng111(_mm_set_epi32(4253465, 3434565, 234435, 23987045));

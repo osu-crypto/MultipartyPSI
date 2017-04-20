@@ -79,6 +79,7 @@
     <ClCompile Include="nPSI.cpp" />
     <ClCompile Include="OPPRF_Tests.cpp" />
     <ClCompile Include="OT_Tests.cpp" />
+    <ClCompile Include="ShamirSSScheme_Tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AES_Tests.h" />
@@ -87,6 +88,7 @@
     <ClInclude Include="nPSI.h" />
     <ClInclude Include="OPPRF_Tests.h" />
     <ClInclude Include="OT_Tests.h" />
+    <ClInclude Include="ShamirSSScheme_Tests.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />

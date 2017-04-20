@@ -1041,15 +1041,17 @@ namespace osuCrypto
 		if (plaintexts.size() != mN)
 			throw std::runtime_error(LOCATION);
 
-		mBfSize = mNumBFhashs * mN * (bins.mCuckooBins.mParams.mNumHashes[0] + bins.mCuckooBins.mParams.mNumHashes[1]) / std::log(2);//;/ std::log(2);
+		u64 extend_mN = mN * (bins.mCuckooBins.mParams.mNumHashes[0] + bins.mCuckooBins.mParams.mNumHashes[1]);
+		mBfSize = mNumBFhashs * extend_mN / std::log(2);
 
+		bins.mMaskSize= roundUpTo(mStatSecParam + std::log(mN) + std::log(extend_mN) - 1, 8) / 8;
 		
 		//TODO: double check
 		//	u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-		u64 maskSize = sizeof(block); //roundUpTo(mStatSecParam + std::log(mN) + std::log(mBfSize) - 1, 8) / 8;
+		//u64 maskSize = sizeof(block); //roundUpTo(mStatSecParam + std::log(mN) + std::log(mBfSize) - 1, 8) / 8;
 
 		//u64 maskSize = 7;
-		if (maskSize > sizeof(block))
+		if (bins.mMaskSize > sizeof(block))
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
 		std::vector<std::thread>  thrds(chls.size());
@@ -1060,10 +1062,10 @@ namespace osuCrypto
 
 
 		uPtr<Buff> sendMaskBuff(new Buff);
-		sendMaskBuff->resize(mBfSize* maskSize);
-		auto maskBFView = sendMaskBuff->getArrayView<block>();
+		sendMaskBuff->resize(mBfSize* bins.mMaskSize);
+		auto maskBFView = sendMaskBuff->getMatrixView<u8>(bins.mMaskSize);
 
-
+		std::vector<block> GarbleBF(mBfSize);
 
 		gTimer.setTimePoint("online.send.spaw");
 
@@ -1136,7 +1138,7 @@ namespace osuCrypto
 
 									for (auto idx : idxs)
 									{
-										if (eq(maskBFView[idx], ZeroBlock))
+										if (eq(GarbleBF[idx], ZeroBlock))
 										{
 											if (firstFreeIdx == u64(-1))
 											{
@@ -1146,20 +1148,22 @@ namespace osuCrypto
 											}
 											else
 											{
-												maskBFView[idx] = mPrng.get<block>();
+												GarbleBF[idx] = mPrng.get<block>();
+												memcpy(maskBFView[idx].data(),(u8*)&GarbleBF[idx], bins.mMaskSize);
 												//	std::cout << garbledBF[idx] <<"\n";
-												sum = sum ^ maskBFView[idx];
+												sum = sum ^ GarbleBF[idx];
 												//std::cout << idx << " " << maskBFView[idx] << std::endl;
 											}
 										}
 										else
 										{
-											sum = sum ^ maskBFView[idx];
+											sum = sum ^ GarbleBF[idx];
 										//	std::cout << idx << " " << maskBFView[idx] << std::endl;
 										}
 									}
 
-									maskBFView[firstFreeIdx] = sum^plaintexts[inputIdx]^ bin.mValOPRF[IdxP][i];
+									GarbleBF[firstFreeIdx] = sum^plaintexts[inputIdx]^ bin.mValOPRF[IdxP][i];
+									memcpy(maskBFView[firstFreeIdx].data(), (u8*)&GarbleBF[firstFreeIdx], bins.mMaskSize);
 								}
 							}
 
@@ -1177,15 +1181,19 @@ namespace osuCrypto
 		for (auto& thrd : thrds)
 			thrd.join();
 
-		for (u64 i = 0; i < maskBFView.size(); ++i)
+		for (u64 i = 0; i < GarbleBF.size(); ++i)
 		{
-			if (eq(maskBFView[i], ZeroBlock))
+			if (eq(GarbleBF[i], ZeroBlock))
 			{
-				maskBFView[i] = mPrng.get<block>();
+
+				GarbleBF[i] = mPrng.get<block>();
+				memcpy(maskBFView[i].data(), (u8*)&GarbleBF[i], bins.mMaskSize);
+
 			}
 		}	
 
-	//	std::cout << "\ns[" << IdxP << "]-maskBFView.size()" << maskBFView.size() << "\n";
+		std::cout << "\ns[" << IdxP << "]-maskBFView.size() " << maskBFView.size()[0] << "\n";
+		std::cout << "\ns[" << IdxP << "]-mBfSize " << mBfSize << "\n";
 
 	//	std::cout << "\ns[" << IdxP << "]-maskBFView[3]" << maskBFView[3] << "\n";
 

@@ -30,7 +30,7 @@ std::vector<block> sendSet;
 std::vector<block> mSet;
 u64 nParties(3);
 
-u64 opt = 3;
+u64 opt = 0;
 
 void Channel_test()
 {
@@ -2545,7 +2545,7 @@ void aug_party_test(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mS
 		else if (opt == 2)
 			maskSize = sizeof(block);
 		else if (opt == 3)
-			maskSize = sizeof(block);
+			maskSize = bins.mMaskSize;
 
 		for (u64 i = 0; i < setSize; ++i)
 		{
@@ -2885,7 +2885,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 		else if (opt == 2)
 			maskSize = sizeof(block);
 		else if (opt == 3)
-			maskSize = sizeof(block);
+			maskSize = bins.mMaskSize;
 
 		for (u64 i = 0; i < setSize; ++i)
 		{
@@ -2911,8 +2911,8 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 
 
 
-	//if (myIdx == 1 || myIdx == leaderIdx) {
-		if (myIdx == leaderIdx) {
+	if (myIdx == 1 || myIdx == leaderIdx) {
+	//	if (myIdx == leaderIdx) {
 		auto offlineTime = std::chrono::duration_cast<std::chrono::milliseconds>(initDone - start).count();
 		auto hashingTime = std::chrono::duration_cast<std::chrono::milliseconds>(hashingDone - initDone).count();
 		auto getOPRFTime = std::chrono::duration_cast<std::chrono::milliseconds>(getOPRFDone - hashingDone).count();
