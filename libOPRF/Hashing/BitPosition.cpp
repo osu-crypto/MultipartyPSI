@@ -337,12 +337,16 @@ namespace osuCrypto
 	void BaseOPPRF::GF2EFromBlock(NTL::GF2E &element, block& blk) {
 
 		NTL::GF2X x1;
-		NTL::SetCoeff(x1, 1);
-		//NTL::BuildIrred(x1, 64);
+		
+		NTL::BuildIrred(x1, 128);
 		NTL::GF2E::init(x1);
 		//convert the Block to GF2X element.
 		NTL::GF2XFromBytes(x1, (u8*)&blk, sizeof(block));
+
+		TODO("remove this hack, get NTL thread safe");
 		element = to_GF2E(x1);
+		//NTL::random(element);
+
 	}
 
 	void BaseOPPRF::BlockFromGF2E(block& blk, NTL::GF2E & element) {

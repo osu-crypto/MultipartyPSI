@@ -30,7 +30,7 @@ std::vector<block> sendSet;
 std::vector<block> mSet;
 u64 nParties(3);
 
-u64 opt = 0;
+u64 opt = 1;
 
 void Channel_test()
 {
@@ -2809,7 +2809,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 	{
 		//I am a sender to my next neigbour		
 
-		if (opt == 0 || opt == 3)
+		if (opt == 0 || opt == 3 || opt == 1)
 		{
 			std::vector<std::thread>  pThrds(nParties);
 			for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)

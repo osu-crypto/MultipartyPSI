@@ -26,7 +26,7 @@ void ShamirSSScheme_Test()
 
     //if(ss.GetSecretParts()[0].size())
 
-    ss.computeShares(shares);
+    ss.computeShares(shares,5);
 
     //for (u64 i = 0; i < n; ++i)
     //{
