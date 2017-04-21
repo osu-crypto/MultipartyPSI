@@ -402,20 +402,28 @@ namespace osuCrypto
 			y.append(e);
 		}
 
-		for (u64 i = setX.size(); i < degree; ++i)
+//NOTE: "get the correct intersection when uncomment following")
+		/*for (u64 i = setX.size(); i < degree; ++i)
 		{
 			NTL::random(e);
 			x.append(e);
 			NTL::random(e);
 			y.append(e);
-		}
+		}*/
+
 		//interpolate
 		NTL::GF2EX polynomial = NTL::interpolate(x, y);
 
-		
-		//NTL::GF2EX dummy_polynomial;
-		//NTL::random(dummy_polynomial, degree- setX.size()-1);
-		// NTL::mul(polynomial,dummy_polynomial, polynomial);
+		//indeed, we dont need to pad dummy item to max_bin_size
+		//we can compute a polynomial over real items
+		//for exaple, there are 3 items in a bin => interpolate poly p1(x) of a degree 2
+		// gererate a dummy poly p2(x) of degree max_bin_size - degree of p1(x)
+		//send coff of poly p1(x)*p2(x)
+		//NOTE: current test returns a wrong intersection!!!
+
+		NTL::GF2EX dummy_polynomial;
+		NTL::random(dummy_polynomial, degree- setX.size()-1);
+		 NTL::mul(polynomial,dummy_polynomial, polynomial);
 
 		 //std::cout << NTL::deg(polynomial) << std::endl;
 

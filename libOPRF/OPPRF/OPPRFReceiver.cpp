@@ -748,6 +748,7 @@ namespace osuCrypto
 		ByteStream maskBuffer;
 		chl.recv(maskBuffer);
 		BaseOPPRF b;
+		b.poly_init();
 		NTL::GF2E e;
 		NTL::GF2EX polynomial;
 

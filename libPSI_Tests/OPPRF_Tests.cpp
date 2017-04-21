@@ -37,7 +37,7 @@ using namespace osuCrypto;
 #define PRINT
 //#define BIN_PRINT
 
-u32 opt = 1;
+u32 opt = 2;
 void testPointer(std::vector<block>* test)
 {
 	//int length = test->size();

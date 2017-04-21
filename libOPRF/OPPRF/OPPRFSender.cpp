@@ -875,6 +875,8 @@ namespace osuCrypto
 		NTL::vec_GF2E vec_GF2E_X; NTL::vec_GF2E vec_GF2E_Y;
 		u64 size_vec_GF2E_X = 0;
 		NTL::GF2E e;
+		BaseOPPRF base_poly;
+		base_poly.poly_init();
 
 		gTimer.setTimePoint("online.send.spaw");
 
@@ -935,12 +937,12 @@ namespace osuCrypto
 									//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
 									
 									block y = plaintexts[inputIdx] ^ bin.mValOPRF[IdxP][i];
-									bin.mBits[IdxP].GF2EFromBlock(e, y);
+									base_poly.GF2EFromBlock(e, y);
 
 									//TODO: current test is single thread, make safe when running multi-thread
 									vec_GF2E_Y.append(e);
 
-									bin.mBits[IdxP].GF2EFromBlock(e, bin.mValOPRF[IdxP][i]);
+									base_poly.GF2EFromBlock(e, bin.mValOPRF[IdxP][i]);
 
 									//TODO: current test is single thread, make safe when running multi-thread
 									vec_GF2E_X.append(e);
@@ -955,27 +957,7 @@ namespace osuCrypto
 							}
 							
 						}
-
-#ifdef PRINT
-						Log::out << "maskSize: ";
-						for (size_t i = 0; i < maskView.size()[0]; i++)
-						{
-							for (size_t j = 0; j < mSimpleBins.mNumBits[bIdxType]; j++)
-							{
-								Log::out << static_cast<int16_t>(maskView[i][j]) << " ";
-							}
-							Log::out << Log::endl;
-
-							for (size_t j = 0; j < mSimpleBins.mMaxBinSize[bIdxType]; j++) {
-								auto theirMask = ZeroBlock;
-								memcpy(&theirMask, maskView[i].data() + j*maskSize + mSimpleBins.mNumBits[bIdxType], maskSize);
-								if (theirMask != ZeroBlock)
-								{
-									Log::out << theirMask << " " << Log::endl;
-								}
-							}
-						}
-#endif						
+				
 					}
 				}				
 
@@ -1007,8 +989,8 @@ namespace osuCrypto
 		std::vector<block> coeffs;
 		//computes coefficients (in blocks) of p such that p(x[i]) = y[i]
 		//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
-		BaseOPPRF b;
-		b.getBlkCoefficients(vec_GF2E_X,vec_GF2E_Y, coeffs);
+		
+		base_poly.getBlkCoefficients(vec_GF2E_X,vec_GF2E_Y, coeffs);
 
 	//	std::cout << "coeffs.size()" << coeffs.size() << "\n";		
 	//	std::cout << "totalMask: " << totalMask << "\n";

@@ -30,7 +30,7 @@ std::vector<block> sendSet;
 std::vector<block> mSet;
 u64 nParties(3);
 
-u64 opt = 1;
+u64 opt = 2;
 
 void Channel_test()
 {
