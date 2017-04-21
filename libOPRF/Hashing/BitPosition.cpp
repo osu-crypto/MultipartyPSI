@@ -334,17 +334,22 @@ namespace osuCrypto
 
 	//#################POLYNOMIAL
 
+	void BaseOPPRF::poly_init() {
+		NTL::BuildIrred(mGf2x,128);
+		NTL::GF2E::init(mGf2x);
+	}
+
 	void BaseOPPRF::GF2EFromBlock(NTL::GF2E &element, block& blk) {
 
-		NTL::GF2X x1;
+		//NTL::GF2X x1;
 		
-		x1=NTL::BuildSparseIrred_GF2X(128);
-		NTL::GF2E::init(x1);
+		//x1=NTL::BuildSparseIrred_GF2X(128);
+		//NTL::GF2E::init(x1);
 		//convert the Block to GF2X element.
-		NTL::GF2XFromBytes(x1, (u8*)&blk, sizeof(block));
+		NTL::GF2XFromBytes(mGf2x, (u8*)&blk, sizeof(block));
 
 		//TODO("remove this hack, get NTL thread safe");
-		element = to_GF2E(x1);
+		element = to_GF2E(mGf2x);
 		//NTL::random(element);
 
 	}
@@ -397,21 +402,20 @@ namespace osuCrypto
 			y.append(e);
 		}
 
-		for (u64 i = setX.size(); i < degree; ++i)
+		/*for (u64 i = setX.size(); i < degree; ++i)
 		{
 			NTL::random(e);
 			x.append(e);
 			NTL::random(e);
 			y.append(e);
-		}
+		}*/
 		//interpolate
 		NTL::GF2EX polynomial = NTL::interpolate(x, y);
 
 		
-		//NTL::GF2EX dummy_polynomial;
-		//NTL::random(dummy_polynomial, degree- setX.size()-1);
-
-		// NTL::mul(polynomial,dummy_polynomial, polynomial);
+		NTL::GF2EX dummy_polynomial;
+		NTL::random(dummy_polynomial, degree- setX.size()-1);
+		 NTL::mul(polynomial,dummy_polynomial, polynomial);
 
 		 //std::cout << NTL::deg(polynomial) << std::endl;
 

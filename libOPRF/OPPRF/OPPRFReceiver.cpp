@@ -722,7 +722,9 @@ namespace osuCrypto
 		//if (plaintexts.size() != mN)
 		//	throw std::runtime_error(LOCATION);
 
-	
+		BaseOPPRF poly;
+		poly.poly_init();
+
 		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
 		{
 			auto seed = mPrng.get<block>();
@@ -764,11 +766,11 @@ namespace osuCrypto
 							{
 								u64 inputIdx = bin.idx();
 								block blkY;
-								BaseOPPRF b;
+								
 
 								//TODO("remove this hack, get NTL thread safe");
 								//if(IdxP==1)
-									b.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
+								poly.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
 								
 								if (bIdx == 0)
 								{

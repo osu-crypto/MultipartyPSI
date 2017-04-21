@@ -690,6 +690,9 @@ namespace osuCrypto
 		std::vector<std::thread>  thrds(chls.size());
 		// std::vector<std::thread>  thrds(1);        
 
+		BaseOPPRF mPoly;
+		mPoly.poly_init();
+
 		std::mutex mtx;
 		NTL::vec_GF2E x; NTL::vec_GF2E y;
 		NTL::GF2E e;
@@ -769,7 +772,7 @@ namespace osuCrypto
 								//computes coefficients (in blocks) of p such that p(x[i]) = y[i]
 								//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
 								
-								bin.mBits[IdxP].getBlkCoefficients(bins.mSimpleBins.mMaxBinSize[bIdxType],
+								mPoly.getBlkCoefficients(bins.mSimpleBins.mMaxBinSize[bIdxType],
 									bin.mValOPRF[IdxP], setY, coeffs);
 
 								if (bIdx == 0)

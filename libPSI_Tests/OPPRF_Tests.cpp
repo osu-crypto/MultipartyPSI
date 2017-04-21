@@ -37,7 +37,7 @@ using namespace osuCrypto;
 #define PRINT
 //#define BIN_PRINT
 
-u32 opt = 0;
+u32 opt = 1;
 void testPointer(std::vector<block>* test)
 {
 	//int length = test->size();
@@ -1960,18 +1960,28 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 	if (myIdx == 0)
 	{
 		//I am a sender to my next neigbour
-		std::vector<std::thread>  pThrds(nParties);
-
-		for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+		if (opt == 0 || opt == 3)
 		{
+			std::vector<std::thread>  pThrds(nParties);
+			for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+			{
 
-			//pThrds[pIdx] = std::thread([&, pIdx]() {
-				if(pIdx!=0)
-				recv[pIdx].recvSS(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
-			//});
+				pThrds[pIdx] = std::thread([&, pIdx]() {
+					if (pIdx != 0)
+						recv[pIdx].recvSS(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+				});
+			}
+			for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+				pThrds[pIdx].join();
 		}
-	//	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
-		//	pThrds[pIdx].join();
+		else //since NTL does not support thread safe => running in pipeline
+		{
+			for (u64 pIdx = 0; pIdx < nParties; ++pIdx)
+			{
+				if (pIdx != 0)
+					recv[pIdx].recvSS(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+			}
+		}
 
 		
 	}
@@ -3176,7 +3186,7 @@ void OPPRFn_Aug_EmptrySet_Test_Impl()
 		mSet[i] = prng.get<block>();
 	}
 	
-	nParties = 4;
+	nParties = 3;
 
 	std::vector<std::vector<block>> mSeeds(nParties);
 	std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);

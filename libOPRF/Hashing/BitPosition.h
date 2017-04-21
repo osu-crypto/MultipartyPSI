@@ -45,6 +45,10 @@ namespace osuCrypto
 		void getRandPos();
 		int midIdx(std::vector<block>& codewords, int length);
 
+		NTL::GF2X mGf2x;
+
+		void poly_init();
+
 		//void findPos(std::vector<block>& codewords);
 		//int isSet(block& codeword, int pos);
 		//void setBit(block& codeword, int pos);
