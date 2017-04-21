@@ -623,6 +623,10 @@ namespace osuCrypto
 		// this mutex is used to guard inserting things into the intersection vector.
 		std::mutex mInsertMtx;
 
+		BaseOPPRF poly;
+		poly.poly_init();
+
+
 		// fr each thread, spawn it.
 		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
 		{
@@ -693,11 +697,9 @@ namespace osuCrypto
 									}
 								}
 							
-								//TODO{ "can't call eval poly here..." };
-
-								//block blkY;
-								//BaseOPPRF b;
-								//b.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
+								block blkY;
+								poly.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
+								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
 
 								/*if (bIdx == 0)
 								{
@@ -721,76 +723,7 @@ namespace osuCrypto
 		// check that the number of inputs is as expected.
 		//if (plaintexts.size() != mN)
 		//	throw std::runtime_error(LOCATION);
-
-		BaseOPPRF poly;
-		poly.poly_init();
-
-		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
-		{
-			auto seed = mPrng.get<block>();
-			thrds[tIdx] = std::thread([&, tIdx, seed]()
-			{
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
-
-				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
-
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
-
-				//2 type of bins: normal bin in inital step + stash bin
-				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
-				{
-					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
-
-					u64 binStart, binEnd;
-					if (bIdxType == 0)
-					{
-						binStart = tIdx       * binCountRecv / thrds.size();
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size();
-					}
-					else
-					{
-						binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-					}
-					
-
-					for (u64 bIdx = binStart; bIdx < binEnd;)
-					{
-						u64 curStepSize = std::min(stepSize, binEnd - bIdx);						
-
-						for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
-						{
-							auto& bin = bins.mCuckooBins.mBins[bIdx];
-							if (!bin.isEmpty())
-							{
-								u64 inputIdx = bin.idx();
-								block blkY;
-								
-
-								//TODO("remove this hack, get NTL thread safe");
-								//if(IdxP==1)
-								poly.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
-								
-								if (bIdx == 0)
-								{
-								//	std::cout << "r["<< IdxP<<"]-bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
-								//	std::cout << "----" << blkY << std::endl;
-								}
-								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
-							}
-						}
-					}
-				}
-
-
-			});
-			//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
-		}
-		// join the threads.
-		for (auto& thrd : thrds)
-			thrd.join();
-		
+	
 
 	}
 	void OPPRFReceiver::recvFullPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)

@@ -402,20 +402,20 @@ namespace osuCrypto
 			y.append(e);
 		}
 
-		/*for (u64 i = setX.size(); i < degree; ++i)
+		for (u64 i = setX.size(); i < degree; ++i)
 		{
 			NTL::random(e);
 			x.append(e);
 			NTL::random(e);
 			y.append(e);
-		}*/
+		}
 		//interpolate
 		NTL::GF2EX polynomial = NTL::interpolate(x, y);
 
 		
-		NTL::GF2EX dummy_polynomial;
-		NTL::random(dummy_polynomial, degree- setX.size()-1);
-		 NTL::mul(polynomial,dummy_polynomial, polynomial);
+		//NTL::GF2EX dummy_polynomial;
+		//NTL::random(dummy_polynomial, degree- setX.size()-1);
+		// NTL::mul(polynomial,dummy_polynomial, polynomial);
 
 		 //std::cout << NTL::deg(polynomial) << std::endl;
 
