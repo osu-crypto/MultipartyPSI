@@ -338,12 +338,12 @@ namespace osuCrypto
 
 		NTL::GF2X x1;
 		
-		NTL::BuildIrred(x1, 128);
+		x1=NTL::BuildSparseIrred_GF2X(128);
 		NTL::GF2E::init(x1);
 		//convert the Block to GF2X element.
 		NTL::GF2XFromBytes(x1, (u8*)&blk, sizeof(block));
 
-		TODO("remove this hack, get NTL thread safe");
+		//TODO("remove this hack, get NTL thread safe");
 		element = to_GF2E(x1);
 		//NTL::random(element);
 
@@ -407,17 +407,13 @@ namespace osuCrypto
 		//interpolate
 		NTL::GF2EX polynomial = NTL::interpolate(x, y);
 
-		TODO("better to have dummpy_pol * real_pol");
-		//NTL::GF2EX real_polynomial = NTL::interpolate(x, y);
-		//std::cout << NTL::deg(real_polynomial) << std::endl;
+		
+		//NTL::GF2EX dummy_polynomial;
+		//NTL::random(dummy_polynomial, degree- setX.size()-1);
 
-		//NTL::GF2EX dummy_polynomial= NTL::interpolate(x1, y1);
-		//NTL::random(dummy_polynomial, 1);
-		//std::cout << NTL::deg(dummy_polynomial) << std::endl;
+		// NTL::mul(polynomial,dummy_polynomial, polynomial);
 
-		// NTL::mul(polynomial,dummy_polynomial, real_polynomial);
-
-
+		 //std::cout << NTL::deg(polynomial) << std::endl;
 
 		////convert coefficient to vector<block> 
 		coeffs.resize(NTL::deg(polynomial) + 1);

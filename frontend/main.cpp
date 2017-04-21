@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 	u64 trials=1;
 
 	std::vector<block> mSet;
-	 u64 setSize = 1 << 10, psiSecParam = 40, bitSize = 128;
+	 u64 setSize = 1 << 12, psiSecParam = 40, bitSize = 128;
 	 u64 nParties, tParties;
 	 u64 roundOPPRF;
 	 PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 	 std::cout << "pIdx:  " << pIdx << "\n";
 	 std::cout << "nParties:  " << nParties << "\n";
 
-	 //TODO(remove this hash: unconditional zero-sharing
+	 //TODO(remove this hash: unconditional zero - sharing);
 	 //only one time => very mirror effect on perfomance
 	 std::vector<std::vector<block>> mSeeds(nParties);
 	 std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
@@ -84,6 +84,7 @@ int main(int argc, char** argv)
 
 
 	 aug_party(pIdx, nParties, mSet.size(), mSet, mPRNGSeeds[pIdx]);
+	// tparty(pIdx, nParties, 4, setSize, trials);
 	 return 0;
 
 	 if (argc == 7) {

@@ -2626,12 +2626,12 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 	{
 		if (i < myIdx)
 		{
-			u32 port = 1120 + i * 100 + myIdx;//get the same port; i=1 & pIdx=2 =>port=102
+			u32 port = 1110 + i * 100 + myIdx;//get the same port; i=1 & pIdx=2 =>port=102
 			ep[i].start(ios, "localhost", port, false, name); //channel bwt i and pIdx, where i is sender
 		}
 		else if (i > myIdx)
 		{
-			u32 port = 1120 + myIdx * 100 + i;//get the same port; i=2 & pIdx=1 =>port=102
+			u32 port = 1110 + myIdx * 100 + i;//get the same port; i=2 & pIdx=1 =>port=102
 			ep[i].start(ios, "localhost", port, true, name); //channel bwt i and pIdx, where i is receiver
 		}
 	}
@@ -2809,7 +2809,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 	{
 		//I am a sender to my next neigbour		
 
-		if (opt == 0 || opt == 3 || opt == 1)
+		if (opt == 0 || opt == 3)
 		{
 			std::vector<std::thread>  pThrds(nParties);
 			for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)

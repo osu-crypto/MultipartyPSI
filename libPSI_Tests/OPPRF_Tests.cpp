@@ -165,10 +165,32 @@ void findScaleNumBins_Test_Impl()
 }
 void findMaxBinSize_Test_Impl()
 {
-	u64 n = 1 << 20;
-	u64 numBins = 0.17*n;
-	u64 maxBin = findMaxBinSize(n, numBins);
-	std::cout << maxBin << std::endl;
+	//u64 n = 1 << 12;
+
+	std::vector<u64> n = { 12,16,20,24 };
+	std::vector<double> scale30 = { 1.14 ,1.12,1.12,1.11 };
+	std::vector<double> scale40 = {1.17 ,1.13,1.12,1.11 };
+
+	
+
+	std::cout << "2^-30 | \n";
+	for (u64 i = 0; i < n.size(); i++)
+	{
+		u64 p = 1 << n[i];
+		u64 numBins = scale30[i]*p;
+		u64 maxBin = findMaxBinSize(p, numBins,3);
+		std::cout << n[i] << " | "<< maxBin << std::endl;
+	}
+
+	std::cout << "2^-40 | \n";
+	for (u64 i = 0; i < n.size(); i++)
+	{
+		u64 p = 1 << n[i];
+		u64 numBins = scale40[i] * p;
+		u64 maxBin = findMaxBinSize(p, numBins,3);
+		std::cout << n[i] << " | " << maxBin << std::endl;
+	}
+	
 }
 
 void hashing2Bins_Test_Impl()

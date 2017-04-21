@@ -763,9 +763,12 @@ namespace osuCrypto
 							if (!bin.isEmpty())
 							{
 								u64 inputIdx = bin.idx();
-								block blkY=ZeroBlock;
+								block blkY;
 								BaseOPPRF b;
-								b.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
+
+								//TODO("remove this hack, get NTL thread safe");
+								//if(IdxP==1)
+									b.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
 								
 								if (bIdx == 0)
 								{
