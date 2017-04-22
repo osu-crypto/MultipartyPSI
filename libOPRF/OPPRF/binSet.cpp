@@ -23,7 +23,7 @@ namespace osuCrypto
     {
     }
 
-    void binSet::init(u64 myIdx, u64 nParties, u64 setSize, u64 statSecParam)
+    void binSet::init( u64 myIdx, u64 nParties, u64 setSize, u64 statSecParam, u64 opt)
     {
 		mMyIdx = myIdx;
 		mParties = nParties;
@@ -40,9 +40,10 @@ namespace osuCrypto
 
 	/*	std::vector<OPPRFSender> mOpprfSends(3);
 		std::vector<OPPRFReceiver> mOpprfRecvs(3);*/
-
-		mSimpleBins.init(mN);
-		mCuckooBins.init(mN);
+		
+		
+			mSimpleBins.init(mN,opt);
+			mCuckooBins.init(mN,opt);
     }
 
 	void binSet::hashing2Bins(std::vector<block>& inputs, int numThreads)

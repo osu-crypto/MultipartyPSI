@@ -19,19 +19,19 @@ namespace osuCrypto
 	//u64 mSenderBinStashSize;
 
     CuckooParam1 k2n24s40CuckooParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 32,64 } };
+	{ { 1.15,0.17 },{ 3,2 },{ 31,64 } };
     CuckooParam1 k2n20s40CuckooParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 32,64 } };
+	{ { 1.15,0.17 },{ 3,2 },{ 30,64 } };
     CuckooParam1 k2n16s40CuckooParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 32,64 } };
+	{ { 1.15,0.17 },{ 3,2 },{ 29,64 } };
     CuckooParam1 k2n12s40CuckooParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 32,64 } };
+	{ { 1.15,0.17 },{ 3,2 },{ 27,64 } };
     CuckooParam1 k2n08s40CuckooParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 32,64 } };
+	{ { 1.15,0.17 },{ 3,2 },{ 27,64 } };
 
     // not sure if this needs a stash of 40, but should be safe enough.
     CuckooParam1 k2n07s40CuckooParam1
-	{ { 1.5,0.17 },{ 3,2 },{ 32,64 } };
+	{ { 1.5,0.17 },{ 3,2 },{ 27,64 } };
 
 
     CuckooHasher1::CuckooHasher1()
@@ -140,16 +140,15 @@ namespace osuCrypto
 		std::cout << IoStream::unlock;
 
     }
-    void CuckooHasher1::init(u64 n)
-    {
-		
 
+    void CuckooHasher1::init(u64 n,u64 opt)
+    {
 
        // if (statSecParam != 40) throw std::runtime_error("not implemented");
 
 		
 			if (n <= 1 << 7)
-				mParams = k2n07s40CuckooParam1;
+				mParams = k2n07s40CuckooParam1;			
 			else if (n <= 1 << 8)
 				mParams = k2n08s40CuckooParam1;
 			else if (n <= 1 << 12)
@@ -163,6 +162,8 @@ namespace osuCrypto
 			else
 				throw std::runtime_error("not implemented");
 		
+			if (opt == 0)
+				mParams.mSenderBinSize[0] = 32;
 
         mHashes.resize(n * mParams.mNumHashes[0], u64(-1));
         mHashesView = MatrixView<u64>(mHashes.begin(), mHashes.end(), mParams.mNumHashes[0]);

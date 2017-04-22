@@ -302,7 +302,7 @@ void party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 		//##########################
 		Timer timer;
 		auto start = timer.setTimePoint("start");
-		bins.init(myIdx, nParties, setSize, psiSecParam);
+		bins.init(myIdx, nParties, setSize, psiSecParam,opt);
 		u64 otCountSend = bins.mSimpleBins.mBins.size();
 		u64 otCountRecv = bins.mCuckooBins.mBins.size();
 
@@ -754,7 +754,7 @@ void party3(u64 myIdx, u64 setSize, u64 nTrials)
 
 		auto start = timer.setTimePoint("start");
 
-		bins.init( myIdx, nParties, setSize, psiSecParam);
+		bins.init( myIdx, nParties, setSize, psiSecParam,opt);
 		u64 otCountSend = bins.mSimpleBins.mBins.size();
 		u64 otCountRecv = bins.mCuckooBins.mBins.size();
 
@@ -1163,7 +1163,7 @@ void party2(u64 myIdx, u64 setSize)
 
 	auto start = timer.setTimePoint("start");
 
-	bins.init( myIdx, nParties, setSize, psiSecParam);
+	bins.init( myIdx, nParties, setSize, psiSecParam,opt);
 	u64 otCountSend = bins.mSimpleBins.mBins.size();
 	u64 otCountRecv = bins.mCuckooBins.mBins.size();
 
@@ -1579,7 +1579,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize,  u64 nTrials)
 		//##########################
 		Timer timer;
 		auto start = timer.setTimePoint("start");
-		bins.init(myIdx, nParties, setSize, psiSecParam);
+		bins.init(myIdx, nParties, setSize, psiSecParam,opt);
 		u64 otCountSend = bins.mSimpleBins.mBins.size();
 		u64 otCountRecv = bins.mCuckooBins.mBins.size();
 
@@ -2372,7 +2372,7 @@ void aug_party_test(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mS
 	Timer timer;
 	auto start = timer.setTimePoint("start");
 
-	bins.init(myIdx, nParties, setSize, psiSecParam);
+	bins.init(myIdx, nParties, setSize, psiSecParam,opt);
 	u64 otCountSend = bins.mSimpleBins.mBins.size();
 	u64 otCountRecv = bins.mCuckooBins.mBins.size();
 
@@ -2703,7 +2703,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 	auto start = timer.setTimePoint("start");
 
 
-	bins.init(myIdx, nParties, setSize, psiSecParam);
+	bins.init(myIdx, nParties, setSize, psiSecParam,opt);
 	u64 otCountSend = bins.mSimpleBins.mBins.size();
 	u64 otCountRecv = bins.mCuckooBins.mBins.size();
 
@@ -3198,7 +3198,7 @@ void Bit_Position_Random_Test()
 
 
 	SimpleHasher1 mSimpleBins;
-	mSimpleBins.init(setSize);
+	mSimpleBins.init(setSize,opt);
 	std::vector<u64> tempIdxBuff(setSize);
 	MatrixView<u64> hashes(setSize, mSimpleBins.mNumHashes[0]);
 

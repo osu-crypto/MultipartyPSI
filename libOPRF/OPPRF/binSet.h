@@ -41,7 +41,7 @@ namespace osuCrypto
 		SimpleHasher1 mSimpleBins;
       
 
-		void init(u64 myIdx, u64 nParties, u64 setSize, u64 statSecParam);
+		void init(u64 myIdx, u64 nParties, u64 setSize, u64 statSecParam, u64 opt);
 
 		void hashing2Bins(std::vector<block>& inputs, int numThreads);
     };

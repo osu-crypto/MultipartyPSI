@@ -47,13 +47,15 @@ namespace osuCrypto
 		u64  mRepSize, mInputBitSize, mN;
 		u64 mBinCount[2], mMaxBinSize[2], mNumHashes[2], mNumBits[2];
 
+	
+
         std::unique_ptr<std::mutex[]> mMtx;
         std::vector<Bin> mBins;
         block mHashSeed;
 		SimpleParam1 mParams;
         void print(u64 idxParty, bool isIdx, bool isOPRF, bool isMap, bool isPos) const;
 
-        void init(u64 n);
+        void init(u64 n,u64 opt);
 
 		void insertBatch(
 			ArrayView<u64> inputIdxs,

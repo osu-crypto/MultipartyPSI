@@ -524,7 +524,7 @@ void nOPPRF_EmptrySet_hashing_Test_Impl()
 
 	std::thread thrd([&]() {
 
-		bins[0].init(opt, numParties, setSize, psiSecParam);
+		bins[0].init(0, numParties, setSize, psiSecParam,opt);
 		u64 otCounts = bins[0].mSimpleBins.mBins.size();
 		send[0].init(opt, numParties, setSize, psiSecParam, bitSize, sendChl, otCounts,otSend[0], otRecv[0], prng.get<block>());
 
@@ -558,7 +558,7 @@ void nOPPRF_EmptrySet_hashing_Test_Impl()
 
 	});
 
-	bins[1].init(opt, numParties, setSize, psiSecParam);
+	bins[1].init(0, numParties, setSize, psiSecParam,opt);
 
 	u64 otCountRecv = bins[1].mCuckooBins.mBins.size();
 
@@ -706,7 +706,7 @@ void nParty(u64 myIdx)
 	//### Offline Phasing
 	//##########################
 
-	bins.init(myIdx, mParties, setSize, psiSecParam);
+	bins.init(myIdx, mParties, setSize, psiSecParam,opt);
 	u64 otCountRecv = bins.mCuckooBins.mBins.size();
 	u64 otCountSend = bins.mSimpleBins.mBins.size();
 

@@ -10,19 +10,19 @@ namespace osuCrypto
 {
 
 	SimpleParam1 k2n24s40SimpleParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 32,64 },{5,6} };
+	{ { 1.15,0.17 },{ 3,2 },{ 31,64 },{5,6} };
 	SimpleParam1 k2n20s40SimpleParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 32,64 } ,{ 5,6 } };
+	{ { 1.15,0.17 },{ 3,2 },{ 30,64 } ,{ 5,6 } };
 	SimpleParam1 k2n16s40SimpleParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 32,64 },{ 5,6 } };
+	{ { 1.15,0.17 },{ 3,2 },{ 29,64 },{ 5,6 } };
 	SimpleParam1 k2n12s40SimpleParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 32,64 },{ 5,6 } };
+	{ { 1.15,0.17 },{ 3,2 },{ 27,64 },{ 5,6 } };
 	SimpleParam1 k2n08s40SimpleParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 32,64 },{ 5,6 } };
+	{ { 1.15,0.17 },{ 3,2 },{ 27,64 },{ 5,6 } };
 
 	// not sure if this needs a stash of 40, but should be safe enough.
 	SimpleParam1 k2n07s40SimpleParam1
-	{ { 1.5,0.17 },{ 3,2 },{ 32,64 },{ 5,6 } };
+	{ { 1.5,0.17 },{ 3,2 },{ 27,64 },{ 5,6 } };
 
 
 	SimpleHasher1::SimpleHasher1()
@@ -120,7 +120,7 @@ namespace osuCrypto
 		return std::log(bins * std::pow(balls * exp(1) / (bins * k), k)) / std::log(2);
 	}
 
-	void SimpleHasher1::init(u64 n)
+	void SimpleHasher1::init(u64 n,u64 opt)
 	{	
 		mN = n;
 
@@ -138,6 +138,9 @@ namespace osuCrypto
 			mParams = k2n24s40SimpleParam1;
 		else
 			throw std::runtime_error("not implemented");
+
+		if (opt == 0)
+			mParams.mMaxBinSize[0] = 32;
 
 		mMaxBinSize[0] = mParams.mMaxBinSize[0];
 		mMaxBinSize[1] = mParams.mMaxBinSize[1];
@@ -205,7 +208,7 @@ namespace osuCrypto
 		
 
 	}
-
+	
 	void SimpleHasher1::insertBatch(ArrayView<u64> inputIdxs, MatrixView<u64> hashs)
 	{
 		for (u64 j = 0; j < inputIdxs.size(); ++j)
