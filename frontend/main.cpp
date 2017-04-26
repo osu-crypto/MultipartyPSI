@@ -41,6 +41,68 @@ int main(int argc, char** argv)
 	//OPPRFn_Aug_EmptrySet_Test_Impl();
 	//return 0;
 
+	std::vector<std::thread>  pThrds(2);
+	PRNG prng11(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+	
+	std::vector<block> blks(pThrds.size());
+	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+	{
+		blks[pIdx] = prng11.get<block>();
+	}
+	
+	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+	{
+
+		pThrds[pIdx] = std::thread([&, pIdx]() {
+
+			auto ii = pIdx + 40;
+			NTL::GF2X xi;
+			
+
+			NTL::GF2X gf2x;
+			NTL::BuildIrred(gf2x, 128);
+			NTL::GF2E::init(gf2x);
+
+			NTL::GF2E e;
+
+			block blk = OneBlock;
+			NTL::GF2XFromBytes(xi, (u8*)&ii, sizeof(ii));
+			//NTL::GF2XFromBytes(gf2x, (u8*)&blks[pIdx], sizeof(block));
+
+			//TODO("remove this hack, get NTL thread safe");
+			//e = NTL::to_GF2E(gf2x);
+
+			
+			/*NTL::GF2X gf2x;
+			NTL::BuildSparseIrred(gf2x, 5);
+			NTL::GF2E::init(gf2x);*/
+
+			//std::vector<NTL::GF2E> ex1(2), ex2(2);
+
+			//NTL::GF2EX px1, px2;
+
+			//for (u64 i = 0; i < ex1.size(); ++i)
+			//{
+			//	NTL::random(ex1[i]);
+			//	NTL::random(ex2[i]);
+			//	NTL::SetCoeff(px1, i, ex1[i]); //build res_polynomial
+			//	NTL::SetCoeff(px2, i, ex2[i]); //build res_polynomial
+
+			//	std::cout << "x" << i << ": " << ex1[i] << "		y" << i << ": " << ex2[i] << std::endl;
+			//}
+
+			//NTL::GF2E e;
+			//e = NTL::eval(px1, e);
+			std::cout << "e " << e << std::endl; 
+		
+		});
+	}
+
+	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+		pThrds[pIdx].join();
+
+	return 0;
+
 	u64 trials=1;
 
 	std::vector<block> mSet;
