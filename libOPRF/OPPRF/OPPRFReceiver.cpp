@@ -699,6 +699,7 @@ namespace osuCrypto
 							
 								block blkY;
 								poly.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
+
 								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
 
 								/*if (bIdx == 0)

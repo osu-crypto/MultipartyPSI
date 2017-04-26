@@ -402,30 +402,64 @@ namespace osuCrypto
 			y.append(e);
 		}
 
-//NOTE: "get the correct intersection when uncomment following")
-		/*for (u64 i = setX.size(); i < degree; ++i)
-		{
-			NTL::random(e);
-			x.append(e);
-			NTL::random(e);
-			y.append(e);
-		}*/
 
-		//interpolate
 		NTL::GF2EX polynomial = NTL::interpolate(x, y);
 
 		//indeed, we dont need to pad dummy item to max_bin_size
 		//we can compute a polynomial over real items
-		//for exaple, there are 3 items in a bin => interpolate poly p1(x) of a degree 2
-		// gererate a dummy poly p2(x) of degree max_bin_size - degree of p1(x)
-		//send coff of poly p1(x)*p2(x)
-		//NOTE: current test returns a wrong intersection!!!
+		//for exaple, there are 3 items in a bin (xi,yi) => interpolate poly p1(x) of a degree 2
+		// gererate a root poly pRoot(x) of degree 2 over (xi,0)
+		// gererate a dummy poly dummy(x) of degree max_bin_size - degree of p1(x)
+		//send coff of poly dummy(x)*pRoot(x)+p1(x)
+		//if x*=xi =>pRoot(xi)=0 => get p1(x*)
+		
+		NTL::GF2EX root_polynomial;
+		NTL::BuildFromRoots(root_polynomial, x);
+
 
 		NTL::GF2EX dummy_polynomial;
-		NTL::random(dummy_polynomial, degree- setX.size()-1);
-		 NTL::mul(polynomial,dummy_polynomial, polynomial);
+		/*for (u64 i = setX.size(); i < degree-1; ++i)
+		{
+			NTL::random(e);
+			x.append(e);
+		}*/
 
-		 //std::cout << NTL::deg(polynomial) << std::endl;
+		NTL::random(dummy_polynomial, degree - setX.size());
+		NTL::GF2EX d_polynomial;
+		//NTL::mul(d_polynomial, dummy_polynomial, root_polynomial);
+
+		//NTL::BuildFromRoots(dummy_polynomial, x);
+
+		//for (u64 i = 0; i < setX.size(); ++i)
+		//{
+		//	NTL::GF2E e1 = NTL::eval(d_polynomial, x[i]); //get y=f(x) in GF2E
+		//	if (e1 != 0)
+		//	std::cout << x[i] << std::endl;
+		//}
+
+		
+		
+
+		//NTL::BuildFromRoots(dummy_polynomial, x);
+
+		//NTL::random(dummy_polynomial, degree- setX.size()-1);
+		// NTL::add(polynomial, d_polynomial, polynomial);
+		polynomial = polynomial + dummy_polynomial*root_polynomial;
+
+	//	dummy_polynomial.~GF2EX();
+	//	root_polynomial.~GF2EX();
+
+		 for (u64 i = 0; i < setX.size(); ++i)
+		 {
+			 NTL::GF2E e1 = NTL::eval(polynomial, x[i]); //get y=f(x) in GF2E
+			 if (e1 != y[i])
+				 throw std::runtime_error(LOCATION);
+			// else
+			//	 std::cout << "ok" << std::endl;
+		 }
+
+		 
+		 std::cout << NTL::deg(polynomial) << std::endl;
 
 		////convert coefficient to vector<block> 
 		coeffs.resize(NTL::deg(polynomial) + 1);

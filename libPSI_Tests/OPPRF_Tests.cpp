@@ -3511,44 +3511,79 @@ void evalPolynomial(std::vector<block>& coeffs, block& x, block& y)
 }
 
 void polynomial_Test_Impl()
-{
-	
+{	
 
-	PRNG prng111(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
-	std::vector<block> coeffs(32);
+	NTL::GF2X gf2x;
+	NTL::BuildSparseIrred(gf2x, 3);
+	NTL::GF2E::init(gf2x);
 
-	for (int i = 0; i < coeffs.size(); ++i)
+	std::vector<NTL::GF2E> ex1(1), ey1(1);
+	NTL::vec_GF2E x1; NTL::vec_GF2E y1;
+	for (u64 i = 0; i < ex1.size(); ++i)
 	{
-		coeffs[i] = prng111.get<block>();
+		NTL::random(ex1[i]);
+		NTL::random(ey1[i]);
+		x1.append(ex1[i]);
+		y1.append(ey1[i]);
+		std::cout << "x"<<i<<": " << ex1[i] << "		y"<<i<<": " << ey1[i] << std::endl;
 	}
 
-	block blkX = OneBlock;
-	NTL::GF2E e;
+	NTL::GF2EX poly1;
+	NTL::BuildFromRoots(poly1, x1);
+
+	//NTL::GF2EX poly1=NTL::interpolate(x1,y1);
 
 	
-	NTL::GF2X x1;
-	NTL::SetCoeff(x1, 1);
-	//NTL::BuildIrred(x1, 1);
-	NTL::GF2E::init(x1);
-	//convert the Block to GF2X element.
-	NTL::GF2XFromBytes(x1, (u8*)&blkX, sizeof(block));
-	std::cout << x1;
-	e = NTL::to_GF2E(x1);
 
+	for (int i = 0; i < NTL::deg(poly1) + 1; i++) {
+		//get the coefficient polynomial
+		std::cout <<"NTL::coeff(poly1, " << i << "): "<< NTL::coeff(poly1, i) << std::endl;
+	}	
+	//std::cout << "poly1" << poly1 << std::endl;
 
-	std::vector<block> x(3);
-
-	for (u64 i = 0; i < x.size(); ++i)
+	std::vector<NTL::GF2E> ex2(2), ey2(2);
+	NTL::vec_GF2E x2; NTL::vec_GF2E y2;
+	for (u64 i = 0; i < ex2.size(); ++i)
 	{
-		if (eq(x[i], ZeroBlock))
-		{
+		NTL::random(ex2[i]);
+		NTL::random(ey2[i]);
+		x2.append(ex2[i]);
+		y2.append(ey2[i]);
+		std::cout << "x" << i << ": " << ex2[i] << "		y" << i << ": " << ey2[i] << std::endl;
+	}
 
-			std::cout << x[i]<<std::endl;
+	//NTL::GF2EX poly2 = NTL::interpolate(x2, y2);
 
-		}
+	NTL::GF2EX poly2;
+	NTL::BuildFromRoots(poly1, x2);
+
+	for (int i = 0; i < NTL::deg(poly2) + 1; i++) {
+		//get the coefficient polynomial
+		std::cout << "NTL::coeff(poly2, "<<i<<"): " << NTL::coeff(poly2, i) << std::endl;
+	}
+
+	//NTL::GF2EX p3 = (poly1*poly2);
+
+	NTL::mul(poly1, poly2, poly1);
+
+	for (int i = 0; i < NTL::deg(poly1) + 1; i++) {
+		//get the coefficient polynomial
+		std::cout << "NTL::coeff(poly1+poly2, " << i << "): " << NTL::coeff(poly1, i) << std::endl;
+	}
+
+	
+	NTL::GF2E e1 = NTL::eval(poly1, ex1[0]); //get y=f(x) in GF2E
+	if (e1 == 0)
+		std::cout << "ok";
+	else
+	{
+		std::cout << e1 << std::endl;
+		std::cout << ey1[0] << std::endl;
 	}
 
 
+
+	
 
 
 	//PRNG prng111(_mm_set_epi32(4253465, 3434565, 234435, 23987045));

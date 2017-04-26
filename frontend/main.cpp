@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 	u64 trials=1;
 
 	std::vector<block> mSet;
-	 u64 setSize = 1 << 12, psiSecParam = 40, bitSize = 128;
+	 u64 setSize = 1 << 16, psiSecParam = 40, bitSize = 128;
 	 u64 nParties, tParties;
 	 u64 roundOPPRF;
 	 PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
