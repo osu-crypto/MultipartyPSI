@@ -37,7 +37,7 @@ using namespace osuCrypto;
 #define PRINT
 //#define BIN_PRINT
 
-u32 opt = 1;
+u32 opt = 3;
 void testPointer(std::vector<block>* test)
 {
 	//int length = test->size();
@@ -886,147 +886,147 @@ void OPPRF3_EmptrySet_Test_Impl_draft()
 
 void OPPRF_EmptrySet_hashing_Test_Impl()
 {
-	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128, numParties = 2;
-	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
-
-	std::vector<block> sendSet(setSize), recvSet(setSize);
-	std::vector<block> sendPayLoads(setSize), recvPayLoads(setSize);
-
-	for (u64 i = 0; i < setSize; ++i)
-	{
-		sendSet[i] = prng.get<block>();
-		sendPayLoads[i] = prng.get<block>();
-		recvSet[i] = prng.get<block>();
-		recvSet[i] = sendSet[i];
-	}
-	for (u64 i = 1; i < 3; ++i)
-	{
-		recvSet[i] = sendSet[i];
-	}
-
-	std::string name("psi");
-
-	BtIOService ios(0);
-	BtEndpoint ep0(ios, "localhost", 1212, true, name);
-	BtEndpoint ep1(ios, "localhost", 1212, false, name);
-
-
-	std::vector<Channel*> recvChl{ &ep1.addChannel(name, name) };
-	std::vector<Channel*> sendChl{ &ep0.addChannel(name, name) };
-
-	std::vector<KkrtNcoOtReceiver> otRecv(2);
-	std::vector<KkrtNcoOtSender> otSend(2);
-
-	std::vector<OPPRFSender> send(1);
-	std::vector<OPPRFReceiver> recv(1);
-
-	std::vector<binSet> bins(2);
-
-
-
-	std::thread thrd([&]() {
-		bins[0].init(0, numParties, setSize, psiSecParam,opt);
-		u64 otCountSend = bins[0].mSimpleBins.mBins.size();
-		send[0].init(opt, numParties, setSize, psiSecParam, bitSize, sendChl, otCountSend, otSend[0], otRecv[0], prng.get<block>());
-
-
-		bins[0].hashing2Bins(sendSet, 2);
-		//send.hash2Bins(sendSet, sendChl);
-		send[0].getOPRFKeys(1, bins[0], sendChl, true);
-		send[0].sendSS(1, bins[0], sendPayLoads, sendChl);
-		//send.recvSS(1, recvPayLoads, sendChl);
-		//Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
-		bins[0].mSimpleBins.print(1, true, true, true, true);
-		//Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
-		//send.mCuckooBins.print(1,true, true, false);
-
-
-
-
-		//send.mBins.print();
-
-		//for (u64 i = 1; i < 3; ++i)
-		//{
-		//	Log::out << "Sender Bin#: " << i << " ";
-		//	for (u64 j = 1; j < send.mBins.mBins[i].mIdx.size(); ++j)
-		//	{
-		//		Log::out << send.mBins.mBins[i].mIdx[j] << " - ";
-		//		Log::out << send.mBins.mBins[i].mValOPRF[j] << Log::endl;
-		//	}
-		//}
-		//
-		//
-
-	});
-
-	bins[1].init(1, numParties, setSize, psiSecParam,opt);
-	u64 otCountRecv = bins[1].mCuckooBins.mBins.size();
-
-	recv[0].init(opt, numParties, setSize, psiSecParam, bitSize, recvChl, otCountRecv, otRecv[1], otSend[1], ZeroBlock);
-
-	bins[1].hashing2Bins(recvSet, 2);
-
-	//recv.hash2Bins(recvSet, recvChl);
-	recv[0].getOPRFkeys(0, bins[1], recvChl);
-	recv[0].recvSS(0, bins[1], recvPayLoads, recvChl);
-	//recv.sendSS(0, sendPayLoads, recvChl);
-
-	Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
-	bins[1].mCuckooBins.print(0, true, true, true);
-
-	//Log::out << "recv.mSimpleBins.print(true, false, false,false);" << Log::endl;
-	//recv.mSimpleBins.print(0,true, true, true, true);
-
-	/*recv.sendInput(recvSet, recvChl);
-	recv.mBins.print();
-	*/
-
-#ifdef PRINT
-	std::cout << IoStream::lock;
-	for (u64 i = 1; i < recvPayLoads.size(); ++i)
-	{
-		Log::out << recvPayLoads[i] << Log::endl;
-		Log::out << sendPayLoads[i] << Log::endl;
-		if (memcmp((u8*)&recvPayLoads[i], &sendPayLoads[i], sizeof(block)))
-		{
-			Log::out << "recvPayLoads[i] != sendPayLoads[i]" << Log::endl;
-			Log::out << recvSet[i] << Log::endl;
-			Log::out << sendSet[i] << Log::endl;
-			Log::out << i << Log::endl;
-		}
-
-	}
-
-	std::cout << IoStream::unlock;
-
-	std::cout << IoStream::lock;
-	Log::out << otSend[0].mT.size()[1] << Log::endl;
-	Log::out << otSend[1].mT.size()[1] << Log::endl;
-	Log::out << otSend[0].mGens[0].get<block>() << Log::endl;
-	Log::out << otRecv[0].mGens[0][0].get<block>() << Log::endl;
-	Log::out << otRecv[0].mGens[0][1].get<block>() << Log::endl;
-	Log::out << "------------" << Log::endl;
-	Log::out << otSend[1].mGens[0].get<block>() << Log::endl;
-	Log::out << otRecv[1].mGens[0][0].get<block>() << Log::endl;
-	Log::out << otRecv[1].mGens[0][1].get<block>() << Log::endl;
-	std::cout << IoStream::unlock;
-
-#endif
-
-	thrd.join();
-
-
-
-
-
-
-
-	sendChl[0]->close();
-	recvChl[0]->close();
-
-	ep0.stop();
-	ep1.stop();
-	ios.stop();
+//	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128, numParties = 2;
+//	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+//
+//	std::vector<block> sendSet(setSize), recvSet(setSize);
+//	std::vector<block> sendPayLoads(setSize), recvPayLoads(setSize);
+//
+//	for (u64 i = 0; i < setSize; ++i)
+//	{
+//		sendSet[i] = prng.get<block>();
+//		sendPayLoads[i] = prng.get<block>();
+//		recvSet[i] = prng.get<block>();
+//		recvSet[i] = sendSet[i];
+//	}
+//	for (u64 i = 1; i < 3; ++i)
+//	{
+//		recvSet[i] = sendSet[i];
+//	}
+//
+//	std::string name("psi");
+//
+//	BtIOService ios(0);
+//	BtEndpoint ep0(ios, "localhost", 1212, true, name);
+//	BtEndpoint ep1(ios, "localhost", 1212, false, name);
+//
+//
+//	std::vector<Channel*> recvChl{ &ep1.addChannel(name, name) };
+//	std::vector<Channel*> sendChl{ &ep0.addChannel(name, name) };
+//
+//	std::vector<KkrtNcoOtReceiver> otRecv(2);
+//	std::vector<KkrtNcoOtSender> otSend(2);
+//
+//	std::vector<OPPRFSender> send(1);
+//	std::vector<OPPRFReceiver> recv(1);
+//
+//	std::vector<binSet> bins(2);
+//
+//
+//
+//	std::thread thrd([&]() {
+//		bins[0].init(0, numParties, setSize, psiSecParam,opt);
+//		u64 otCountSend = bins[0].mSimpleBins.mBins.size();
+//		send[0].init(opt, numParties, setSize, psiSecParam, bitSize, sendChl, otCountSend, otSend[0], otRecv[0], prng.get<block>());
+//
+//
+//		bins[0].hashing2Bins(sendSet, 2);
+//		//send.hash2Bins(sendSet, sendChl);
+//		send[0].getOPRFKeys(1, bins[0], sendChl, true);
+//		send[0].sendSS(1, bins[0], sendPayLoads, sendChl);
+//		//send.recvSS(1, recvPayLoads, sendChl);
+//		//Log::out << "send.mSimpleBins.print(true, false, false,false);" << Log::endl;
+//		bins[0].mSimpleBins.print(1, true, true, true, true);
+//		//Log::out << "send.mCuckooBins.print(true, false, false);" << Log::endl;
+//		//send.mCuckooBins.print(1,true, true, false);
+//
+//
+//
+//
+//		//send.mBins.print();
+//
+//		//for (u64 i = 1; i < 3; ++i)
+//		//{
+//		//	Log::out << "Sender Bin#: " << i << " ";
+//		//	for (u64 j = 1; j < send.mBins.mBins[i].mIdx.size(); ++j)
+//		//	{
+//		//		Log::out << send.mBins.mBins[i].mIdx[j] << " - ";
+//		//		Log::out << send.mBins.mBins[i].mValOPRF[j] << Log::endl;
+//		//	}
+//		//}
+//		//
+//		//
+//
+//	});
+//
+//	bins[1].init(1, numParties, setSize, psiSecParam,opt);
+//	u64 otCountRecv = bins[1].mCuckooBins.mBins.size();
+//
+//	recv[0].init(opt, numParties, setSize, psiSecParam, bitSize, recvChl, otCountRecv, otRecv[1], otSend[1], ZeroBlock);
+//
+//	bins[1].hashing2Bins(recvSet, 2);
+//
+//	//recv.hash2Bins(recvSet, recvChl);
+//	recv[0].getOPRFkeys(0, bins[1], recvChl);
+//	recv[0].recvSS(0, bins[1], recvPayLoads, recvChl);
+//	//recv.sendSS(0, sendPayLoads, recvChl);
+//
+//	Log::out << "recv.mCuckooBins.print(true, false, false);" << Log::endl;
+//	bins[1].mCuckooBins.print(0, true, true, true);
+//
+//	//Log::out << "recv.mSimpleBins.print(true, false, false,false);" << Log::endl;
+//	//recv.mSimpleBins.print(0,true, true, true, true);
+//
+//	/*recv.sendInput(recvSet, recvChl);
+//	recv.mBins.print();
+//	*/
+//
+//#ifdef PRINT
+//	std::cout << IoStream::lock;
+//	for (u64 i = 1; i < recvPayLoads.size(); ++i)
+//	{
+//		Log::out << recvPayLoads[i] << Log::endl;
+//		Log::out << sendPayLoads[i] << Log::endl;
+//		if (memcmp((u8*)&recvPayLoads[i], &sendPayLoads[i], sizeof(block)))
+//		{
+//			Log::out << "recvPayLoads[i] != sendPayLoads[i]" << Log::endl;
+//			Log::out << recvSet[i] << Log::endl;
+//			Log::out << sendSet[i] << Log::endl;
+//			Log::out << i << Log::endl;
+//		}
+//
+//	}
+//
+//	std::cout << IoStream::unlock;
+//
+//	std::cout << IoStream::lock;
+//	Log::out << otSend[0].mT.size()[1] << Log::endl;
+//	Log::out << otSend[1].mT.size()[1] << Log::endl;
+//	Log::out << otSend[0].mGens[0].get<block>() << Log::endl;
+//	Log::out << otRecv[0].mGens[0][0].get<block>() << Log::endl;
+//	Log::out << otRecv[0].mGens[0][1].get<block>() << Log::endl;
+//	Log::out << "------------" << Log::endl;
+//	Log::out << otSend[1].mGens[0].get<block>() << Log::endl;
+//	Log::out << otRecv[1].mGens[0][0].get<block>() << Log::endl;
+//	Log::out << otRecv[1].mGens[0][1].get<block>() << Log::endl;
+//	std::cout << IoStream::unlock;
+//
+//#endif
+//
+//	thrd.join();
+//
+//
+//
+//
+//
+//
+//
+//	sendChl[0]->close();
+//	recvChl[0]->close();
+//
+//	ep0.stop();
+//	ep1.stop();
+//	ios.stop();
 }
 
 std::vector<block> mSet;
@@ -1274,7 +1274,8 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 				recv[pIdx].getOPRFkeys(pIdx, bins, chls[pIdx], true);
 			}
 			else if (pIdx > myIdx) {
-				send[pIdx - myIdx - 1].getOPRFKeys(pIdx, bins, chls[pIdx], true);
+
+				send[pIdx - myIdx - 1].getOPRFkeys(pIdx, bins, chls[pIdx], true);
 			}
 		});
 	}
@@ -1659,7 +1660,7 @@ void party2(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 	
 			if (myIdx == 1) {
 				//I am a sender to my next neigbour
-				send.getOPRFKeys(0, bins, chls[0], false);
+				send.getOPRFkeys(0, bins, chls[0], false);
 			}
 			else if (myIdx == 0) {
 				//I am a recv to my previous neigbour
@@ -1667,17 +1668,17 @@ void party2(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 			}
 	
 
-	//if (myIdx == 0)
-	//{
-	//	//bins.mSimpleBins.print(2, true, true, false, false);
-	//	bins.mCuckooBins.print(1, true, true, false);
-	//	Log::out << "------------" << Log::endl;
-	//}
-	//if (myIdx == 1)
-	//{
-	//	bins.mSimpleBins.print(0, true, true, false, false);
-	//	//bins.mCuckooBins.print(0, true, true, false);
-	//}
+	if (myIdx == 0)
+	{
+		//bins.mSimpleBins.print(2, true, true, false, false);
+		bins.mCuckooBins.print(1, true, true, false);
+		Log::out << "------------" << Log::endl;
+	}
+	if (myIdx == 1)
+	{
+		bins.mSimpleBins.print(0, true, true, false, false);
+		//bins.mCuckooBins.print(0, true, true, false);
+	}
 
 
 
@@ -1912,8 +1913,8 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 	//### Hashing
 	//##########################
 	bins.hashing2Bins(set, 1);
-	//bins.mSimpleBins.print(myIdx, true, false, false, false);
-	//bins.mCuckooBins.print(myIdx, true, false, false);
+	bins.mSimpleBins.print(myIdx, true, false, false, false);
+	bins.mCuckooBins.print(myIdx, true, false, false);
 
 	//##########################
 	//### Online Phasing - compute OPRF
@@ -1936,22 +1937,22 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 			pThrds[pIdx].join();	
 	}
 	else {
-		//I am a recv to my previous neigbour
-		send.getOPRFKeys(0, bins, chls[0], false);		
+		//I am a recv to my previous neigbour	
+		send.getOPRFkeys(0, bins, chls[0], false);
 	}
 
 
-	//if (myIdx == 0)
-	//{
-	//	//bins.mSimpleBins.print(2, true, true, false, false);
-	//	bins.mCuckooBins.print(1, true, true, false);
-	//	Log::out << "------------" << Log::endl;
-	//}
-	//if (myIdx == 2)
-	//{
-	//	bins.mSimpleBins.print(0, true, true, false, false);
-	//	//bins.mCuckooBins.print(0, true, true, false);
-	//}
+	if (myIdx == 0)
+	{
+		//bins.mSimpleBins.print(2, true, true, false, false);
+		bins.mCuckooBins.print(1, true, true, false);
+		Log::out << "------------" << Log::endl;
+	}
+	if (myIdx == 2)
+	{
+		bins.mSimpleBins.print(0, true, true, false, false);
+		//bins.mCuckooBins.print(0, true, true, false);
+	}
 
 
 
@@ -2229,7 +2230,7 @@ void party3(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 
 			if (pIdx == nextNeibough) {
 				//I am a sender to my next neigbour
-				send.getOPRFKeys(pIdx, bins, chls[pIdx], false);
+				send.getOPRFkeys(pIdx, bins, chls[pIdx], false);
 			}
 			else if (pIdx == prevNeibough) {
 				//I am a recv to my previous neigbour
@@ -2772,7 +2773,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 						//dual myIdx << " <-> " << nextIdx 
 						if (myIdx < nextIdx)
 						{
-							send[nextIdx].getOPRFKeys(nextIdx, bins, chls[nextIdx], true);
+							send[nextIdx].getOPRFkeys(nextIdx, bins, chls[nextIdx], true);
 						}
 						else if (myIdx > nextIdx) //by index
 						{
@@ -2784,14 +2785,16 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 				else
 				{
 					pThrds[pIdx] = std::thread([&, nextIdx]() {
-						send[nextIdx].getOPRFKeys(nextIdx, bins, chls[nextIdx], false);
+						send[nextIdx].getOPRFkeys(nextIdx, bins, chls[nextIdx], false);
+
 					});
 				}
 			}
 
 			//last thread for connecting with leader
 			pThrds[pThrds.size() - 1] = std::thread([&, leaderIdx]() {
-				send[leaderIdx].getOPRFKeys(leaderIdx, bins, chls[leaderIdx], false);
+				
+				send[leaderIdx].getOPRFkeys(leaderIdx, bins, chls[leaderIdx], false);
 			});
 
 		}
@@ -3188,7 +3191,7 @@ void OPPRFn_Aug_EmptrySet_Test_Impl()
 		mSet[i] = prng.get<block>();
 	}
 	
-	nParties = 3;
+	nParties = 2;
 
 	std::vector<std::vector<block>> mSeeds(nParties);
 	std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);

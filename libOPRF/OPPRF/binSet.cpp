@@ -29,6 +29,7 @@ namespace osuCrypto
 		mParties = nParties;
 		mN = setSize;
 		mStatSecParam = statSecParam;
+		mOpt = opt;
 
 		//Hard-coding key for hash functions 
 		mHashingSeed = _mm_set_epi64x(1, 1);
@@ -42,8 +43,8 @@ namespace osuCrypto
 		std::vector<OPPRFReceiver> mOpprfRecvs(3);*/
 		
 		
-			mSimpleBins.init(mN,opt);
-			mCuckooBins.init(mN,opt);
+			mSimpleBins.init(mN, mOpt);
+			mCuckooBins.init(mN, mOpt);
     }
 
 	void binSet::hashing2Bins(std::vector<block>& inputs, int numThreads)
@@ -177,11 +178,21 @@ namespace osuCrypto
 
 #pragma region Init Bin
 #if 1
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.insertDone");
-
-
+				
+				
 				if (mCuckooBins.mBins.size() != mSimpleBins.mBins.size())
 					throw std::runtime_error("mCuckooBins.mBins.size()!= mSimpleBins.mBins.size()");
+
+				if (mOpt != 0)
+				{
+					mSimpleBins.mOprfs.resize(mParties);
+					for (u64 pIdx = 0; pIdx < mParties;pIdx++)
+					{
+						mSimpleBins.mOprfs[pIdx].resize(mN);
+						for (u64 hIdx = 0; hIdx < mSimpleBins.mOprfs[pIdx].size(); hIdx++)
+							mSimpleBins.mOprfs[pIdx][hIdx].resize(mSimpleBins.mNumHashes[0] + mSimpleBins.mNumHashes[1]);
+					}
+				}
 
 				auto binCount = mCuckooBins.mBins.size();
 				// get the region of the base OTs that this thread should do.

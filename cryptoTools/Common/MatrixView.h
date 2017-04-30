@@ -132,6 +132,9 @@ namespace osuCrypto
         }
 
         const std::array<u64, 2>& size() const { return mSize; }
+
+
+
         T* data() const { return mData; };
 #ifndef NDEBUG
         ArrayIterator<T> begin() const 

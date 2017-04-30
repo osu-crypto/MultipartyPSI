@@ -99,11 +99,12 @@ namespace osuCrypto
             else
             {
               //  std::cout << "    c_idx=" << mBins[i].idx() << "  hIdx=" << mBins[i].hashIdx() << std::endl;
-				if(isIdx)
-					Log::out << "    c_idx=" << mBins[i].idx();
-			
-				//	Log::out << "    hIdx=" << mBins[i].hashIdx();
-				if(isOPRF)
+				if (isIdx)
+				
+					std::cout << "    c_idx=" << mBins[i].idx() << "  hIdx=" << mBins[i].hashIdx() << std::endl;
+
+
+				if (isOPRF)
 					Log::out << "    c_OPRF=" << mBins[i].mValOPRF[IdxP];
 				
 				if(isMap)

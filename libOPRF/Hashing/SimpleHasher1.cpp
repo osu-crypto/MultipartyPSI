@@ -36,7 +36,8 @@ namespace osuCrypto
 
 
 
-	void SimpleHasher1::print(u64 IdxP, bool isIdx, bool isOPRF, bool isMap, bool isPos) const
+	void SimpleHasher1::print(u64 IdxP, bool isIdx, bool isOPRF, 
+		bool isMap, bool isPos, u64 opt) const
 	{
 
 		std::cout << IoStream::lock;
@@ -88,12 +89,17 @@ namespace osuCrypto
 					for (u64 j = 0; j < mBins[i].mIdx.size(); ++j)
 					{
 						if (isIdx)
-							Log::out << "    c_idx=" << mBins[i].mIdx[j];
+							
+						std::cout << "    c_idx=" << mBins[i].mIdx[j] << "  hIdx=" << mBins[i].hIdx[j] << std::endl;
 
-						if (isOPRF)
+
+						if (isOPRF && (opt == 0 || opt==1))//seperated oprf
 							Log::out << "    c_OPRF=" << mBins[i].mValOPRF[IdxP][j];
+						if (isOPRF && (opt == 2 || opt == 3))//combined oprf
+							Log::out << "    c_OPRF=" 
+							<< mOprfs[IdxP][mBins[i].mIdx[j]][mBins[i].hIdx[j]];
 
-						if (isMap)
+						if (isMap && opt==0)
 							Log::out << "    c_Map=" << static_cast<int16_t>(mBins[i].mBits[IdxP].mMaps[j]);
 
 						Log::out << Log::endl;
@@ -141,6 +147,8 @@ namespace osuCrypto
 
 		if (opt == 0)
 			mParams.mMaxBinSize[0] = 32;
+		
+
 
 		mMaxBinSize[0] = mParams.mMaxBinSize[0];
 		mMaxBinSize[1] = mParams.mMaxBinSize[1];
@@ -224,6 +232,7 @@ namespace osuCrypto
 					== mBins[addr].mIdx.end()) {
 					{	
 							mBins[addr].mIdx.emplace_back(inputIdxs[j]);
+							mBins[addr].hIdx.emplace_back(k);
 					//		std::cout << "1----"<<inputIdxs[j] <<"-" << addr << std::endl;
 					}
 				}
@@ -237,6 +246,7 @@ namespace osuCrypto
 				if (std::find(mBins[addrStash].mIdx.begin(), mBins[addrStash].mIdx.end(), inputIdxs[j])
 					== mBins[addrStash].mIdx.end()) {				
 					mBins[addrStash].mIdx.emplace_back(inputIdxs[j]);
+					mBins[addrStash].hIdx.emplace_back(mNumHashes[0]+k);
 					//	std::cout << "2----" << inputIdxs[j] << "-" << addrStash << std::endl;
 
 				}

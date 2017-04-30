@@ -38,7 +38,7 @@ namespace osuCrypto
 		NcoOtExtReceiver& otRecv,
         block seed, bool isOtherDirection)
 	{
-		mOpt = opt;
+		
 		mStatSecParam = statSec;
 		mN = setSize;
 		mParties = numParties;
@@ -230,12 +230,27 @@ namespace osuCrypto
 	}
 
 
-	void OPPRFSender::getOPRFKeys(u64 IdxParty, binSet& bins, Channel & chl, bool isOtherDirectionGetOPRF)
+	void OPPRFSender::getOPRFkeys(u64 IdxParty, binSet& bins, Channel & chl, bool isOtherDirectionGetOPRF)
 	{
-		getOPRFKeys(IdxParty, bins,{ &chl }, isOtherDirectionGetOPRF);
+
+		if (bins.mOpt == 0 || bins.mOpt == 1)
+			getOPRFkeysSeperated(IdxParty, bins, { &chl }, isOtherDirectionGetOPRF);
+		else
+			getOPRFkeysCombined(IdxParty, bins, { &chl }, isOtherDirectionGetOPRF);
 	}
 
-	void  OPPRFSender::getOPRFKeys(u64 IdxP, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF)
+	void OPPRFSender::getOPRFkeys(u64 IdxParty, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF)
+	{
+		if (bins.mOpt == 0 || bins.mOpt == 1)
+			getOPRFkeysSeperated(IdxParty, bins, chls, isOtherDirectionGetOPRF);
+		else
+			getOPRFkeysCombined(IdxParty, bins, chls, isOtherDirectionGetOPRF);
+
+	}
+
+
+
+	void  OPPRFSender::getOPRFkeysSeperated(u64 IdxP, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF)
 	{
 		
 		//std::vector<std::thread>  thrds(chls.size());
@@ -323,7 +338,7 @@ namespace osuCrypto
 							bin.mBits[IdxP].init(/*bin.mIdx.size(), */bins.mSimpleBins.mNumBits[1]);
 
 						//Table-based-OPPRF
-						if (mOpt == 0)
+						if (bins.mOpt == 0)
 						{
 							auto start = mTimer.setTimePoint("getPos1.start");
 							bin.mBits[IdxP].getPos1(bin.mValOPRF[IdxP], 128);
@@ -409,52 +424,197 @@ namespace osuCrypto
 			thrd.join();
 	}
 	
+	void  OPPRFSender::getOPRFkeysCombined(u64 IdxP, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF)
+	{
+
+		//std::vector<std::thread>  thrds(chls.size());
+		std::vector<std::thread>  thrds(1);
+
+		gTimer.setTimePoint("online.send.spaw");
+
+
+		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+		{
+			auto seed = mPrng.get<block>();
+			thrds[tIdx] = std::thread([&, tIdx, seed]() {
+
+				PRNG prng(seed);
+
+				if (tIdx == 0) gTimer.setTimePoint("online.send.thrdStart");
+
+
+				auto& chl = *chls[tIdx];
+
+				if (tIdx == 0) gTimer.setTimePoint("online.send.insert");
+				const u64 stepSize = 16;
+
+				std::vector<block> ncoInput(bins.mNcoInputBlkSize);
+
+#if 1
+#pragma region compute Send Bark-OPRF				
+				//####################
+				//#######Sender role
+				//####################
+				auto& otSend = *mOtSends[tIdx];
+				auto otCountSend = bins.mSimpleBins.mBins.size();
+
+				auto binStart = tIdx       * otCountSend / thrds.size();
+				auto binEnd = (tIdx + 1) * otCountSend / thrds.size();
+
+				if (tIdx == 0) gTimer.setTimePoint("online.send.OT");
+
+				for (u64 bIdx = binStart; bIdx < binEnd;)
+				{
+					u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
+					otSend.recvCorrection(chl, currentStepSize);
+
+					for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
+					{
+
+						auto& bin = bins.mSimpleBins.mBins[bIdx];
+						
+
+						if (bin.mIdx.size() > 0)
+						{
+							bin.mValOPRF[IdxP].resize(bin.mIdx.size());
+							//std::cout << "s-" << bIdx << ", ";
+							for (u64 i = 0; i < bin.mIdx.size(); ++i)
+							{
+
+								u64 inputIdx = bin.mIdx[i];
+
+								for (u64 j = 0; j < bins.mNcoInputBlkSize; ++j)
+								{
+									ncoInput[j] = bins.mNcoInputBuff[j][inputIdx];
+								}
+
+								//    block sendMask;
+
+								otSend.encode(
+									bIdx, //each bin has 1 OT
+									ncoInput,
+									bins.mSimpleBins.mOprfs[IdxP][inputIdx][bin.hIdx[i]]);
+								//put oprf by inputIdx
+								std::cout << "------" << bins.mSimpleBins.mOprfs[IdxP][inputIdx][bin.hIdx[i]] << "\n";
+
+								
+							}						
+						}
+					}
+				}
+
+
+				if (tIdx == 0) gTimer.setTimePoint("online.send.otSend.finalOPRF");
+
+#pragma endregion
+#endif
+
+#if 1
+#pragma region compute Recv Bark-OPRF
+
+				//####################
+				//#######Receiver role
+				//####################
+				if (isOtherDirectionGetOPRF) {
+					auto& otRecv = *mOtRecvs[tIdx];
+					auto otCountRecv = bins.mCuckooBins.mBins.size();
+					// get the region of the base OTs that this thread should do.
+					binStart = tIdx       * otCountRecv / thrds.size();
+					binEnd = (tIdx + 1) * otCountRecv / thrds.size();
+
+					for (u64 bIdx = binStart; bIdx < binEnd;)
+					{
+						u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
+
+						for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
+						{
+
+							auto& bin = bins.mCuckooBins.mBins[bIdx];
+
+							if (!bin.isEmpty())
+							{
+								u64 inputIdx = bin.idx();
+
+								for (u64 j = 0; j < ncoInput.size(); ++j)
+									ncoInput[j] = bins.mNcoInputBuff[j][inputIdx];
+
+								otRecv.encode(
+									bIdx,      // input
+									ncoInput,             // input
+									bin.mValOPRF[IdxP]); // output
+
+														 /*if (bIdx < 3 || (bIdx < mN && bIdx > mN-2))
+														 std::cout << "r-" << bIdx << ", " << inputIdx << ": " << valOPRF[inputIdx] << std::endl;*/
+							}
+							else
+							{
+								otRecv.zeroEncode(bIdx);
+							}
+						}
+						otRecv.sendCorrection(chl, currentStepSize);
+					}
+
+					if (tIdx == 0) gTimer.setTimePoint("online.send.otRecv.finalOPRF");
+
+					otRecv.check(chl);
+				}
+#pragma endregion
+#endif
+				otSend.check(chl);
+
+			});
+		}
+
+		for (auto& thrd : thrds)
+			thrd.join();
+	}
+
 
 
 	void OPPRFSender::sendSS(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
 	{
-		if (mOpt == 0)
+		if (bins.mOpt == 0)
 			sendSSTableBased(IdxParty, bins, plaintexts, { &chl });
-		else if (mOpt == 1)
+		else if (bins.mOpt == 1)
 			sendSSPolyBased(IdxParty, bins, plaintexts, { &chl });
-		else if (mOpt == 2)
+		else if (bins.mOpt == 2)
 			sendFullPolyBased(IdxParty, bins, plaintexts, { &chl });
-		else if (mOpt == 3)
+		else if (bins.mOpt == 3)
 			sendBFBased(IdxParty, bins, plaintexts, { &chl });
 	}
 	void OPPRFSender::recvSS(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, Channel & chl)
 	{
-		if (mOpt == 0)
+		if (bins.mOpt == 0)
 			recvSSTableBased(IdxParty, bins, plaintexts, { &chl });
-		else if (mOpt == 1)
+		else if (bins.mOpt == 1)
 			recvSSPolyBased(IdxParty, bins, plaintexts, { &chl });
-		else if (mOpt == 2)
+		else if (bins.mOpt == 2)
 			recvFullPolyBased(IdxParty, bins, plaintexts, { &chl });
-		else if (mOpt == 3)
+		else if (bins.mOpt == 3)
 			recvBFBased(IdxParty, bins, plaintexts, { &chl });
 	}
 
 	void OPPRFSender::sendSS(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 	{
-		if (mOpt == 0)
+		if (bins.mOpt == 0)
 			sendSSTableBased(IdxParty, bins, plaintexts, chls);
-		else if (mOpt == 1)
+		else if (bins.mOpt == 1)
 			sendSSPolyBased(IdxParty, bins, plaintexts, chls);
-		else if (mOpt == 2)
+		else if (bins.mOpt == 2)
 			sendFullPolyBased(IdxParty, bins, plaintexts, chls);
-		else if (mOpt == 3)
+		else if (bins.mOpt == 3)
 			sendBFBased(IdxParty, bins, plaintexts, chls);
 	}
 
 	void OPPRFSender::recvSS(u64 IdxParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 	{
-		if (mOpt == 0)
+		if (bins.mOpt == 0)
 			recvSSTableBased(IdxParty, bins, plaintexts, chls);
-		else if (mOpt == 1)
+		else if (bins.mOpt == 1)
 			recvSSPolyBased(IdxParty, bins, plaintexts, chls); // gf2x is not thread safe =>USING 1 thread
-		else if (mOpt == 2)
+		else if (bins.mOpt == 2)
 			recvFullPolyBased(IdxParty, bins, plaintexts, chls);// gf2x is not thread safe =>USING 1 thread
-		else if (mOpt == 3)
+		else if (bins.mOpt == 3)
 			recvBFBased(IdxParty, bins, plaintexts, chls);
 	}
 

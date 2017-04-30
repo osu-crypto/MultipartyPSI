@@ -41,19 +41,22 @@ namespace osuCrypto
 		struct Bin
 		{
 			std::vector<u64> mIdx; //have many items in the bin
+			//hash index used for mIdx. Only use when combined hints
+			//one can think mIdx and hIdx as a pair <mIdx,hIdx>....
+			std::vector<u64> hIdx;			
 			std::vector<BaseOPPRF> mBits;//mBits[IdxParty]
 			std::vector<std::vector<block>> mValOPRF; //mValOPRF[IdxParty][mIdx]
 		};
 		u64  mRepSize, mInputBitSize, mN;
 		u64 mBinCount[2], mMaxBinSize[2], mNumHashes[2], mNumBits[2];
 
-	
-
+		//mOpprfs[IdxParty][inputIdx][hIdx]
+		std::vector<std::vector<std::vector<block>>> mOprfs; 
         std::unique_ptr<std::mutex[]> mMtx;
         std::vector<Bin> mBins;
         block mHashSeed;
 		SimpleParam1 mParams;
-        void print(u64 idxParty, bool isIdx, bool isOPRF, bool isMap, bool isPos) const;
+        void print(u64 idxParty, bool isIdx, bool isOPRF, bool isMap, bool isPos, u64 opt=0) const;
 
         void init(u64 n,u64 opt);
 

@@ -21,8 +21,7 @@ namespace osuCrypto
         OPPRFSender();
         ~OPPRFSender();
 
-		u32 mOpt=0;
-        u64 mN, mParties, mStatSecParam, mNcoInputBlkSize,  mOtMsgBlkSize;
+		u64 mN, mParties, mStatSecParam, mNcoInputBlkSize,  mOtMsgBlkSize;
         block mHashingSeed;
 		//SimpleHasher1 mSimpleBins;
 		//CuckooHasher1 mCuckooBins;
@@ -55,8 +54,14 @@ namespace osuCrypto
 			NcoOtExtReceiver& otRecv,
             block seed, bool isOtherDirection=true);
 
-		void getOPRFKeys( u64 IdxTheirParty, binSet& bins, Channel& chl, bool isOtherDirectionGetOPRF=true);
-		void getOPRFKeys(u64 IdxTheirParty, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF = true);
+		void getOPRFkeys(u64 IdxTheirParty, binSet& bins, Channel& chl, bool isOtherDirectionGetOPRF = true);
+		
+
+		void getOPRFkeys(u64 IdxTheirParty, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF = false);
+
+		void getOPRFkeysSeperated(u64 IdxTheirParty, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF = false);
+		
+		void getOPRFkeysCombined(u64 IdxTheirParty, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF = false);
 
 		void sendSS(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
 		void recvSS(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, Channel& chl);
