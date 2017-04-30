@@ -334,19 +334,27 @@ namespace osuCrypto
 
 	//#################POLYNOMIAL
 
-	void BaseOPPRF::poly_init() {
-		NTL::BuildIrred(mGf2x,128);
+	void BaseOPPRF::poly_init(u64 numBytes) {
+		std::cout << "numBytes" << numBytes << "\n";
+		mGf2x.~GF2X();
+		mNumBytes = numBytes;
+		NTL::BuildIrred(mGf2x, numBytes*8);
 		NTL::GF2E::init(mGf2x);
+		
 	}
 
-	void BaseOPPRF::GF2EFromBlock(NTL::GF2E &element, block& blk) {
+	/*void BaseOPPRF::reset() {
+		mGf2x.~GF2X();
+	}*/
+
+	void BaseOPPRF::GF2EFromBlock(NTL::GF2E &element, block& blk,u64 size) {
 
 		//NTL::GF2X x1;
 		
 		//x1=NTL::BuildSparseIrred_GF2X(128);
 		//NTL::GF2E::init(x1);
 		//convert the Block to GF2X element.
-		NTL::GF2XFromBytes(mGf2x, (u8*)&blk, sizeof(block));
+		NTL::GF2XFromBytes(mGf2x, (u8*)&blk, size);
 
 		//TODO("remove this hack, get NTL thread safe");
 		element = to_GF2E(mGf2x);
@@ -354,11 +362,13 @@ namespace osuCrypto
 
 	}
 
-	void BaseOPPRF::BlockFromGF2E(block& blk, NTL::GF2E & element) {
+	void BaseOPPRF::BlockFromGF2E(block& blk, NTL::GF2E & element,u64 size) {	
+		
+
 		//Get the bytes of the random element.
 		NTL::GF2X fromEl = NTL::rep(element); //convert the GF2E element to GF2X element.	
 											  //the function rep returns the representation of GF2E as the related GF2X, it returns as read only.
-		BytesFromGF2X((u8*)&blk, fromEl, sizeof(block));
+		BytesFromGF2X((u8*)&blk, fromEl, size);
 	}
 
 
@@ -376,7 +386,7 @@ namespace osuCrypto
 		for (int i = 0; i < coeffs.size(); i++) {
 			//get the coefficient polynomial
 			e = NTL::coeff(polynomial, i);
-			BlockFromGF2E(coeffs[i], e);
+			BlockFromGF2E(coeffs[i], e, mNumBytes);
 		}
 	}
 
@@ -395,10 +405,10 @@ namespace osuCrypto
 		//	Log::out << "setY[" << i << "]: " << setX[i] << Log::endl;
 
 
-			GF2EFromBlock(e, setX[i]);
+			GF2EFromBlock(e, setX[i],mNumBytes);
 			x.append(e);
 
-			GF2EFromBlock(e, setY[i]);
+			GF2EFromBlock(e, setY[i], mNumBytes);
 			y.append(e);
 		}
 
@@ -449,24 +459,24 @@ namespace osuCrypto
 	//	dummy_polynomial.~GF2EX();
 	//	root_polynomial.~GF2EX();
 
-		 for (u64 i = 0; i < setX.size(); ++i)
-		 {
-			 NTL::GF2E e1 = NTL::eval(polynomial, x[i]); //get y=f(x) in GF2E
-			 if (e1 != y[i])
-				 throw std::runtime_error(LOCATION);
-			// else
-			//	 std::cout << "ok" << std::endl;
-		 }
+		 //for (u64 i = 0; i < setX.size(); ++i)
+		 //{
+			// NTL::GF2E e1 = NTL::eval(polynomial, x[i]); //get y=f(x) in GF2E
+			// if (e1 != y[i])
+			//	 throw std::runtime_error(LOCATION);
+			//// else
+			////	 std::cout << "ok" << std::endl;
+		 //}
 
 		 
-		 std::cout << NTL::deg(polynomial) << std::endl;
+		 //std::cout << NTL::deg(polynomial) << std::endl;
 
 		////convert coefficient to vector<block> 
 		coeffs.resize(NTL::deg(polynomial) + 1);
 		for (int i = 0; i < coeffs.size(); i++) {
 			//get the coefficient polynomial
 			e = NTL::coeff(polynomial, i);
-			BlockFromGF2E(coeffs[i], e);
+			BlockFromGF2E(coeffs[i], e, mNumBytes);
 		}
 	}
 
@@ -478,13 +488,13 @@ namespace osuCrypto
 		//std::cout << coeffs.size() << std::endl;
 		for (u64 i = 0; i < coeffs.size(); ++i)
 		{
-			GF2EFromBlock(e, coeffs[i]);
+			GF2EFromBlock(e, coeffs[i], mNumBytes);
 			NTL::SetCoeff(res_polynomial, i, e); //build res_polynomial
 		}
 
-		GF2EFromBlock(e, x);
+		GF2EFromBlock(e, x, mNumBytes);
 		e = NTL::eval(res_polynomial, e); //get y=f(x) in GF2E
-		BlockFromGF2E(y, e); //convert to block 
+		BlockFromGF2E(y, e, mNumBytes); //convert to block 
 	}
 
 	NTL::GF2EX BaseOPPRF::buildPolynomial(std::vector<block>& coeffs)
@@ -494,14 +504,11 @@ namespace osuCrypto
 		//std::cout << coeffs.size() << std::endl;
 		for (u64 i = 0; i < coeffs.size(); ++i)
 		{
-			GF2EFromBlock(e, coeffs[i]);
+			GF2EFromBlock(e, coeffs[i], mNumBytes);
 			NTL::SetCoeff(res_polynomial, i, e); //build res_polynomial
 		}
 		return res_polynomial;		
 	}
-
-
-
 }
 
 //void BaseOPPRF::findPos(std::vector<block>& codewords) {

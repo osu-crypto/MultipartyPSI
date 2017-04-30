@@ -46,8 +46,9 @@ namespace osuCrypto
 		int midIdx(std::vector<block>& codewords, int length);
 
 		NTL::GF2X mGf2x;
+		u64 mNumBytes;
 
-		void poly_init();
+		void poly_init(u64 numBytes);
 
 		//void findPos(std::vector<block>& codewords);
 		//int isSet(block& codeword, int pos);
@@ -55,8 +56,8 @@ namespace osuCrypto
 		//bool TestBitN(__m128i value, int N);
 
 		//#################POLYNOMIAL
-		void GF2EFromBlock(NTL::GF2E &element, block& blk);
-		void BlockFromGF2E(block& blk, NTL::GF2E & element);
+		void GF2EFromBlock(NTL::GF2E &element, block& blk, u64 size);
+		void BlockFromGF2E(block& blk, NTL::GF2E & element, u64 size);
 		//computes coefficients (in blocks) of f such that f(x[i]) = y[i]
 		void getBlkCoefficients(NTL::vec_GF2E& setX, NTL::vec_GF2E& setY, std::vector<block>& coeffs);
 

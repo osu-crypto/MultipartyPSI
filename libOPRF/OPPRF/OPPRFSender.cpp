@@ -465,14 +465,6 @@ namespace osuCrypto
 		if (plaintexts.size() != mN)
 			throw std::runtime_error(LOCATION);
 
-
-		//TODO: double check
-	//	u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-		u64 maskSize =roundUpTo(mStatSecParam + 2 * std::log(mN) - 1 + bins.mSimpleBins.mNumBits[1], 8) / 8;
-		//u64 maskSize = 7;
-		if (maskSize > sizeof(block))
-			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
-
 		std::vector<std::thread>  thrds(chls.size());
 		// std::vector<std::thread>  thrds(1);        
 
@@ -500,6 +492,9 @@ namespace osuCrypto
 				//2 type of bins: normal bin in inital step + stash bin
 				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
 				{
+					bins.mMaskSize = roundUpTo(mStatSecParam + std::log(bins.mSimpleBins.mNumBits[bIdxType]), 8) / 8;
+
+
 					auto binCountSend = bins.mSimpleBins.mBinCount[bIdxType];
 					u64 binStart, binEnd;
 					if (bIdxType == 0)
@@ -519,8 +514,8 @@ namespace osuCrypto
 					{
 						u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
 						uPtr<Buff> sendMaskBuff(new Buff);
-						sendMaskBuff->resize(currentStepSize * (bins.mSimpleBins.mMaxBinSize[bIdxType] * maskSize + bins.mSimpleBins.mNumBits[bIdxType] * sizeof(u8)));
-						auto maskView = sendMaskBuff->getMatrixView<u8>(bins.mSimpleBins.mMaxBinSize[bIdxType] * maskSize + bins.mSimpleBins.mNumBits[bIdxType] * sizeof(u8));
+						sendMaskBuff->resize(currentStepSize * (bins.mSimpleBins.mMaxBinSize[bIdxType] * bins.mMaskSize + bins.mSimpleBins.mNumBits[bIdxType] * sizeof(u8)));
+						auto maskView = sendMaskBuff->getMatrixView<u8>(bins.mSimpleBins.mMaxBinSize[bIdxType] * bins.mMaskSize + bins.mSimpleBins.mNumBits[bIdxType] * sizeof(u8));
 
 						for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
 						{
@@ -565,12 +560,12 @@ namespace osuCrypto
 									//Log::out << "    c_OPRF=" << encr;
 									//Log::out << "    c_Map=" << static_cast<int16_t>(bin.mBits.mMaps[i]);
 
-									MaskIdx = bin.mBits[IdxP].mMaps[i] * maskSize + bins.mSimpleBins.mNumBits[bIdxType];
+									MaskIdx = bin.mBits[IdxP].mMaps[i] * bins.mMaskSize + bins.mSimpleBins.mNumBits[bIdxType];
 
 									memcpy(
 										maskView[baseMaskIdx].data() + MaskIdx,
 										(u8*)&encr,
-										maskSize);
+										bins.mMaskSize);
 
 									//	Log::out << Log::endl;
 								}
@@ -583,12 +578,12 @@ namespace osuCrypto
 								{
 									if (std::find(bin.mBits[IdxP].mMaps.begin(), bin.mBits[IdxP].mMaps.end(), i) == bin.mBits[IdxP].mMaps.end())
 									{
-										MaskIdx = i* maskSize + bins.mSimpleBins.mNumBits[bIdxType];
+										MaskIdx = i* bins.mMaskSize + bins.mSimpleBins.mNumBits[bIdxType];
 										//	Log::out << "    cc_Map=" << i << Log::endl;
 										memcpy(
 											maskView[baseMaskIdx].data() + MaskIdx,
 											(u8*)&ZeroBlock,  //make randome
-											maskSize);
+											bins.mMaskSize);
 									}
 								}
 							}
@@ -612,12 +607,12 @@ namespace osuCrypto
 
 								for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
 								{
-										MaskIdx = i* maskSize + bins.mSimpleBins.mNumBits[bIdxType];
+										MaskIdx = i* bins.mMaskSize + bins.mSimpleBins.mNumBits[bIdxType];
 										//	Log::out << "    cc_Map=" << i << Log::endl;
 										memcpy(
 											maskView[baseMaskIdx].data() + MaskIdx,
 											(u8*)&ZeroBlock,  //make randome
-											maskSize);
+											bins.mMaskSize);
 		
 								}
 							
@@ -678,21 +673,12 @@ namespace osuCrypto
 	{
 		if (plaintexts.size() != mN)
 			throw std::runtime_error(LOCATION);
-
-
-		//TODO: double check
-		//	u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-		u64 maskSize = sizeof(block);
-		//u64 maskSize = 7;
-		if (maskSize > sizeof(block))
-			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
-
+		
 		std::vector<std::thread>  thrds(chls.size());
 		// std::vector<std::thread>  thrds(1);        
 
 		BaseOPPRF mPoly;
-		mPoly.poly_init();
-
+		
 		std::mutex mtx;
 		NTL::vec_GF2E x; NTL::vec_GF2E y;
 		NTL::GF2E e;
@@ -716,20 +702,29 @@ namespace osuCrypto
 				if (tIdx == 0) gTimer.setTimePoint("online.send.sendShare");
 
 				//2 type of bins: normal bin in inital step + stash bin
+
+				bins.mMaskSize = roundUpTo(mStatSecParam + std::log(bins.mSimpleBins.mMaxBinSize[1]) - 1, 8) / 8;
+				mPoly.poly_init(bins.mMaskSize);
+
 				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
 				{
+					
+
 					auto binCountSend = bins.mSimpleBins.mBinCount[bIdxType];
 					u64 binStart, binEnd;
 					if (bIdxType == 0)
 					{
 						binStart = tIdx       * binCountSend / thrds.size();
 						binEnd = (tIdx + 1) * binCountSend / thrds.size();
+
 					}
 					else
 					{
 						binStart = tIdx       * binCountSend / thrds.size() + bins.mSimpleBins.mBinCount[0];
 						binEnd = (tIdx + 1) * binCountSend / thrds.size() + bins.mSimpleBins.mBinCount[0];
+
 					}
+
 
 					if (tIdx == 0) gTimer.setTimePoint("online.send.masks.init.step");
 
@@ -737,8 +732,8 @@ namespace osuCrypto
 					{
 						u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
 						uPtr<Buff> sendMaskBuff(new Buff);
-						sendMaskBuff->resize(currentStepSize * (bins.mSimpleBins.mMaxBinSize[bIdxType] * maskSize));
-						auto maskView = sendMaskBuff->getMatrixView<u8>(bins.mSimpleBins.mMaxBinSize[bIdxType] * maskSize);
+						sendMaskBuff->resize(currentStepSize * (bins.mSimpleBins.mMaxBinSize[bIdxType] * bins.mMaskSize));
+						auto maskView = sendMaskBuff->getMatrixView<u8>(bins.mSimpleBins.mMaxBinSize[bIdxType] * bins.mMaskSize);
 
 						for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
 						{
@@ -788,10 +783,10 @@ namespace osuCrypto
 								for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
 								{									
 									memcpy(
-										maskView[baseMaskIdx].data()+ i* maskSize,
+										maskView[baseMaskIdx].data()+ i* bins.mMaskSize,
 										(u8*)&coeffs[i],  //make randome
 									//	(u8*)&ZeroBlock,  //make randome
-										maskSize);
+										bins.mMaskSize);
 								}
 
 							}
@@ -800,9 +795,9 @@ namespace osuCrypto
 								for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
 								{								
 									memcpy(
-										maskView[baseMaskIdx].data() + i* maskSize,
+										maskView[baseMaskIdx].data() + i* bins.mMaskSize,
 										(u8*)&ZeroBlock,  //make randome
-										maskSize);
+										bins.mMaskSize);
 								}
 							}
 						}
@@ -860,12 +855,9 @@ namespace osuCrypto
 		if (plaintexts.size() != mN)
 			throw std::runtime_error(LOCATION);
 
+		bins.mMaskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) + std::log(bins.mSimpleBins.mNumHashes[0] + bins.mSimpleBins.mNumHashes[1]) - 1, 8) / 8;
 
-		//TODO: double check
-		//	u64 maskSize = sizeof(block);//roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-		u64 maskSize = sizeof(block);
-		//u64 maskSize = 7;
-		if (maskSize > sizeof(block))
+		if (bins.mMaskSize > sizeof(block))
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
 		std::vector<std::thread>  thrds(chls.size());
@@ -876,7 +868,7 @@ namespace osuCrypto
 		u64 size_vec_GF2E_X = 0;
 		NTL::GF2E e;
 		BaseOPPRF base_poly;
-		base_poly.poly_init();
+		base_poly.poly_init(bins.mMaskSize);
 
 		gTimer.setTimePoint("online.send.spaw");
 
@@ -937,12 +929,12 @@ namespace osuCrypto
 									//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
 									
 									block y = plaintexts[inputIdx] ^ bin.mValOPRF[IdxP][i];
-									base_poly.GF2EFromBlock(e, y);
+									base_poly.GF2EFromBlock(e, y, bins.mMaskSize);
 
 									//TODO: current test is single thread, make safe when running multi-thread
 									vec_GF2E_Y.append(e);
 
-									base_poly.GF2EFromBlock(e, bin.mValOPRF[IdxP][i]);
+									base_poly.GF2EFromBlock(e, bin.mValOPRF[IdxP][i], bins.mMaskSize);
 
 									//TODO: current test is single thread, make safe when running multi-thread
 									vec_GF2E_X.append(e);
@@ -997,8 +989,8 @@ namespace osuCrypto
 
 
 		uPtr<Buff> sendMaskBuff(new Buff);
-		sendMaskBuff->resize(totalMask* maskSize);
-		auto maskView = sendMaskBuff->getMatrixView<u8>(totalMask * maskSize);
+		sendMaskBuff->resize(totalMask* bins.mMaskSize);
+		auto maskView = sendMaskBuff->getMatrixView<u8>(totalMask * bins.mMaskSize);
 
 #if 1
 		
@@ -1006,10 +998,10 @@ namespace osuCrypto
 		for (u64 i = 0; i < coeffs.size(); ++i)
 		{
 			memcpy(
-				maskView[0].data() + i* maskSize,
+				maskView[0].data() + i* bins.mMaskSize,
 				(u8*)&coeffs[i],  //make randome
 								  //(u8*)&ZeroBlock,  //make randome
-				maskSize);
+				bins.mMaskSize);
 		}
 			std::cout << "s[" <<IdxP<<"]-coeffs[3]" << coeffs[3] << "\n";
 
@@ -1192,530 +1184,493 @@ namespace osuCrypto
 
 			}
 
-
-
-	void OPPRFSender::recvSSTableBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
-	{
-
-		// this is the online phase.
-		gTimer.setTimePoint("online.recv.start");
-
-		//u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-		u64 maskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1 + bins.mSimpleBins.mNumBits[1], 8) / 8;
-		if (maskSize > sizeof(block))
-			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
-
-
-		std::vector<std::thread>  thrds(chls.size());
-		// this mutex is used to guard inserting things into the intersection vector.
-		std::mutex mInsertMtx;
-
-		// fr each thread, spawn it.
-		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
-		{
-			auto seed = mPrng.get<block>();
-			thrds[tIdx] = std::thread([&, tIdx, seed]()
+			void OPPRFSender::recvSSTableBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 			{
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
-				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
+				// this is the online phase.
+				gTimer.setTimePoint("online.recv.start");
 
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
 
-				//2 type of bins: normal bin in inital step + stash bin
-				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
+
+
+				std::vector<std::thread>  thrds(chls.size());
+				// this mutex is used to guard inserting things into the intersection vector.
+				std::mutex mInsertMtx;
+
+				// fr each thread, spawn it.
+				for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
 				{
-					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
-
-					u64 binStart, binEnd;
-					if (bIdxType == 0)
+					auto seed = mPrng.get<block>();
+					thrds[tIdx] = std::thread([&, tIdx, seed]()
 					{
-						binStart = tIdx       * binCountRecv / thrds.size();
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size();
-					}
-					else
-					{
-						binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-					}
+						if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
+						auto& chl = *chls[tIdx];
+						const u64 stepSize = 16;
 
+						if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
 
-					//use the params of the simple hashing as their params
-					u64 mTheirBins_mMaxBinSize = bins.mSimpleBins.mMaxBinSize[bIdxType];
-					u64 mTheirBins_mNumBits = bins.mSimpleBins.mNumBits[bIdxType];
-					for (u64 bIdx = binStart; bIdx < binEnd;)
-					{
-						u64 curStepSize = std::min(stepSize, binEnd - bIdx);
-
-						MatrixView<u8> maskView;
-						ByteStream maskBuffer;
-						chl.recv(maskBuffer);
-						//maskView = maskBuffer.getMatrixView<u8>(mTheirBins_mMaxBinSize * maskSize + mTheirBins_mNumBits * sizeof(u8));
-						maskView = maskBuffer.getMatrixView<u8>(mTheirBins_mMaxBinSize * maskSize + mTheirBins_mNumBits * sizeof(u8));
-						if (maskView.size()[0] != curStepSize)
-							throw std::runtime_error("size not expedted");
-
-						for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
+						//2 type of bins: normal bin in inital step + stash bin
+						for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
 						{
+							auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
+							bins.mMaskSize = roundUpTo(mStatSecParam + std::log(bins.mSimpleBins.mNumBits[bIdxType]), 8) / 8;
 
-							auto& bin = bins.mCuckooBins.mBins[bIdx];
-							if (!bin.isEmpty())
+
+							u64 binStart, binEnd;
+							if (bIdxType == 0)
 							{
-								u64 baseMaskIdx = stepIdx;
-								auto mask = maskView[baseMaskIdx];
-								BaseOPPRF b;
-								b.mMaxBitSize = mTheirBins_mNumBits;
-								for (u64 i = 0; i < b.mMaxBitSize; i++)
+								binStart = tIdx       * binCountRecv / thrds.size();
+								binEnd = (tIdx + 1) * binCountRecv / thrds.size();
+							}
+							else
+							{
+								binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+								binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+							}
+
+
+
+							//use the params of the simple hashing as their params
+							u64 mTheirBins_mMaxBinSize = bins.mSimpleBins.mMaxBinSize[bIdxType];
+							u64 mTheirBins_mNumBits = bins.mSimpleBins.mNumBits[bIdxType];
+							for (u64 bIdx = binStart; bIdx < binEnd;)
+							{
+								u64 curStepSize = std::min(stepSize, binEnd - bIdx);
+
+								MatrixView<u8> maskView;
+								ByteStream maskBuffer;
+								chl.recv(maskBuffer);
+								//maskView = maskBuffer.getMatrixView<u8>(mTheirBins_mMaxBinSize * mMaskSize + mTheirBins_mNumBits * sizeof(u8));
+								maskView = maskBuffer.getMatrixView<u8>(mTheirBins_mMaxBinSize * bins.mMaskSize + mTheirBins_mNumBits * sizeof(u8));
+								if (maskView.size()[0] != curStepSize)
+									throw std::runtime_error("size not expedted");
+
+								for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
 								{
-									int idxPos = 0;
-									memcpy(&idxPos, maskView[baseMaskIdx].data() + i, sizeof(u8));
-									b.mPos.push_back(idxPos);
-								}
+
+									auto& bin = bins.mCuckooBins.mBins[bIdx];
+									if (!bin.isEmpty())
+									{
+										u64 baseMaskIdx = stepIdx;
+										auto mask = maskView[baseMaskIdx];
+										BaseOPPRF b;
+										b.mMaxBitSize = mTheirBins_mNumBits;
+										for (u64 i = 0; i < b.mMaxBitSize; i++)
+										{
+											int idxPos = 0;
+											memcpy(&idxPos, maskView[baseMaskIdx].data() + i, sizeof(u8));
+											b.mPos.push_back(idxPos);
+										}
 #ifdef PRINT
-								Log::out << "RBin #" << bIdx << Log::endl;
-								Log::out << "    cc_mPos= ";
-								for (u64 idxPos = 0; idxPos < b.mPos.size(); idxPos++)
-								{
-									Log::out << static_cast<int16_t>(b.mPos[idxPos]) << " ";
-								}
-								Log::out << Log::endl;
+										Log::out << "RBin #" << bIdx << Log::endl;
+										Log::out << "    cc_mPos= ";
+										for (u64 idxPos = 0; idxPos < b.mPos.size(); idxPos++)
+										{
+											Log::out << static_cast<int16_t>(b.mPos[idxPos]) << " ";
+										}
+										Log::out << Log::endl;
 #endif
-								u64 inputIdx = bin.idx();
-								auto myMask = bin.mValOPRF[IdxP];
-								//	u8 myMaskPos = 0;
-								b.getMask(myMask, bin.mValMap[IdxP]);
+										u64 inputIdx = bin.idx();
+										auto myMask = bin.mValOPRF[IdxP];
+										//	u8 myMaskPos = 0;
+										b.getMask(myMask, bin.mValMap[IdxP]);
 
-								u64	MaskIdx = bin.mValMap[IdxP] * maskSize + mTheirBins_mNumBits;
+										u64	MaskIdx = bin.mValMap[IdxP] * bins.mMaskSize + mTheirBins_mNumBits;
 
-								auto theirMask = ZeroBlock;
-								memcpy(&theirMask, maskView[baseMaskIdx].data() + MaskIdx, maskSize);
+										auto theirMask = ZeroBlock;
+										memcpy(&theirMask, maskView[baseMaskIdx].data() + MaskIdx, bins.mMaskSize);
 
-								//if (!memcmp((u8*)&myMask, &theirMask, maskSize))
-								//{
-								//Log::out << "inputIdx: " << inputIdx << Log::endl;
-								//	Log::out << "myMask: " << myMask << Log::endl;
-								//Log::out << "theirMask: " << theirMask << " " << Log::endl;
+										//if (!memcmp((u8*)&myMask, &theirMask, mMaskSize))
+										//{
+										//Log::out << "inputIdx: " << inputIdx << Log::endl;
+										//	Log::out << "myMask: " << myMask << Log::endl;
+										//Log::out << "theirMask: " << theirMask << " " << Log::endl;		
+
+										plaintexts[inputIdx] = myMask^theirMask;
 
 
-								plaintexts[inputIdx] = myMask^theirMask;
-
-
-								//}
+										//}
+									}
+								}
 							}
 						}
-					}
+
+
+					});
+					//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
 				}
+				// join the threads.
+				for (auto& thrd : thrds)
+					thrd.join();
 
-
-			});
-			//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
-		}
-		// join the threads.
-		for (auto& thrd : thrds)
-			thrd.join();
-
-		// check that the number of inputs is as expected.
-		if (plaintexts.size() != mN)
-			throw std::runtime_error(LOCATION);
+				// check that the number of inputs is as expected.
+				if (plaintexts.size() != mN)
+					throw std::runtime_error(LOCATION);
 
 
 
-	}
-	void OPPRFSender::recvSSPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
-	{
-
-		// this is the online phase.
-		gTimer.setTimePoint("online.recv.start");
-
-		//u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-		u64 maskSize = sizeof(block);
-
-		if (maskSize > sizeof(block))
-			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
-
-
-		std::vector<std::thread>  thrds(chls.size());
-		// this mutex is used to guard inserting things into the intersection vector.
-		std::mutex mInsertMtx;
-
-		// fr each thread, spawn it.
-		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
-		{
-			auto seed = mPrng.get<block>();
-			thrds[tIdx] = std::thread([&, tIdx, seed]()
+			}
+			void OPPRFSender::recvSSPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 			{
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
-				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
+				// this is the online phase.
+				gTimer.setTimePoint("online.recv.start");
 
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
 
-				//2 type of bins: normal bin in inital step + stash bin
-				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
+				std::vector<std::thread>  thrds(chls.size());
+				// this mutex is used to guard inserting things into the intersection vector.
+				std::mutex mInsertMtx;
+
+				BaseOPPRF poly;
+
+
+				// fr each thread, spawn it.
+				for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
 				{
-					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
-
-					u64 binStart, binEnd;
-					if (bIdxType == 0)
+					auto seed = mPrng.get<block>();
+					thrds[tIdx] = std::thread([&, tIdx, seed]()
 					{
-						binStart = tIdx       * binCountRecv / thrds.size();
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size();
-					}
-					else
-					{
-						binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-					}
-					//use the params of the simple hashing as their params
-					u64 mTheirBins_mMaxBinSize = bins.mSimpleBins.mMaxBinSize[bIdxType];
+						if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
-					for (u64 bIdx = binStart; bIdx < binEnd;)
-					{
-						u64 curStepSize = std::min(stepSize, binEnd - bIdx);
+						auto& chl = *chls[tIdx];
+						const u64 stepSize = 16;
 
-						MatrixView<block> maskView;
-						ByteStream maskBuffer;
-						chl.recv(maskBuffer);
+						if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
 
-						maskView = maskBuffer.getMatrixView<block>(mTheirBins_mMaxBinSize);
-
-						if (maskView.size()[0] != curStepSize)
-							throw std::runtime_error("size not expedted");
-
-						for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
+						//2 type of bins: normal bin in inital step + stash bin
+						bins.mMaskSize = roundUpTo(mStatSecParam + std::log(bins.mSimpleBins.mMaxBinSize[1]) - 1, 8) / 8;
+						poly.poly_init(bins.mMaskSize);
+						for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
 						{
+							auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
 
-							auto& bin = bins.mCuckooBins.mBins[bIdx];
-							if (!bin.isEmpty())
+
+
+							u64 binStart, binEnd;
+							if (bIdxType == 0)
 							{
-								bin.mCoeffs[IdxP].resize(mTheirBins_mMaxBinSize);
+								binStart = tIdx       * binCountRecv / thrds.size();
+								binEnd = (tIdx + 1) * binCountRecv / thrds.size();
+							}
+							else
+							{
+								binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+								binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
 
-								u64 baseMaskIdx = stepIdx;
+							}
 
-								u64 inputIdx = bin.idx();
 
-								//compute p(x*)
 
-								for (u64 i = 0; i < mTheirBins_mMaxBinSize; i++)
+							//use the params of the simple hashing as their params
+							u64 mTheirBins_mMaxBinSize = bins.mSimpleBins.mMaxBinSize[bIdxType];
+
+							for (u64 bIdx = binStart; bIdx < binEnd;)
+							{
+								u64 curStepSize = std::min(stepSize, binEnd - bIdx);
+
+								MatrixView<u8> maskView;
+								ByteStream maskBuffer;
+								chl.recv(maskBuffer);
+
+								maskView = maskBuffer.getMatrixView<u8>(mTheirBins_mMaxBinSize*bins.mMaskSize);
+
+								if (maskView.size()[0] != curStepSize)
+									throw std::runtime_error("size not expedted");
+
+								for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
 								{
-									memcpy(&bin.mCoeffs[IdxP][i], maskView[baseMaskIdx].data() + i, sizeof(block));
 
-									if (bIdx == 0)
+									auto& bin = bins.mCuckooBins.mBins[bIdx];
+									if (!bin.isEmpty())
 									{
-										//	Log::out << "r-coeffs[" << i << "] #" << bin.mCoeffs[IdxP][i] << Log::endl;
+										bin.mCoeffs[IdxP].resize(mTheirBins_mMaxBinSize);
+
+										u64 baseMaskIdx = stepIdx;
+
+										u64 inputIdx = bin.idx();
+
+										//compute p(x*)
+
+										for (u64 i = 0; i < mTheirBins_mMaxBinSize; i++)
+										{
+											memcpy(&bin.mCoeffs[IdxP][i], maskView[baseMaskIdx].data() + i*bins.mMaskSize, bins.mMaskSize);
+
+											if (bIdx == 0 && i == 3)
+											{
+												Log::out << "r[" << IdxP << "]-coeffs[" << i << "] #" << bin.mCoeffs[IdxP][i] << Log::endl;
+
+											}
+										}
+
+										block blkY;
+										poly.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
+
+										plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
+
+										/*if (bIdx == 0)
+										{
+										std::cout << "r["<<IdxP<<"]-bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
+										std::cout << "-----------" << blkY << std::endl;
+										}*/
 
 									}
 								}
-
-								//TODO{ "can't call eval poly here..." };
 							}
 						}
-					}
+
+
+					});
+					//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
 				}
+				// join the threads.
+				for (auto& thrd : thrds)
+					thrd.join();
+
+				// check that the number of inputs is as expected.
+				//if (plaintexts.size() != mN)
+				//	throw std::runtime_error(LOCATION);
 
 
-			});
-			//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
-		}
-		// join the threads.
-		for (auto& thrd : thrds)
-			thrd.join();
-
-		// check that the number of inputs is as expected.
-		//if (plaintexts.size() != mN)
-		//	throw std::runtime_error(LOCATION);
-
-
-		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
-		{
-			auto seed = mPrng.get<block>();
-			thrds[tIdx] = std::thread([&, tIdx, seed]()
+			}
+			void OPPRFSender::recvFullPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 			{
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
-				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
+				// this is the online phase.
+				gTimer.setTimePoint("online.recv.start");
 
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
 
-				//2 type of bins: normal bin in inital step + stash bin
-				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
+
+				bins.mMaskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) + std::log(bins.mSimpleBins.mNumHashes[0] + bins.mSimpleBins.mNumHashes[1]) - 1, 8) / 8;
+
+				if (bins.mMaskSize > sizeof(block))
+					throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
+
+
+				std::vector<std::thread>  thrds(chls.size());
+				// this mutex is used to guard inserting things into the intersection vector.
+				std::mutex mInsertMtx;
+
+				auto& chl = *chls[0];
+
+				ByteStream maskBuffer;
+				chl.recv(maskBuffer);
+				BaseOPPRF b;
+				b.poly_init(bins.mMaskSize);
+				NTL::GF2E e;
+				NTL::GF2EX polynomial;
+
+				auto maskView = maskBuffer.getMatrixView<u8>(bins.mMaskSize);
+
+				//std::cout << "maskView.size()" << maskView.size() << "\n";
+				//std::cout << "totalMask: " << totalMask << "\n";
+
+				//std::cout << "\nr[" << IdxP << "]-coeffs[3]" << maskView[3] << "\n";
+
+				block blkCoff;
+				for (u64 i = 0; i < maskView.size()[0]; ++i)
 				{
-					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
 
-					u64 binStart, binEnd;
-					if (bIdxType == 0)
-					{
-						binStart = tIdx       * binCountRecv / thrds.size();
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size();
-					}
-					else
-					{
-						binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-					}
-
-
-					for (u64 bIdx = binStart; bIdx < binEnd;)
-					{
-						u64 curStepSize = std::min(stepSize, binEnd - bIdx);
-
-						for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
-						{
-							auto& bin = bins.mCuckooBins.mBins[bIdx];
-							if (!bin.isEmpty())
-							{
-								u64 inputIdx = bin.idx();
-								block blkY;
-								BaseOPPRF b;
-								b.evalPolynomial(bin.mCoeffs[IdxP], bin.mValOPRF[IdxP], blkY);
-
-								if (bIdx == 0)
-								{
-									std::cout << "r bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
-									std::cout << "-----------" << blkY << std::endl;
-								}
-								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
-							}
-						}
-					}
+					memcpy(&blkCoff, maskView[i].data(), bins.mMaskSize);
+					if (i == 3)
+						std::cout << "\nr[" << IdxP << "]-coeffs[3]" << blkCoff << "\n";
+					b.GF2EFromBlock(e, blkCoff, bins.mMaskSize);
+					NTL::SetCoeff(polynomial, i, e); //build res_polynomial
 				}
-
-
-			});
-			//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
-		}
-		// join the threads.
-		for (auto& thrd : thrds)
-			thrd.join();
-
-
-	}
-	void OPPRFSender::recvFullPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
-	{
-
-		// this is the online phase.
-		gTimer.setTimePoint("online.recv.start");
-
-		//u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-		u64 maskSize = sizeof(block);
-
-		if (maskSize > sizeof(block))
-			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
-
-
-		std::vector<std::thread>  thrds(chls.size());
-		// this mutex is used to guard inserting things into the intersection vector.
-		std::mutex mInsertMtx;
-
-		auto& chl = *chls[0];
-
-		ByteStream maskBuffer;
-		chl.recv(maskBuffer);
-		BaseOPPRF b;
-		NTL::GF2E e;
-		NTL::GF2EX polynomial;
-
-		auto maskView = maskBuffer.getArrayView<block>();
-
-		//std::cout << "maskView.size()" << maskView.size() << "\n";
-		//std::cout << "totalMask: " << totalMask << "\n";
-
-		std::cout << "\nr[" << IdxP << "]-coeffs[3]" << maskView[3] << "\n";
-
-
-		for (u64 i = 0; i < maskView.size(); ++i)
-		{
-			b.GF2EFromBlock(e, maskView[i]);
-			NTL::SetCoeff(polynomial, i, e); //build res_polynomial
-		}
 
 #if 1
 
-		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
-		{
-			auto seed = mPrng.get<block>();
-			thrds[tIdx] = std::thread([&, tIdx, seed]()
-			{
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
-
-				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
-
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
-
-				//2 type of bins: normal bin in inital step + stash bin
-				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
+				for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
 				{
-					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
-
-					u64 binStart, binEnd;
-					if (bIdxType == 0)
+					auto seed = mPrng.get<block>();
+					thrds[tIdx] = std::thread([&, tIdx, seed]()
 					{
-						binStart = tIdx       * binCountRecv / thrds.size();
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size();
-					}
-					else
-					{
-						binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-					}
+						if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
+						auto& chl = *chls[tIdx];
+						const u64 stepSize = 16;
 
-					for (u64 bIdx = binStart; bIdx < binEnd;)
-					{
-						u64 curStepSize = std::min(stepSize, binEnd - bIdx);
+						if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
 
-						for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
+						//2 type of bins: normal bin in inital step + stash bin
+						for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
 						{
-							auto& bin = bins.mCuckooBins.mBins[bIdx];
-							if (!bin.isEmpty())
-							{
-								u64 inputIdx = bin.idx();
-								block blkY;
-								b.GF2EFromBlock(e, bin.mValOPRF[IdxP]);
-								e = NTL::eval(polynomial, e); //get y=f(x) in GF2E
-								b.BlockFromGF2E(blkY, e);
+							auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
 
-								if (bIdx == 0)
+							u64 binStart, binEnd;
+							if (bIdxType == 0)
+							{
+								binStart = tIdx       * binCountRecv / thrds.size();
+								binEnd = (tIdx + 1) * binCountRecv / thrds.size();
+							}
+							else
+							{
+								binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+								binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+							}
+
+
+							for (u64 bIdx = binStart; bIdx < binEnd;)
+							{
+								u64 curStepSize = std::min(stepSize, binEnd - bIdx);
+
+								for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
 								{
-									std::cout << "r[" << IdxP << "]-bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
-									std::cout << "-----------" << blkY << std::endl;
+									auto& bin = bins.mCuckooBins.mBins[bIdx];
+									if (!bin.isEmpty())
+									{
+										u64 inputIdx = bin.idx();
+										block blkY;
+										b.GF2EFromBlock(e, bin.mValOPRF[IdxP], bins.mMaskSize);
+										e = NTL::eval(polynomial, e); //get y=f(x) in GF2E
+										b.BlockFromGF2E(blkY, e, bins.mMaskSize);
+
+										if (bIdx == 0)
+										{
+											std::cout << "r[" << IdxP << "]-bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
+											std::cout << "-----------" << blkY << std::endl;
+										}
+										plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
+									}
 								}
-								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
 							}
 						}
-					}
+
+
+					});
+					//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
 				}
-
-
-			});
-			//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
-		}
-		// join the threads.
-		for (auto& thrd : thrds)
-			thrd.join();
+				// join the threads.
+				for (auto& thrd : thrds)
+					thrd.join();
 
 #endif // 0
 
 
-	}
-	void OPPRFSender::recvBFBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
-	{
+			}
+			void OPPRFSender::recvBFBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
+			{
 
-		// this is the online phase.
-		gTimer.setTimePoint("online.recv.start");
+				// this is the online phase.
+				gTimer.setTimePoint("online.recv.start");
 
-		//u64 maskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-		u64 maskSize = sizeof(block);
+				//u64 mMaskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 
-		if (maskSize > sizeof(block))
-			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
+				u64 nNN = mN * (bins.mCuckooBins.mParams.mNumHashes[0] + bins.mCuckooBins.mParams.mNumHashes[1]);
+				mBfSize = mNumBFhashs * nNN / std::log(2);
 
-
-		mBfSize = mNumBFhashs * mN * (bins.mCuckooBins.mParams.mNumHashes[0] + bins.mCuckooBins.mParams.mNumHashes[1]) / std::log(2);
+				bins.mMaskSize = roundUpTo(mStatSecParam + std::log(mN) + std::log(nNN) - 1, 8) / 8;
 
 
+				//u64 mMaskSize = sizeof(block);
 
-		std::vector<std::thread>  thrds(chls.size());
-		// this mutex is used to guard inserting things into the intersection vector.
-		std::mutex mInsertMtx;
+				if (bins.mMaskSize > sizeof(block))
+					throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
 
-		auto& chl = *chls[0];
 
-		ByteStream maskBuffer;
-		chl.recv(maskBuffer);
 
-		auto maskBFView = maskBuffer.getArrayView<block>();
 
-		//std::cout << "\nr[" << IdxP << "]-maskBFView.size() " << maskBFView.size() << "\n";
-	//	std::cout << "\nr[" << IdxP << "]-mBfBitCount " << mBfSize << "\n";
-		//std::cout << "totalMask: " << totalMask << "\n";
+				std::vector<std::thread>  thrds(chls.size());
+				// this mutex is used to guard inserting things into the intersection vector.
+				std::mutex mInsertMtx;
 
-		//std::cout << "\nr[" << IdxP << "]-maskBFView[3]" << maskBFView[3] << "\n";
+				auto& chl = *chls[0];
+
+				ByteStream maskBuffer;
+				chl.recv(maskBuffer);
+
+				auto maskBFView = maskBuffer.getMatrixView<u8>(bins.mMaskSize);
+
+				std::cout << "\nr[" << IdxP << "]-maskBFView.size() " << maskBFView.size()[0] << "\n";
+				//	std::cout << "\nr[" << IdxP << "]-mBfBitCount " << mBfSize << "\n";
+				//std::cout << "totalMask: " << totalMask << "\n";
+
+				//	std::cout << "\nr[" << IdxP << "]-maskBFView[3]" << maskBFView[3] << "\n";
 
 #if 1
 
-		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
-		{
-			auto seed = mPrng.get<block>();
-			thrds[tIdx] = std::thread([&, tIdx, seed]()
-			{
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
-
-				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
-
-				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
-
-				//2 type of bins: normal bin in inital step + stash bin
-				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
+				for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
 				{
-					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
-
-					u64 binStart, binEnd;
-					if (bIdxType == 0)
+					auto seed = mPrng.get<block>();
+					thrds[tIdx] = std::thread([&, tIdx, seed]()
 					{
-						binStart = tIdx       * binCountRecv / thrds.size();
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size();
-					}
-					else
-					{
-						binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-						binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
-					}
+						if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
+						auto& chl = *chls[tIdx];
+						const u64 stepSize = 16;
 
-					for (u64 bIdx = binStart; bIdx < binEnd;)
-					{
-						u64 curStepSize = std::min(stepSize, binEnd - bIdx);
+						if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
 
-						for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
+						//2 type of bins: normal bin in inital step + stash bin
+						for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
 						{
-							auto& bin = bins.mCuckooBins.mBins[bIdx];
-							if (!bin.isEmpty())
+							auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
+
+							u64 binStart, binEnd;
+							if (bIdxType == 0)
 							{
-								u64 inputIdx = bin.idx();
+								binStart = tIdx       * binCountRecv / thrds.size();
+								binEnd = (tIdx + 1) * binCountRecv / thrds.size();
+							}
+							else
+							{
+								binStart = tIdx       * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+								binEnd = (tIdx + 1) * binCountRecv / thrds.size() + bins.mCuckooBins.mBinCount[0];
+							}
 
-								block blkY = ZeroBlock;
 
-								//NOTE that it is fine to compute BF on (oprf(x),y) as long as receiver reconstruct y*=BF(oprf(x*))
-								for (u64 hashIdx = 0; hashIdx < mBFHasher.size(); ++hashIdx)
+							for (u64 bIdx = binStart; bIdx < binEnd;)
+							{
+								u64 curStepSize = std::min(stepSize, binEnd - bIdx);
+
+								for (u64 stepIdx = 0; stepIdx < curStepSize; ++bIdx, ++stepIdx)
 								{
-									block hashOut = mBFHasher[hashIdx].ecbEncBlock(bin.mValOPRF[IdxP]);
-									u64& idx = *(u64*)&hashOut;
-									idx %= mBfSize;
-									blkY = blkY ^ maskBFView[idx];
-								}
+									auto& bin = bins.mCuckooBins.mBins[bIdx];
+									if (!bin.isEmpty())
+									{
+										u64 inputIdx = bin.idx();
 
-								if (bIdx == 0)
-								{
-									std::cout << "r[" << IdxP << "]-bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
-									std::cout << "-----------" << blkY << std::endl;
+										block blkY = ZeroBlock;
+
+										//NOTE that it is fine to compute BF on (oprf(x),y) as long as receiver reconstruct y*=BF(oprf(x*))
+										for (u64 hashIdx = 0; hashIdx < mBFHasher.size(); ++hashIdx)
+										{
+											block hashOut = mBFHasher[hashIdx].ecbEncBlock(bin.mValOPRF[IdxP]);
+											u64& idx = *(u64*)&hashOut;
+											idx %= mBfSize;
+											auto theirBFMask = ZeroBlock;
+											memcpy(&theirBFMask, maskBFView[idx].data(), bins.mMaskSize);
+
+											blkY = blkY ^ theirBFMask;
+										}
+
+										if (bIdx == 0)
+										{
+											std::cout << "r[" << IdxP << "]-bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
+											std::cout << "-----------" << blkY << std::endl;
+										}
+										plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
+									}
 								}
-								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
 							}
 						}
-					}
+
+
+					});
+					//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
 				}
-
-
-			});
-			//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
-		}
-		// join the threads.
-		for (auto& thrd : thrds)
-			thrd.join();
+				// join the threads.
+				for (auto& thrd : thrds)
+					thrd.join();
 
 #endif // 0
 
 
-	}
+			}
 
 
+
+	
 }
 
 

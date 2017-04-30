@@ -2877,15 +2877,6 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 
 	if (myIdx == 0) {
 		std::vector<u64> mIntersection;
-		u64 maskSize;
-		if (opt == 0)
-			maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
-		else if (opt == 1)
-			maskSize = sizeof(block);
-		else if (opt == 2)
-			maskSize = sizeof(block);
-		else if (opt == 3)
-			maskSize = bins.mMaskSize;
 
 		for (u64 i = 0; i < setSize; ++i)
 		{
@@ -2900,7 +2891,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 			}
 			//std::cout << sum << std::endl;
 
-			if (!memcmp((u8*)&sum, (u8*)&ZeroBlock, maskSize))
+			if (!memcmp((u8*)&sum, (u8*)&ZeroBlock, bins.mMaskSize))
 			{
 				mIntersection.push_back(i);
 			}

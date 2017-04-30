@@ -37,7 +37,7 @@ using namespace osuCrypto;
 #define PRINT
 //#define BIN_PRINT
 
-u32 opt = 2;
+u32 opt = 1;
 void testPointer(std::vector<block>* test)
 {
 	//int length = test->size();
@@ -3432,56 +3432,55 @@ void OPPRF2_EmptrySet_Test_Impl()
 void GF2EFromBlock(NTL::GF2E &element, block& blk,u64 size) {
 
 	NTL::GF2X x1;
-	//NTL::BuildIrred(x1, 128);
-	//NTL::GF2E::init(x1);
+	NTL::BuildIrred(x1, 40);
+	NTL::GF2E::init(x1);
 	//convert the Block to GF2X element.
 	NTL::GF2XFromBytes(x1, (u8*)&blk, size);
-//	element = to_GF2E(x1);
+	element = to_GF2E(x1);
 }
 
-void BlockFromGF2E(block& blk, NTL::GF2E & element) {
+
+
+void BlockFromGF2E(block& blk, NTL::GF2E & element, u64 size) {
 	//Get the bytes of the random element.
+	
+
+
+	//int numBytes = NTL::NumBytes(element); //get the number of element bytes.
+
+	//vector<uint8_t> arr(numBytes);
+	////the function rep returns the representation of GF2E as the related GF2X, it returns as read only.
+	//BytesFromGF2X(arr.data(), element, numBytes);
+
+
 	NTL::GF2X fromEl = NTL::rep(element); //convert the GF2E element to GF2X element.	
 										  //the function rep returns the representation of GF2E as the related GF2X, it returns as read only.
-	BytesFromGF2X((u8*)&blk, fromEl, sizeof(block));
+	
+	int numBytes = NTL::NumBytes(fromEl);
+	
+	BytesFromGF2X((u8*)&blk, fromEl, size);
 }
 
+u64 masksize = 5;
 
 //computes coefficients (in blocks) of f such that f(x[i]) = y[i]
-void getBlkCoefficients(u64 degree, std::vector<block>& setX, std::vector<block>& setY, std::vector<block>& coeffs)
+void getBlkCoefficients( std::vector<block>& setX, std::vector<block>& setY, std::vector<block>& coeffs)
 {
 	NTL::vec_GF2E x; NTL::vec_GF2E y;
 	NTL::GF2E e;
 
 	for (u64 i = 0; i < setX.size(); ++i)
 	{
-		GF2EFromBlock(e, setX[i],sizeof(block));
+		GF2EFromBlock(e, setX[i], masksize);
 		x.append(e);
 
-		GF2EFromBlock(e, setY[i], sizeof(block));
+		GF2EFromBlock(e, setY[i], masksize);
 		y.append(e);
 	}
 
-	for (u64 i = setX.size(); i < degree; ++i)
-	{
-		NTL::random(e);
-		x.append(e);
-		NTL::random(e);
-		y.append(e);
-	}
+	
 	//interpolate
 	NTL::GF2EX polynomial = NTL::interpolate(x, y);
-
-	TODO("better to have dummpy_pol * real_pol");
-	//NTL::GF2EX real_polynomial = NTL::interpolate(x, y);
-	//std::cout << NTL::deg(real_polynomial) << std::endl;
-
-	//NTL::GF2EX dummy_polynomial= NTL::interpolate(x1, y1);
-	//NTL::random(dummy_polynomial, 1);
-	//std::cout << NTL::deg(dummy_polynomial) << std::endl;
-
-	// NTL::mul(polynomial,dummy_polynomial, real_polynomial);
-
 
 
 	////convert coefficient to vector<block> 
@@ -3489,7 +3488,10 @@ void getBlkCoefficients(u64 degree, std::vector<block>& setX, std::vector<block>
 	for (int i = 0; i < coeffs.size(); i++) {
 		//get the coefficient polynomial
 		e = NTL::coeff(polynomial, i);
-		BlockFromGF2E(coeffs[i], e);
+		NTL::GF2X fromEl = NTL::rep(e);
+		int numBytes = NTL::NumBytes(fromEl);
+		std::cout << "numBytes" << numBytes << std::endl;
+		BlockFromGF2E(coeffs[i], e, masksize);
 	}
 }
 
@@ -3498,132 +3500,25 @@ void evalPolynomial(std::vector<block>& coeffs, block& x, block& y)
 {
 	NTL::GF2EX res_polynomial;
 	NTL::GF2E e;
-	std::cout << coeffs.size() << std::endl;
 	for (u64 i = 0; i < coeffs.size(); ++i)
 	{
-		GF2EFromBlock(e, coeffs[i], sizeof(block));
+		GF2EFromBlock(e, coeffs[i], masksize);
 		NTL::SetCoeff(res_polynomial, i, e); //build res_polynomial
 	}
 
-	GF2EFromBlock(e, x, sizeof(block));
+	GF2EFromBlock(e, x, masksize);
 	e = NTL::eval(res_polynomial, e); //get y=f(x) in GF2E
-	BlockFromGF2E(y, e); //convert to block 
+	BlockFromGF2E(y, e, masksize); //convert to block 
 }
 
 void polynomial_Test_Impl()
 {	
-
-	NTL::GF2X gf2x;
-	NTL::BuildSparseIrred(gf2x, 3);
-	NTL::GF2E::init(gf2x);
-
-	std::vector<NTL::GF2E> ex1(1), ey1(1);
-	NTL::vec_GF2E x1; NTL::vec_GF2E y1;
-	for (u64 i = 0; i < ex1.size(); ++i)
-	{
-		NTL::random(ex1[i]);
-		NTL::random(ey1[i]);
-		x1.append(ex1[i]);
-		y1.append(ey1[i]);
-		std::cout << "x"<<i<<": " << ex1[i] << "		y"<<i<<": " << ey1[i] << std::endl;
-	}
-
-	NTL::GF2EX poly1;
-	NTL::BuildFromRoots(poly1, x1);
-
-	//NTL::GF2EX poly1=NTL::interpolate(x1,y1);
-
 	
 
-	for (int i = 0; i < NTL::deg(poly1) + 1; i++) {
-		//get the coefficient polynomial
-		std::cout <<"NTL::coeff(poly1, " << i << "): "<< NTL::coeff(poly1, i) << std::endl;
-	}	
-	//std::cout << "poly1" << poly1 << std::endl;
-
-	std::vector<NTL::GF2E> ex2(2), ey2(2);
-	NTL::vec_GF2E x2; NTL::vec_GF2E y2;
-	for (u64 i = 0; i < ex2.size(); ++i)
-	{
-		NTL::random(ex2[i]);
-		NTL::random(ey2[i]);
-		x2.append(ex2[i]);
-		y2.append(ey2[i]);
-		std::cout << "x" << i << ": " << ex2[i] << "		y" << i << ": " << ey2[i] << std::endl;
-	}
-
-	//NTL::GF2EX poly2 = NTL::interpolate(x2, y2);
-
-	NTL::GF2EX poly2;
-	NTL::BuildFromRoots(poly1, x2);
-
-	for (int i = 0; i < NTL::deg(poly2) + 1; i++) {
-		//get the coefficient polynomial
-		std::cout << "NTL::coeff(poly2, "<<i<<"): " << NTL::coeff(poly2, i) << std::endl;
-	}
-
-	//NTL::GF2EX p3 = (poly1*poly2);
-
-	NTL::mul(poly1, poly2, poly1);
-
-	for (int i = 0; i < NTL::deg(poly1) + 1; i++) {
-		//get the coefficient polynomial
-		std::cout << "NTL::coeff(poly1+poly2, " << i << "): " << NTL::coeff(poly1, i) << std::endl;
-	}
-
-	
-	NTL::GF2E e1 = NTL::eval(poly1, ex1[0]); //get y=f(x) in GF2E
-	if (e1 == 0)
-		std::cout << "ok";
-	else
-	{
-		std::cout << e1 << std::endl;
-		std::cout << ey1[0] << std::endl;
-	}
-
-
-
-	
-
-
-	//PRNG prng111(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
-	//	std::vector<block> test1(32);
-	//	for (u64 i = 0; i < 32; ++i)
-	//	{
-	//		test1[i] = prng111.get<block>();
-	//	}
-
-	//	
-	//	NTL::GF2E e1;
-
-	//	test1[0] = _mm_set_epi8(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0);
-
-	//	NTL::GF2X x1;
-	//	NTL::BuildIrred(x1, 128);
-	//	std::cout <<"NTL::GF2X x1: \n" << x1 << std::endl;
-
-	//	NTL::GF2E::init(x1);
-	//	std::cout << "NTL::GF2E::init(x1) \n" << x1 << std::endl;
-	//	//convert the Block to GF2X element.
-	//	NTL::GF2XFromBytes(x1, (u8*)&test1[0], sizeof(block));
-	//	e1 = to_GF2E(x1);
-	//	
-
-	//		
-	//		std::cout << test1[0] << std::endl;
-	//		std::cout << e1 << std::endl;
-	//		std::cout << "-------------"<< std::endl;
-	//		test1[0] = _mm_set_epi8(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
-	//		GF2EFromBlock(e1, test1[0], sizeof(block));
-	//		std::cout << test1[0] << std::endl;
-	//		std::cout << e1 << std::endl;
-
-		//b.evalPolynomial(test, blkX, blkY);
-#if 0
+#if 1
 	std::vector<block> mSetX, mSetY;
 
 	u64 setSize = 10;
-	u64 MaxSetSize = 32;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	mSetX.resize(setSize);
 	mSetY.resize(setSize);
@@ -3633,67 +3528,75 @@ void polynomial_Test_Impl()
 		mSetY[i] = prng.get<block>();
 		//	std::cout << mSetY[i] << std::endl;
 	}
+
+	NTL::GF2E e1;
+	block blkk;
+	GF2EFromBlock(e1, mSetX[0], masksize);
+	BlockFromGF2E(blkk, e1, masksize);
+	std::cout << mSetX[0] <<"---"<< blkk << std::endl;
+
+
 	std::cout << std::endl;
-	std::vector<block> coeffs;
-	//BaseOPPRF b;
-	getBlkCoefficients(MaxSetSize, mSetX, mSetY, coeffs);
+	std::vector<block> coeffs;	
+	
+	getBlkCoefficients( mSetX, mSetY, coeffs);
 
 	block blkY;
 	for (int i = 0; i < mSetY.size(); ++i)
 	{
 
-	//	evalPolynomial(coeffs, mSetX[i], blkY);
+		evalPolynomial(coeffs, mSetX[i], blkY);
 
 		std::cout << blkY << " -- " << mSetY[i] << std::endl;
 
 		//if (neq(blkY, mSetY[i]))
 		//	throw UnitTestFail();
 	}
-	block blkX = prng.get<block>();
+	//block blkX = prng.get<block>();
 	//evalPolynomial(coeffs, blkX, blkY);
-	std::cout << blkX << " -- " << blkY << std::endl;
+	//std::cout << blkX << " -- " << blkY << std::endl;
 
 	/*if (eq(blkX, blkY))
 	throw UnitTestFail();*/
 
-	NTL::GF2EX p1;
-	NTL::random(p1, 1);
-	std::cout << NTL::deg(p1) << std::endl;
+	//NTL::GF2EX p1;
+	//NTL::random(p1, 1);
+	//std::cout << NTL::deg(p1) << std::endl;
 
 
-	for (u32 i = 0; i < NTL::deg(p1) + 1; i++)
-	{
-		NTL::GF2E x1;
-		NTL::GetCoeff(x1, p1, 0);
-		std::cout << x1 << std::endl;
-	}
+	//for (u32 i = 0; i < NTL::deg(p1) + 1; i++)
+	//{
+	//	NTL::GF2E x1;
+	//	NTL::GetCoeff(x1, p1, 0);
+	//	std::cout << x1 << std::endl;
+	//}
 
 
-	NTL::GF2EX p2;
-	NTL::random(p2, 1);
-	std::cout << NTL::deg(p2) << std::endl;
+	//NTL::GF2EX p2;
+	//NTL::random(p2, 1);
+	//std::cout << NTL::deg(p2) << std::endl;
 
-	for (u32 i = 0; i < NTL::deg(p2) + 1; i++)
-	{
-		NTL::GF2E x1;
-		NTL::GetCoeff(x1, p2, 0);
-		std::cout << x1 << std::endl;
-	}
+	//for (u32 i = 0; i < NTL::deg(p2) + 1; i++)
+	//{
+	//	NTL::GF2E x1;
+	//	NTL::GetCoeff(x1, p2, 0);
+	//	std::cout << x1 << std::endl;
+	//}
 
-	NTL::GF2EX p3;
-	NTL::mul(p3, p1, p2);
-	std::cout << NTL::deg(p3) << std::endl;
+	//NTL::GF2EX p3;
+	//NTL::mul(p3, p1, p2);
+	//std::cout << NTL::deg(p3) << std::endl;
 
-	for (u32 i = 0; i < NTL::deg(p3) + 1; i++)
-	{
-		NTL::GF2E x1;
-		NTL::GetCoeff(x1, p3, 0);
-		std::cout << x1 << std::endl;
-	}
+	//for (u32 i = 0; i < NTL::deg(p3) + 1; i++)
+	//{
+	//	NTL::GF2E x1;
+	//	NTL::GetCoeff(x1, p3, 0);
+	//	std::cout << x1 << std::endl;
+	//}
 
-	block test = prng.get<block>();
-	NTL::GF2X xi;
-	NTL::GF2XFromBytes(xi, (u8*)&test, sizeof(block));
+	//block test = prng.get<block>();
+	//NTL::GF2X xi;
+	//NTL::GF2XFromBytes(xi, (u8*)&test, sizeof(block));
 #endif // 0
 }
 
