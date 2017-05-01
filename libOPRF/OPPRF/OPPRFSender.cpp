@@ -1341,10 +1341,11 @@ namespace osuCrypto
 			}
 		}
 
-		std::cout << "\ns[" << IdxP << "]-maskBFView.size() " << maskBFView.size()[0]* maskBFView.size()[1] << "\n";
+		std::cout << "\ns[" << IdxP << "]-maskBFView.size() " << maskBFView.size()[0] << "\n";
 		std::cout << "\ns[" << IdxP << "]-mBfSize " << mBfSize << "\n";
 		std::cout << "\ns[" << IdxP << "]-mMaskSize " << bins.mMaskSize << "\n";
 
+		std::cout << "\ns[" << IdxP << "]-dataSent(bytes)" << maskBFView.size()[0] * maskBFView.size()[1] << "\n";
 
 			std::cout << "\ns[" << IdxP << "]-GarbleBF[1][3]" << GarbleBF[1][3] << "\n";
 

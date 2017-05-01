@@ -209,7 +209,7 @@ void party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 		}
 	}
 
-	u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+	u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
 
 	for (u64 idxTrial = 0; idxTrial < numTrial; idxTrial++)
 	{
@@ -559,7 +559,7 @@ void party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 
 		if (myIdx == 0) {
 			std::vector<u64> mIntersection;
-			u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+			u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
 			for (u64 i = 0; i < setSize; ++i)
 			{
 				if (!memcmp((u8*)&sendPayLoads[myIdx][i], &recvPayLoads[prevNeighbor][i], maskSize))
@@ -941,7 +941,7 @@ void party3(u64 myIdx, u64 setSize, u64 nTrials)
 
 		if (myIdx == 0) {
 
-			u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+			u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
 			for (u64 i = 0; i < setSize; ++i)
 			{
 				if (!memcmp((u8*)&sendPayLoads[i], &recvPayLoads[i], maskSize))
@@ -1299,7 +1299,7 @@ void party2(u64 myIdx, u64 setSize)
 
 	if (myIdx == 0) {
 		std::vector<u64> mIntersection;
-		u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+		u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
 		for (u64 i = 0; i < setSize; ++i)
 		{
 			if (!memcmp((u8*)&sendPayLoads[i], &recvPayLoads[i], maskSize))
@@ -1441,7 +1441,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 	}
 
 
-	u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+	u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
 	u64 nextNeighbor = (myIdx + 1) % nParties;
 	u64 prevNeighbor = (myIdx - 1 + nParties) % nParties;
 	u64 num_intersection;
@@ -2037,7 +2037,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 		std::vector<u64> mIntersection;
 		if (myIdx == leaderIdx) {
 
-			u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+			u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
 
 			for (u64 i = 0; i < setSize; ++i)
 			{
@@ -2603,7 +2603,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 			for (u64 i = 0; i < nParties; ++i)
 			{
 				if (i != myIdx) {
-					chls[i].resize(numThreads);
+					//chls[i].resize(numThreads);
 					for (u64 j = 0; j < numThreads; ++j)
 					{
 						dataSent += chls[i][j]->getTotalDataSent();

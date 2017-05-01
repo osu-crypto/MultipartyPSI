@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 	//OPPRFn_Aug_EmptrySet_Test_Impl();
 	//return 0;
 
-	u64 trials=1;
+	u64 trials=2;
 
 	std::vector<block> mSet;
 	 u64 setSize = 1 << 12, psiSecParam = 40, bitSize = 128;
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 	 std::cout << "pIdx:  " << pIdx << "\n";
 	 std::cout << "nParties:  " << nParties << "\n";
 
-	 //TODO(remove this hash: unconditional zero - sharing);
+	 //TODO(remove this hack: unconditional zero - sharing);
 	 //only one time => very mirror effect on perfomance
 	 std::vector<std::vector<block>> mSeeds(nParties);
 	 std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
