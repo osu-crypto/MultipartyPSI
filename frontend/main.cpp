@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 	 }
 
 
-	 aug_party(pIdx, nParties, mSet.size(), mSet, mPRNGSeeds[pIdx]);
+	 aug_party(pIdx, nParties, mSet.size(), mSet, mPRNGSeeds[pIdx], trials);
 	// tparty(pIdx, nParties, 4, setSize, trials);
 	 return 0;
 
@@ -102,13 +102,13 @@ int main(int argc, char** argv)
 				 if (roundOPPRF == 1)
 				 {
 					// party3(pIdx, setSize, trials);
-					 aug_party(pIdx, nParties, setSize, mSet, mPRNGSeeds[pIdx]);
+					 aug_party(pIdx, nParties, setSize, mSet, mPRNGSeeds[pIdx], trials);
 				 }
 				 else
 				 {
 					// tparty(pIdx, nParties, 2, setSize, trials);
 					 std::cout << "aug_party";
-					aug_party(pIdx, 2, mSet.size(), mSet, mPRNGSeeds[pIdx]);
+					aug_party(pIdx, 2, mSet.size(), mSet, mPRNGSeeds[pIdx], trials);
 				 }
 			 
 			 }

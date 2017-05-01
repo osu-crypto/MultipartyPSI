@@ -1079,7 +1079,7 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 {
 	u64  psiSecParam = 40, bitSize = 128, numThreads = 1;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, myIdx, myIdx));
-	u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+	u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
 
 	std::vector<block> set(setSize);
 	std::vector<std::vector<block>> sendPayLoads(nParties), recvPayLoads(nParties);
@@ -1462,7 +1462,7 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 
 	if (myIdx == 0) {
 		std::vector<u64> mIntersection;
-		u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+		u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
 		for (u64 i = 0; i < setSize; ++i)
 		{
 			if (!memcmp((u8*)&sendPayLoads[myIdx][i], &recvPayLoads[prevNeighbor][i], maskSize))
@@ -1727,7 +1727,7 @@ void party2(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 
 	if (myIdx == 0) {
 		std::vector<u64> mIntersection;
-		u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+		u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
 		for (u64 i = 0; i < setSize; ++i)
 		{
 			//	if (sendPayLoads[i]== recvPayLoads[i])
@@ -2296,7 +2296,7 @@ void party3(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 
 	if (myIdx == 0) {
 		std::vector<u64> mIntersection;
-		u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+		u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
 		for (u64 i = 0; i < setSize; ++i)
 		{
 			//	if (sendPayLoads[i]== recvPayLoads[i])
@@ -2414,7 +2414,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 	}
 
 
-	u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+	u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
 	u64 nextNeighbor = (myIdx + 1) % nParties;
 	u64 prevNeighbor = (myIdx - 1 + nParties) % nParties;
 
@@ -2999,7 +2999,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, std::vector<bloc
 
 		if (myIdx == leaderIdx) {
 			std::vector<u64> mIntersection;
-			u64 maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
+			u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
 
 			for (u64 i = 0; i < setSize; ++i)
 			{
@@ -3509,8 +3509,16 @@ void evalPolynomial(std::vector<block>& coeffs, block& x, block& y)
 void polynomial_Test_Impl()
 {	
 	
+	std::vector<u32> test;
+	test.emplace_back(0);
+	test.emplace_back(0);
+	test.emplace_back(1);
+	std::cout << test.size() << std::endl;
+	u64 setSize = 1 << 12;
+	std::cout <<  std::log2(setSize);
 
-#if 1
+
+#if 0
 	std::vector<block> mSetX, mSetY;
 
 	u64 setSize = 10;
