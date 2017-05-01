@@ -1000,12 +1000,18 @@ namespace osuCrypto
 		// this is the online phase.
 		gTimer.setTimePoint("online.recv.start");
 
-		//u64 mMaskSize = sizeof(block);// roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
-
-		u64 nNN = mN * (bins.mCuckooBins.mParams.mNumHashes[0] + bins.mCuckooBins.mParams.mNumHashes[1]);
-		mBfSize = mNumBFhashs * nNN / std::log(2);
 		
-		bins.mMaskSize = roundUpTo(mStatSecParam + std::log(mN) + std::log(nNN) - 1, 8) / 8;		
+		u32 numHashes = bins.mSimpleBins.mNumHashes[0] + bins.mSimpleBins.mNumHashes[1];
+		
+		//our BF: y-oprf(x)=\xor hashBF_i(x)
+		//each x has 5 diffirent values oprf1(x),...,oprf5(x)
+		//our BF is an array of sized 40*|X|*ln(2)
+		//each array has 5*bins.mMaskSize 
+		//which presented as y-oprf1(x)||y-oprf2(x)||...||y-oprf5(x)
+
+		mBfSize = mNumBFhashs * mN / std::log(2);
+		
+		bins.mMaskSize = roundUpTo(mStatSecParam + 2*std::log(mN) - 1, 8) / 8;		
 
 		
 		//u64 mMaskSize = sizeof(block);
@@ -1031,7 +1037,7 @@ namespace osuCrypto
 	//	std::cout << "\nr[" << IdxP << "]-mBfBitCount " << mBfSize << "\n";
 		//std::cout << "totalMask: " << totalMask << "\n";
 
-	//	std::cout << "\nr[" << IdxP << "]-maskBFView[3]" << maskBFView[3] << "\n";
+		std::cout << "\nr[" << IdxP << "]-maskBFView[1][3]" << maskBFView[1][3] << "\n";
 
 #if 1
 
@@ -1075,25 +1081,28 @@ namespace osuCrypto
 							if (!bin.isEmpty())
 							{								
 								u64 inputIdx = bin.idx();
-								
+								u64 hIdx = bin.hashIdx();
+
 								block blkY=ZeroBlock;
 
-								//NOTE that it is fine to compute BF on (oprf(x),y) as long as receiver reconstruct y*=BF(oprf(x*))
+								
 								for (u64 hashIdx = 0; hashIdx < mBFHasher.size(); ++hashIdx)
 								{
-									block hashOut = mBFHasher[hashIdx].ecbEncBlock(bin.mValOPRF[IdxP]);
+									block hashOut = mBFHasher[hashIdx].ecbEncBlock(bins.mXsets[inputIdx]);
 									u64& idx = *(u64*)&hashOut;
 									idx %= mBfSize;
 									auto theirBFMask = ZeroBlock;
-									memcpy(&theirBFMask, maskBFView[idx].data(), bins.mMaskSize);
+									memcpy(&theirBFMask, maskBFView[hIdx*mBfSize + idx].data(), bins.mMaskSize);
+									if(hIdx==1&&idx==3)
+										std::cout << "\nr[" << IdxP << "]-GarbleBF[1][3]" << theirBFMask << "\n";
 
 									blkY = blkY ^ theirBFMask;
 								}								
 
-								if (bIdx == 0)
+								if (inputIdx == 0)
 								{
-									std::cout << "r[" << IdxP << "]-bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
-									std::cout << "-----------" << blkY << std::endl;
+									std::cout << "inputIdx[" << inputIdx << "]-hIdx[" << hIdx << "]-OPRF" << bin.mValOPRF[IdxP];
+									std::cout << "\n----" << blkY << std::endl;
 								}
 								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
 							}
@@ -1504,169 +1513,7 @@ namespace osuCrypto
 
 
 	}
-	void  OPPRFReceiver::sendFullPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
-	{
-		if (plaintexts.size() != mN)
-			throw std::runtime_error(LOCATION);
-
-		bins.mMaskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) + std::log(bins.mSimpleBins.mNumHashes[0] + bins.mSimpleBins.mNumHashes[1]) - 1, 8) / 8;
-
-		if (bins.mMaskSize > sizeof(block))
-			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
-
-		std::vector<std::thread>  thrds(chls.size());
-		// std::vector<std::thread>  thrds(1);        
-
-		std::mutex mtx;
-		NTL::vec_GF2E vec_GF2E_X; NTL::vec_GF2E vec_GF2E_Y;
-		u64 size_vec_GF2E_X = 0;
-		NTL::GF2E e;
-		BaseOPPRF base_poly;
-		base_poly.poly_init(bins.mMaskSize);
-
-		gTimer.setTimePoint("online.send.spaw");
-
-		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
-		{
-			auto seed = mPrng.get<block>();
-			thrds[tIdx] = std::thread([&, tIdx, seed]() {
-
-				PRNG prng(seed);
-
-				if (tIdx == 0) gTimer.setTimePoint("online.send.thrdStart");
-
-				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
-
-#pragma region sendShare
-#if 1
-				if (tIdx == 0) gTimer.setTimePoint("online.send.sendShare");
-
-				//2 type of bins: normal bin in inital step + stash bin
-				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
-				{
-					auto binCountSend = bins.mSimpleBins.mBinCount[bIdxType];
-					u64 binStart, binEnd;
-					if (bIdxType == 0)
-					{
-						binStart = tIdx       * binCountSend / thrds.size();
-						binEnd = (tIdx + 1) * binCountSend / thrds.size();
-					}
-					else
-					{
-						binStart = tIdx       * binCountSend / thrds.size() + bins.mSimpleBins.mBinCount[0];
-						binEnd = (tIdx + 1) * binCountSend / thrds.size() + bins.mSimpleBins.mBinCount[0];
-					}
-
-					if (tIdx == 0) gTimer.setTimePoint("online.send.masks.init.step");
-
-					for (u64 bIdx = binStart; bIdx < binEnd;)
-					{
-						u64 currentStepSize = std::min(stepSize, binEnd - bIdx);
-
-						for (u64 stepIdx = 0; stepIdx < currentStepSize; ++bIdx, ++stepIdx)
-						{
-							//Log::out << "sBin #" << bIdx << Log::endl;
-
-							auto& bin = bins.mSimpleBins.mBins[bIdx];
-							u64 baseMaskIdx = stepIdx;
-							int MaskIdx = 0;
-
-							//	Log::out << "bin.mIdx[" << bIdx << "]: " <<  Log::endl;
-
-							if (bin.mIdx.size() > 0)
-							{
-
-								for (u64 i = 0; i < bin.mIdx.size(); ++i)
-								{
-									u64 inputIdx = bin.mIdx[i];
-									//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
-
-									block y = plaintexts[inputIdx] ^ bin.mValOPRF[IdxP][i];
-									base_poly.GF2EFromBlock(e, y, bins.mMaskSize);
-
-									//TODO: current test is single thread, make safe when running multi-thread
-									vec_GF2E_Y.append(e);
-
-									base_poly.GF2EFromBlock(e, bin.mValOPRF[IdxP][i], bins.mMaskSize);
-
-									//TODO: current test is single thread, make safe when running multi-thread
-									vec_GF2E_X.append(e);
-									size_vec_GF2E_X++;
-
-									if (bIdx == 0)
-									{
-										std::cout << "s bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP][i];
-										std::cout << "-----------" << y << std::endl;
-									}
-								}
-							}
-
-						}
-
-					}
-				}
-
-				if (tIdx == 0) gTimer.setTimePoint("online.compute x y");
-#endif
-#pragma endregion
-
-			});
-		}
-
-		for (auto& thrd : thrds)
-			thrd.join();
-		std::cout << bins.mN << " - " << bins.mSimpleBins.mNumHashes[0] << " " << bins.mSimpleBins.mNumHashes[1] << "\n";
-
-		u64 totalMask = bins.mN*(bins.mSimpleBins.mNumHashes[0] + bins.mSimpleBins.mNumHashes[1]);
-
-		//ADDING DUMMY
-		//because 2 h(x1) and h(x2) might have the same value
-		for (u32 i = 0; i <totalMask - size_vec_GF2E_X; i++)
-		{
-			NTL::random(e);
-			vec_GF2E_X.append(e);
-			NTL::random(e);
-			vec_GF2E_Y.append(e);
-		}
-
-
-		//get Blk Coefficients and send it to receiver
-		std::vector<block> coeffs;
-		//computes coefficients (in blocks) of p such that p(x[i]) = y[i]
-		//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
-
-		base_poly.getBlkCoefficients(vec_GF2E_X, vec_GF2E_Y, coeffs);
-
-		//	std::cout << "coeffs.size()" << coeffs.size() << "\n";		
-		//	std::cout << "totalMask: " << totalMask << "\n";
-
-
-		uPtr<Buff> sendMaskBuff(new Buff);
-		sendMaskBuff->resize(totalMask* bins.mMaskSize);
-		auto maskView = sendMaskBuff->getMatrixView<u8>(totalMask * bins.mMaskSize);
-
-#if 1
-
-		//it already contain a dummy item
-		for (u64 i = 0; i < coeffs.size(); ++i)
-		{
-			memcpy(
-				maskView[0].data() + i* bins.mMaskSize,
-				(u8*)&coeffs[i],  //make randome
-								  //(u8*)&ZeroBlock,  //make randome
-				bins.mMaskSize);
-		}
-		std::cout << "s[" << IdxP << "]-coeffs[3]" << coeffs[3] << "\n";
-
-
-		auto& chl = *chls[0];
-		chl.asyncSend(std::move(sendMaskBuff));
-
-#endif // 0
-
-
-		}
+	
 	void  OPPRFReceiver::sendBFBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 	{
 		if (plaintexts.size() != mN)
@@ -1838,6 +1685,170 @@ namespace osuCrypto
 
 	}
 
+	void OPPRFReceiver::sendFullPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
+	{
+		if (plaintexts.size() != mN)
+			throw std::runtime_error(LOCATION);
+
+		bins.mMaskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
+
+		if (bins.mMaskSize > sizeof(block))
+			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
+
+		std::vector<std::thread>  thrds(chls.size());
+		// std::vector<std::thread>  thrds(1);        
+
+		u32 numHashes = bins.mSimpleBins.mNumHashes[0] + bins.mSimpleBins.mNumHashes[1];
+
+		std::mutex mtx;
+		std::vector<NTL::vec_GF2E> vec_GF2E_X(numHashes);
+		std::vector<NTL::vec_GF2E> vec_GF2E_Y(numHashes);
+		std::vector<u64> size_vec_GF2E_X(numHashes);
+		NTL::GF2E e;
+		BaseOPPRF base_poly;
+		base_poly.poly_init(bins.mMaskSize);
+
+		gTimer.setTimePoint("online.send.spaw");
+
+		for (u64 tIdx = 0; tIdx < thrds.size(); ++tIdx)
+		{
+			auto seed = mPrng.get<block>();
+			thrds[tIdx] = std::thread([&, tIdx, seed]() {
+
+				PRNG prng(seed);
+
+				if (tIdx == 0) gTimer.setTimePoint("online.send.thrdStart");
+
+				auto& chl = *chls[tIdx];
+				const u64 stepSize = 16;
+
+#pragma region sendShare
+#if 1
+				if (tIdx == 0) gTimer.setTimePoint("online.send.sendShare");
+
+				//2 type of bins: normal bin in inital step + stash bin
+				//auto binCountSend = bins.mSimpleBins.mBinCount[bIdxType];
+
+				u64 idxStart, idxEnd; //by mXset 
+
+				idxStart = tIdx       * mN / thrds.size();
+				idxEnd = (tIdx + 1) * mN / thrds.size();
+
+
+				for (u64 inputIdx = idxStart; inputIdx < idxEnd;)
+				{
+					u64 currentStepSize = std::min(stepSize, idxEnd - inputIdx);
+
+					for (u64 stepIdx = 0; stepIdx < currentStepSize; ++inputIdx, ++stepIdx)
+					{
+
+						u64 baseMaskIdx = stepIdx;
+						int MaskIdx = 0;
+
+						//compute p((x[i]))=y[i]-(oprf(x[i])) by hashIdx
+
+						for (u64 hIdx = 0; hIdx < numHashes; ++hIdx)
+						{
+
+							block y = plaintexts[inputIdx] ^ bins.mSimpleBins.mOprfs[IdxP][inputIdx][hIdx];
+							base_poly.GF2EFromBlock(e, y, bins.mMaskSize);
+
+							//TODO: current test is single thread, make safe when running multi-thread
+							vec_GF2E_Y[hIdx].append(e);
+
+							base_poly.GF2EFromBlock(e, bins.mXsets[inputIdx], bins.mMaskSize);
+
+							//TODO: current test is single thread, make safe when running multi-thread
+							vec_GF2E_X[hIdx].append(e);
+							size_vec_GF2E_X[hIdx]++;
+
+							if (inputIdx == 0)
+							{
+								std::cout << "inputIdx[" << inputIdx << "]-hIdx[" << hIdx << "]-OPRF" << bins.mSimpleBins.mOprfs[IdxP][inputIdx][hIdx];
+								std::cout << "\n----" << y << std::endl;
+							}
+						}
+
+
+
+
+					}
+				}
+
+				if (tIdx == 0) gTimer.setTimePoint("online.compute x y");
+#endif
+#pragma endregion
+
+			});
+		}
+
+		for (auto& thrd : thrds)
+			thrd.join();
+		std::cout << bins.mN << " - " << bins.mSimpleBins.mNumHashes[0] << " " << bins.mSimpleBins.mNumHashes[1] << "\n";
+
+
+
+		//ADDING DUMMY
+		//because 2 h(x1) and h(x2) might have the same value
+		for (u64 hIdx = 0; hIdx < numHashes; ++hIdx)
+		{
+			std::cout << "bins.mN - size_vec_GF2E_X[" << hIdx << "]"
+				<< bins.mN - size_vec_GF2E_X[hIdx] << "\n";
+
+			for (u32 i = 0; i < bins.mN - size_vec_GF2E_X[hIdx]; i++)
+			{
+				NTL::random(e);
+				vec_GF2E_X[hIdx].append(e);
+				NTL::random(e);
+				vec_GF2E_Y[hIdx].append(e);
+			}
+		}
+
+
+		//get Blk Coefficients and send it to receiver
+		std::vector<std::vector<block>> coeffs(numHashes);
+		//computes coefficients (in blocks) of p such that p(x[i]) = y[i]
+		//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
+
+		for (u64 hIdx = 0; hIdx < numHashes; ++hIdx)
+		{
+			//	std::cout << "getBlkCoefficients " << hIdx <<"start \n";
+			base_poly.getBlkCoefficients(vec_GF2E_X[hIdx], vec_GF2E_Y[hIdx], coeffs[hIdx]);
+			//std::cout << "getBlkCoefficients " << hIdx << "end \n";
+		}
+		//	std::cout << "coeffs.size()" << coeffs.size() << "\n";		
+		//	std::cout << "totalMask: " << totalMask << "\n";
+
+
+		uPtr<Buff> sendMaskBuff(new Buff);
+		sendMaskBuff->resize(bins.mN*numHashes* bins.mMaskSize);
+		auto maskView = sendMaskBuff->getMatrixView<u8>(bins.mMaskSize);
+
+#if 1
+
+		//it already contain a dummy item
+		for (u64 hIdx = 0; hIdx < numHashes; ++hIdx)
+		{
+			//std::cout << "coeffs["<<hIdx<<"].size()"<<coeffs[hIdx].size()<<"\n";
+			for (u64 i = 0; i < coeffs[hIdx].size(); ++i)
+			{
+				memcpy(
+					maskView[hIdx*mN + i].data(),
+					(u8*)&coeffs[hIdx][i],  //make randome
+											//(u8*)&ZeroBlock,  //make randome
+					bins.mMaskSize);
+			}
+		}
+		std::cout << "s[" << IdxP << "]-coeffs[1][3]" << coeffs[1][3] << "\n";
+
+
+		auto& chl = *chls[0];
+		chl.asyncSend(std::move(sendMaskBuff));
+
+#endif // 0
+
+
+	}
 
 	
 }

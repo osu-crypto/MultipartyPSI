@@ -1943,17 +1943,17 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 	}
 
 
-	if (myIdx == 0)
-	{
-		//bins.mSimpleBins.print(2, true, true, false, false);
-		//bins.mCuckooBins.print(1, true, true, false);
-		Log::out << "------------" << Log::endl;
-	}
-	if (myIdx == 1)
-	{
-		bins.mSimpleBins.print(0, true, true, false, false,opt);
-		//bins.mCuckooBins.print(0, true, true, false);
-	}
+	//if (myIdx == 0)
+	//{
+	//	//bins.mSimpleBins.print(2, true, true, false, false);
+	//	//bins.mCuckooBins.print(1, true, true, false);
+	//	Log::out << "------------" << Log::endl;
+	//}
+	//if (myIdx == 1)
+	//{
+	//	bins.mSimpleBins.print(0, true, true, false, false,opt);
+	//	//bins.mCuckooBins.print(0, true, true, false);
+	//}
 
 
 
@@ -2032,16 +2032,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 
 	if (myIdx == 0) {
 		std::vector<u64> mIntersection;
-		u64 maskSize;
-		if(opt==0)
-			maskSize = roundUpTo(psiSecParam + 2 * std::log(setSize) - 1, 8) / 8;
-		else if(opt==1)
-			maskSize = sizeof(block);
-		else if (opt ==2)
-			maskSize = sizeof(block);
-		else if (opt == 3)
-			maskSize = bins.mMaskSize;
-
+		
 		for (u64 i = 0; i < setSize; ++i)
 		{
 			block sum = sendPayLoads[i];
@@ -2055,7 +2046,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 			}
 			//std::cout << sum << std::endl;
 							
-				if (!memcmp((u8*)&sum, (u8*)&ZeroBlock, maskSize))
+				if (!memcmp((u8*)&sum, (u8*)&ZeroBlock, bins.mMaskSize))
 				{
 					mIntersection.push_back(i);
 				}
@@ -3192,7 +3183,7 @@ void OPPRFn_Aug_EmptrySet_Test_Impl()
 		mSet[i] = prng.get<block>();
 	}
 	
-	nParties = 2;
+	nParties = 3;
 
 	std::vector<std::vector<block>> mSeeds(nParties);
 	std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
