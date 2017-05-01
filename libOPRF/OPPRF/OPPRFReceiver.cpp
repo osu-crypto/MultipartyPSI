@@ -657,7 +657,7 @@ namespace osuCrypto
 				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
 				{
 					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
-					bins.mMaskSize = roundUpTo(mStatSecParam + std::log2(bins.mSimpleBins.mNumBits[bIdxType]), 8) / 8;
+					bins.mMaskSize = roundUpTo(mStatSecParam + std::log2(bins.mSimpleBins.mMaxBinSize[bIdxType]), 8) / 8;
 
 
 					u64 binStart, binEnd;
@@ -765,7 +765,7 @@ namespace osuCrypto
 		// this mutex is used to guard inserting things into the intersection vector.
 		std::mutex mInsertMtx;
 		
-		BaseOPPRF poly;
+		
 
 
 		// fr each thread, spawn it.
@@ -782,10 +782,13 @@ namespace osuCrypto
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
 
 				//2 type of bins: normal bin in inital step + stash bin
-				bins.mMaskSize = roundUpTo(mStatSecParam + std::log2(bins.mSimpleBins.mMaxBinSize[1]), 8) / 8;
-				poly.poly_init(bins.mMaskSize);
+				
 				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
 				{
+					bins.mMaskSize = roundUpTo(mStatSecParam + std::log2(bins.mSimpleBins.mMaxBinSize[bIdxType]), 8) / 8;
+					BaseOPPRF poly;
+					poly.poly_init(bins.mMaskSize);
+
 					auto binCountRecv = bins.mCuckooBins.mBinCount[bIdxType];
 					
 

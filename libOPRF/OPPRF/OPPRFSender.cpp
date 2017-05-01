@@ -659,7 +659,7 @@ namespace osuCrypto
 				//2 type of bins: normal bin in inital step + stash bin
 				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
 				{
-					bins.mMaskSize = roundUpTo(mStatSecParam + std::log2(bins.mSimpleBins.mNumBits[bIdxType]), 8) / 8;
+					bins.mMaskSize = roundUpTo(mStatSecParam + std::log2(bins.mSimpleBins.mMaxBinSize[bIdxType]), 8) / 8;
 
 
 					auto binCountSend = bins.mSimpleBins.mBinCount[bIdxType];
@@ -844,7 +844,7 @@ namespace osuCrypto
 		std::vector<std::thread>  thrds(chls.size());
 		// std::vector<std::thread>  thrds(1);        
 
-		BaseOPPRF mPoly;
+		
 
 		std::mutex mtx;
 		NTL::vec_GF2E x; NTL::vec_GF2E y;
@@ -870,12 +870,16 @@ namespace osuCrypto
 
 				//2 type of bins: normal bin in inital step + stash bin
 
+				/*BaseOPPRF mPoly;
 				bins.mMaskSize = roundUpTo(mStatSecParam + std::log2(bins.mSimpleBins.mMaxBinSize[1]), 8) / 8;
-				mPoly.poly_init(bins.mMaskSize);
+				mPoly.poly_init(bins.mMaskSize);*/
 
 				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
 				{
 
+					BaseOPPRF mPoly;
+					bins.mMaskSize = roundUpTo(mStatSecParam + std::log2(bins.mSimpleBins.mMaxBinSize[bIdxType]), 8) / 8;
+					mPoly.poly_init(bins.mMaskSize);
 
 					auto binCountSend = bins.mSimpleBins.mBinCount[bIdxType];
 					u64 binStart, binEnd;

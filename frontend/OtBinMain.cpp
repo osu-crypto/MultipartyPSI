@@ -30,7 +30,7 @@ std::vector<block> sendSet;
 std::vector<block> mSet;
 u64 nParties(3);
 
-u64 opt = 3;
+u64 opt = 0;
 
 void Channel_test()
 {
@@ -1475,43 +1475,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 		}
 
 
-		if (myIdx != leaderIdx) {//generate share of zero for leader myIDx!=n-1		
-			for (u64 idxP = 0; idxP < ttParties; ++idxP)
-			{
-				sendPayLoads[idxP].resize(setSize);
-				for (u64 i = 0; i < setSize; ++i)
-				{
-					sendPayLoads[idxP][i] = prng.get<block>();
-				}
-			}
-
-			sendPayLoads[ttParties].resize(setSize); //share to leader at second phase
-			for (u64 i = 0; i < setSize; ++i)
-			{
-				sendPayLoads[ttParties][i] = ZeroBlock;
-				for (u64 idxP = 0; idxP < ttParties; ++idxP)
-				{
-					sendPayLoads[ttParties][i] =
-						sendPayLoads[ttParties][i] ^ sendPayLoads[idxP][i];
-				}
-			}
-			for (u64 idxP = 0; idxP < recvPayLoads.size(); ++idxP)
-			{
-				recvPayLoads[idxP].resize(setSize);
-			}
-
-		}
-		else
-		{
-			//leader: dont send; only receive ss from clients
-			sendPayLoads.resize(0);//
-			recvPayLoads.resize(nParties - 1);
-			for (u64 idxP = 0; idxP < recvPayLoads.size(); ++idxP)
-			{
-				recvPayLoads[idxP].resize(setSize);
-			}
-
-		}
+	
 
 
 #ifdef PRINT	
@@ -1579,6 +1543,46 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 		//##########################
 		Timer timer;
 		auto start = timer.setTimePoint("start");
+
+		if (myIdx != leaderIdx) {//generate share of zero for leader myIDx!=n-1		
+			for (u64 idxP = 0; idxP < ttParties; ++idxP)
+			{
+				sendPayLoads[idxP].resize(setSize);
+				for (u64 i = 0; i < setSize; ++i)
+				{
+					sendPayLoads[idxP][i] = prng.get<block>();
+				}
+			}
+
+			sendPayLoads[ttParties].resize(setSize); //share to leader at second phase
+			for (u64 i = 0; i < setSize; ++i)
+			{
+				sendPayLoads[ttParties][i] = ZeroBlock;
+				for (u64 idxP = 0; idxP < ttParties; ++idxP)
+				{
+					sendPayLoads[ttParties][i] =
+						sendPayLoads[ttParties][i] ^ sendPayLoads[idxP][i];
+				}
+			}
+			for (u64 idxP = 0; idxP < recvPayLoads.size(); ++idxP)
+			{
+				recvPayLoads[idxP].resize(setSize);
+			}
+
+		}
+		else
+		{
+			//leader: dont send; only receive ss from clients
+			sendPayLoads.resize(0);//
+			recvPayLoads.resize(nParties - 1);
+			for (u64 idxP = 0; idxP < recvPayLoads.size(); ++idxP)
+			{
+				recvPayLoads[idxP].resize(setSize);
+			}
+
+		}
+
+
 		bins.init(myIdx, nParties, setSize, psiSecParam, opt);
 		u64 otCountSend = bins.mSimpleBins.mBins.size();
 		u64 otCountRecv = bins.mCuckooBins.mBins.size();
