@@ -30,7 +30,7 @@ std::vector<block> sendSet;
 std::vector<block> mSet;
 u64 nParties(3);
 
-u64 opt = 1;
+u64 opt = 2;
 
 void Channel_test()
 {
@@ -372,7 +372,7 @@ void party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 					recv[pIdx].getOPRFkeys(pIdx, bins, chls[pIdx], true);
 				}
 				else if (pIdx > myIdx) {
-					send[pIdx - myIdx - 1].getOPRFKeys(pIdx, bins, chls[pIdx], true);
+					send[pIdx - myIdx - 1].getOPRFkeys(pIdx, bins, chls[pIdx], true);
 				}
 			});
 		}
@@ -829,7 +829,7 @@ void party3(u64 myIdx, u64 setSize, u64 nTrials)
 
 				if (pIdx == nextNeibough) {
 					//I am a sender to my next neigbour
-					send.getOPRFKeys(pIdx, bins, chls[pIdx], false);
+					send.getOPRFkeys(pIdx, bins, chls[pIdx], false);
 				}
 				else if (pIdx == prevNeibough) {
 					//I am a recv to my previous neigbour
@@ -1224,7 +1224,7 @@ void party2(u64 myIdx, u64 setSize)
 
 	if (myIdx == 0) {
 		//I am a sender to my next neigbour
-		send.getOPRFKeys(1, bins, chls[1], false);
+		send.getOPRFkeys(1, bins, chls[1], false);
 	}
 	else if (myIdx == 1) {
 		//I am a recv to my previous neigbour
@@ -1803,7 +1803,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize,  u64 nTrials)
 						//dual myIdx << " <-> " << nextIdx 
 						if (myIdx < nextIdx)
 						{
-							send[nextIdx].getOPRFKeys(nextIdx, bins, chls[nextIdx], true);
+							send[nextIdx].getOPRFkeys(nextIdx, bins, chls[nextIdx], true);
 						}
 						else if (myIdx > nextIdx) //by index
 						{
@@ -1815,14 +1815,14 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize,  u64 nTrials)
 				else
 				{
 					pThrds[pIdx] = std::thread([&, nextIdx]() {
-						send[nextIdx].getOPRFKeys(nextIdx, bins, chls[nextIdx], false);
+						send[nextIdx].getOPRFkeys(nextIdx, bins, chls[nextIdx], false);
 					});
 				}
 			}
 
 			//last thread for connecting with leader
 			pThrds[pThrds.size() - 1] = std::thread([&, leaderIdx]() {
-				send[leaderIdx].getOPRFKeys(leaderIdx, bins, chls[leaderIdx], false);
+				send[leaderIdx].getOPRFkeys(leaderIdx, bins, chls[leaderIdx], false);
 			});
 
 		}
@@ -2454,7 +2454,7 @@ void aug_party_test(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mS
 	}
 	else {
 		//I am a recv to my previous neigbour
-		send.getOPRFKeys(0, bins, chls[0], false);
+		send.getOPRFkeys(0, bins, chls[0], false);
 	}
 
 
@@ -2783,7 +2783,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 	}
 	else {
 		//I am a recv to my previous neigbour
-		send.getOPRFKeys(0, bins, chls[0], false);
+		send.getOPRFkeys(0, bins, chls[0], false);
 	}
 
 

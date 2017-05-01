@@ -96,7 +96,7 @@ namespace osuCrypto
 						if (isOPRF && (opt == 0 || opt==1))//seperated oprf
 							Log::out << "    c_OPRF=" << mBins[i].mValOPRF[IdxP][j];
 						if (isOPRF && (opt == 2 || opt == 3))//combined oprf
-							Log::out << "    c_OPRF=" 
+							Log::out <<"    mOprfs="
 							<< mOprfs[IdxP][mBins[i].mIdx[j]][mBins[i].hIdx[j]];
 
 						if (isMap && opt==0)

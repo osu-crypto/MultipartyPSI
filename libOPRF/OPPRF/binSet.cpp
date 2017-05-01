@@ -57,6 +57,9 @@ namespace osuCrypto
         if (inputs.size() != mN)
             throw std::runtime_error(LOCATION);	
 
+		if (mOpt != 0)
+			mXsets = inputs;
+
 
         std::vector<std::thread>  thrds(numThreads);
       //  std::vector<std::thread>  thrds(1);

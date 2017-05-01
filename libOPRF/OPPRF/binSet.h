@@ -33,9 +33,9 @@ namespace osuCrypto
 		u64 mOpt;
 
 		std::vector<std::vector<block>> mNcoInputBuff; //hash(x)
-		//std::vector<std::vector<block>> mSetX;//x
 
 	//	OPPRFSender aaa;
+		std::vector<block> mXsets;
 		
 
 		CuckooHasher1 mCuckooBins;

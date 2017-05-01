@@ -1773,6 +1773,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 	for (u64 i = 0; i < setSize; ++i)
 		set[i] = mSet[i];
 
+	
 	PRNG prng1(_mm_set_epi32(4253465, 3434565, 234435, myIdx)); //for test
 	//set[0] = prng1.get<block>();;
 
@@ -1913,8 +1914,8 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 	//### Hashing
 	//##########################
 	bins.hashing2Bins(set, 1);
-	bins.mSimpleBins.print(myIdx, true, false, false, false);
-	bins.mCuckooBins.print(myIdx, true, false, false);
+	//bins.mSimpleBins.print(myIdx, true, false, false, false);
+	//bins.mCuckooBins.print(myIdx, true, false, false);
 
 	//##########################
 	//### Online Phasing - compute OPRF
@@ -1945,12 +1946,12 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 	if (myIdx == 0)
 	{
 		//bins.mSimpleBins.print(2, true, true, false, false);
-		bins.mCuckooBins.print(1, true, true, false);
+		//bins.mCuckooBins.print(1, true, true, false);
 		Log::out << "------------" << Log::endl;
 	}
-	if (myIdx == 2)
+	if (myIdx == 1)
 	{
-		bins.mSimpleBins.print(0, true, true, false, false);
+		bins.mSimpleBins.print(0, true, true, false, false,opt);
 		//bins.mCuckooBins.print(0, true, true, false);
 	}
 

@@ -893,7 +893,7 @@ namespace osuCrypto
 		std::vector<std::thread>  thrds(chls.size());
 		// this mutex is used to guard inserting things into the intersection vector.
 		std::mutex mInsertMtx;
-
+		u32 numHashes = bins.mSimpleBins.mNumHashes[0] + bins.mSimpleBins.mNumHashes[1];
 		auto& chl = *chls[0];
 
 		ByteStream maskBuffer;
@@ -901,25 +901,26 @@ namespace osuCrypto
 		BaseOPPRF b;
 		b.poly_init(bins.mMaskSize);
 		NTL::GF2E e;
-		NTL::GF2EX polynomial;
+		std::vector<NTL::GF2EX> polynomial(numHashes);
 
 		auto maskView = maskBuffer.getMatrixView<u8>(bins.mMaskSize);
 
-			//std::cout << "maskView.size()" << maskView.size() << "\n";
+			std::cout << "maskView.size()" << maskView.size()[0] << "\n";
 			//std::cout << "totalMask: " << totalMask << "\n";
 
 		//std::cout << "\nr[" << IdxP << "]-coeffs[3]" << maskView[3] << "\n";
 
 		block blkCoff;
-		for (u64 i = 0; i < maskView.size()[0]; ++i)
-		{
+		for (u64 hIdx = 0; hIdx < numHashes; ++hIdx)
+			for (u64 i = 0; i < maskView.size()[0]; ++i)
+			{
 
-			memcpy(&blkCoff, maskView[i].data(), bins.mMaskSize);
-			if(i==3)
-				std::cout << "\nr[" << IdxP << "]-coeffs[3]" << blkCoff << "\n";
-			b.GF2EFromBlock(e, blkCoff, bins.mMaskSize);
-			NTL::SetCoeff(polynomial, i, e); //build res_polynomial
-		}
+				memcpy(&blkCoff, maskView[hIdx].data() + i* bins.mMaskSize, bins.mMaskSize);
+				if(i==3 && hIdx==0)
+					std::cout << "\nr[" << IdxP << "]-coeffs][0][3]" << blkCoff << "\n";
+				b.GF2EFromBlock(e, blkCoff, bins.mMaskSize);
+				NTL::SetCoeff(polynomial[hIdx], i, e); //build res_polynomial
+			}
 
 #if 1
 
@@ -963,15 +964,16 @@ namespace osuCrypto
 							if (!bin.isEmpty())
 							{
 								u64 inputIdx = bin.idx();
+								u64 hIdx = bin.hashIdx();
 								block blkY;
-								b.GF2EFromBlock(e, bin.mValOPRF[IdxP], bins.mMaskSize);
-								e = NTL::eval(polynomial, e); //get y=f(x) in GF2E
+								b.GF2EFromBlock(e, bins.mXsets[inputIdx], bins.mMaskSize);
+								e = NTL::eval(polynomial[hIdx], e); //get y=f(x) in GF2E
 								b.BlockFromGF2E(blkY, e, bins.mMaskSize);
 
-								if (bIdx == 0)
+								if (inputIdx == 0)
 								{
-									std::cout << "r["<< IdxP<<"]-bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP];
-									std::cout << "-----------" << blkY << std::endl;
+									std::cout << "inputIdx[" << inputIdx << "]-hIdx[" << hIdx << "]-OPRF" << bin.mValOPRF[IdxP];
+									std::cout << "\n----" << blkY << std::endl;
 								}
 								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
 							}
