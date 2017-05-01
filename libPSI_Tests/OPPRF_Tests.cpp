@@ -1089,7 +1089,7 @@ void party(u64 myIdx, u64 setSize, std::vector<block>& mSet)
 		set[i] = mSet[i];
 	}
 	PRNG prng1(_mm_set_epi32(4253465, 3434565, 234435, myIdx));
-	set[0] = prng1.get<block>();;
+	//set[0] = prng1.get<block>();;
 	for (u64 idxP = 0; idxP < nParties; ++idxP)
 	{
 		sendPayLoads[idxP].resize(setSize);

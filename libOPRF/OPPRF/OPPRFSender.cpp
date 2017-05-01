@@ -1015,7 +1015,7 @@ namespace osuCrypto
 		if (plaintexts.size() != mN)
 			throw std::runtime_error(LOCATION);
 
-		bins.mMaskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) + std::log(bins.mSimpleBins.mNumHashes[0] + bins.mSimpleBins.mNumHashes[1]) - 1, 8) / 8;
+		bins.mMaskSize = roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 
 		if (bins.mMaskSize > sizeof(block))
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
@@ -1116,12 +1116,17 @@ namespace osuCrypto
 		//ADDING DUMMY
 		//because 2 h(x1) and h(x2) might have the same value
 		for (u64 hIdx = 0; hIdx < numHashes; ++hIdx)
-		for (u32 i = 0; i <bins.mN -size_vec_GF2E_X[hIdx]; i++)
 		{
-			NTL::random(e);
-			vec_GF2E_X[hIdx].append(e);
-			NTL::random(e);
-			vec_GF2E_Y[hIdx].append(e);
+				std::cout << "bins.mN - size_vec_GF2E_X["<<hIdx<<"]" 
+					<< bins.mN - size_vec_GF2E_X[hIdx] <<"\n";
+
+			for (u32 i = 0; i < bins.mN - size_vec_GF2E_X[hIdx]; i++)
+			{
+				NTL::random(e);
+				vec_GF2E_X[hIdx].append(e);
+				NTL::random(e);
+				vec_GF2E_Y[hIdx].append(e);
+			}
 		}
 
 
@@ -1149,7 +1154,7 @@ namespace osuCrypto
 		//it already contain a dummy item
 		for (u64 hIdx = 0; hIdx < numHashes; ++hIdx)
 		{
-			std::cout << "coeffs["<<hIdx<<"].size()"<<coeffs[hIdx].size()<<"\n";
+			//std::cout << "coeffs["<<hIdx<<"].size()"<<coeffs[hIdx].size()<<"\n";
 			for (u64 i = 0; i < coeffs[hIdx].size(); ++i)
 			{
 				memcpy(
@@ -1159,8 +1164,8 @@ namespace osuCrypto
 					bins.mMaskSize);
 			}
 		}
-			std::cout << "s[" <<IdxP<<"]-coeffs[0][3]" << coeffs[0][3] << "\n";
-
+		std::cout << "s[" << IdxP << "]-coeffs[1][3]" << coeffs[1][3] << "\n";
+		
 		
 		auto& chl = *chls[0];
 		chl.asyncSend(std::move(sendMaskBuff));

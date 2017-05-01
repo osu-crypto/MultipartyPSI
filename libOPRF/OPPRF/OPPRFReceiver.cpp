@@ -883,8 +883,9 @@ namespace osuCrypto
 		gTimer.setTimePoint("online.recv.start");
 
 		 
+		u32 numHashes = bins.mSimpleBins.mNumHashes[0] + bins.mSimpleBins.mNumHashes[1];
 
-		bins.mMaskSize= roundUpTo(mStatSecParam + 2 * std::log(mN) + std::log(bins.mSimpleBins.mNumHashes[0]+ bins.mSimpleBins.mNumHashes[1]) - 1, 8) / 8;
+		bins.mMaskSize= roundUpTo(mStatSecParam + 2 * std::log(mN) - 1, 8) / 8;
 
 		if (bins.mMaskSize > sizeof(block))
 			throw std::runtime_error("masked are stored in blocks, so they can exceed that size");
@@ -893,7 +894,7 @@ namespace osuCrypto
 		std::vector<std::thread>  thrds(chls.size());
 		// this mutex is used to guard inserting things into the intersection vector.
 		std::mutex mInsertMtx;
-		u32 numHashes = bins.mSimpleBins.mNumHashes[0] + bins.mSimpleBins.mNumHashes[1];
+		
 		auto& chl = *chls[0];
 
 		ByteStream maskBuffer;
@@ -905,19 +906,19 @@ namespace osuCrypto
 
 		auto maskView = maskBuffer.getMatrixView<u8>(bins.mMaskSize);
 
-			std::cout << "maskView.size()" << maskView.size()[0] << "\n";
+			//std::cout << "maskView.size()" << maskView.size()[0] << "\n";
 			//std::cout << "totalMask: " << totalMask << "\n";
 
 		//std::cout << "\nr[" << IdxP << "]-coeffs[3]" << maskView[3] << "\n";
 
 		block blkCoff;
 		for (u64 hIdx = 0; hIdx < numHashes; ++hIdx)
-			for (u64 i = 0; i < maskView.size()[0]; ++i)
+			for (u64 i = 0; i < mN; ++i)
 			{
 
-				memcpy(&blkCoff, maskView[hIdx].data() + i* bins.mMaskSize, bins.mMaskSize);
-				if(i==3 && hIdx==0)
-					std::cout << "\nr[" << IdxP << "]-coeffs][0][3]" << blkCoff << "\n";
+				memcpy(&blkCoff, maskView[hIdx*mN+i].data() , bins.mMaskSize);
+				if(i==3 && hIdx==1)
+					std::cout << "\nr[" << IdxP << "]-coeffs][1][3]" << blkCoff << "\n";
 				b.GF2EFromBlock(e, blkCoff, bins.mMaskSize);
 				NTL::SetCoeff(polynomial[hIdx], i, e); //build res_polynomial
 			}
