@@ -41,11 +41,11 @@ int main(int argc, char** argv)
 	//OPPRFn_Aug_EmptrySet_Test_Impl();
 	//return 0;
 
-	u64 trials=2;
+	u64 trials=10;
 
 	std::vector<block> mSet;
 	 u64 setSize = 1 << 12, psiSecParam = 40, bitSize = 128;
-	 u64 nParties, tParties;
+	 u64 nParties, tParties,opt_basedOPPRF;
 	 u64 roundOPPRF;
 	 PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	 mSet.resize(setSize);
@@ -53,10 +53,12 @@ int main(int argc, char** argv)
 		 mSet[i] = prng.get<block>();
 
 	
-	 nParties = atoi(argv[1]);
-	 u64 pIdx = atoi(argv[2]);
-	 std::cout << "pIdx:  " << pIdx << "\n";
-	 std::cout << "nParties:  " << nParties << "\n";
+	 opt_basedOPPRF = atoi(argv[1]);
+	 nParties = atoi(argv[2]);
+	 u64 pIdx = atoi(argv[3]);
+
+	 std::cout << "pIdx: " << pIdx << "\t";
+	 std::cout << "nParties: " << nParties << "\n";
 
 	 //TODO(remove this hack: unconditional zero - sharing);
 	 //only one time => very mirror effect on perfomance
@@ -83,7 +85,7 @@ int main(int argc, char** argv)
 	 }
 
 
-	 aug_party(pIdx, nParties, mSet.size(), mSet, mPRNGSeeds[pIdx], trials);
+	 aug_party(pIdx, nParties, mSet.size(), mSet, mPRNGSeeds[pIdx], opt_basedOPPRF, trials);
 	// tparty(pIdx, nParties, 4, setSize, trials);
 	 return 0;
 
@@ -102,13 +104,13 @@ int main(int argc, char** argv)
 				 if (roundOPPRF == 1)
 				 {
 					// party3(pIdx, setSize, trials);
-					 aug_party(pIdx, nParties, setSize, mSet, mPRNGSeeds[pIdx], trials);
+					 aug_party(pIdx, nParties, setSize, mSet, mPRNGSeeds[pIdx], opt_basedOPPRF, trials);
 				 }
 				 else
 				 {
 					// tparty(pIdx, nParties, 2, setSize, trials);
 					 std::cout << "aug_party";
-					aug_party(pIdx, 2, mSet.size(), mSet, mPRNGSeeds[pIdx], trials);
+					aug_party(pIdx, 2, mSet.size(), mSet, mPRNGSeeds[pIdx], opt_basedOPPRF,trials);
 				 }
 			 
 			 }

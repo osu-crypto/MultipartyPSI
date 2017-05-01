@@ -842,11 +842,11 @@ namespace osuCrypto
 								{
 									memcpy(&bin.mCoeffs[IdxP][i],maskView[baseMaskIdx].data()+i*bins.mMaskSize, bins.mMaskSize);
 
-									if (bIdx == 0 && i==3)
+									/*if (bIdx == 0 && i==3)
 									{
 										Log::out << "r["<< IdxP<<"]-coeffs[" << i << "] #" << bin.mCoeffs[IdxP][i] << Log::endl;
 										
-									}
+									}*/
 								}
 							
 								block blkY;
@@ -873,9 +873,6 @@ namespace osuCrypto
 		for (auto& thrd : thrds)
 			thrd.join();
 
-		// check that the number of inputs is as expected.
-		//if (plaintexts.size() != mN)
-		//	throw std::runtime_error(LOCATION);
 	
 
 	}
@@ -920,8 +917,8 @@ namespace osuCrypto
 			{
 
 				memcpy(&blkCoff, maskView[hIdx*mN+i].data() , bins.mMaskSize);
-				if(i==3 && hIdx==1)
-					std::cout << "\nr[" << IdxP << "]-coeffs][1][3]" << blkCoff << "\n";
+				/*if(i==3 && hIdx==1)
+					std::cout << "\nr[" << IdxP << "]-coeffs][1][3]" << blkCoff << "\n";*/
 				b.GF2EFromBlock(e, blkCoff, bins.mMaskSize);
 				NTL::SetCoeff(polynomial[hIdx], i, e); //build res_polynomial
 			}
@@ -974,11 +971,11 @@ namespace osuCrypto
 								e = NTL::eval(polynomial[hIdx], e); //get y=f(x) in GF2E
 								b.BlockFromGF2E(blkY, e, bins.mMaskSize);
 
-								if (inputIdx == 0)
+								/*if (inputIdx == 0)
 								{
 									std::cout << "inputIdx[" << inputIdx << "]-hIdx[" << hIdx << "]-OPRF" << bin.mValOPRF[IdxP];
 									std::cout << "\n----" << blkY << std::endl;
-								}
+								}*/
 								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
 							}
 						}
@@ -1036,11 +1033,11 @@ namespace osuCrypto
 
 		auto maskBFView = maskBuffer.getMatrixView<u8>(bins.mMaskSize);
 
-		std::cout << "\nr[" << IdxP << "]-maskBFView.size() " << maskBFView.size()[0] << "\n";
+		//std::cout << "\nr[" << IdxP << "]-maskBFView.size() " << maskBFView.size()[0] << "\n";
 	//	std::cout << "\nr[" << IdxP << "]-mBfBitCount " << mBfSize << "\n";
 		//std::cout << "totalMask: " << totalMask << "\n";
 
-		std::cout << "\nr[" << IdxP << "]-maskBFView[1][3]" << maskBFView[1][3] << "\n";
+		//std::cout << "\nr[" << IdxP << "]-maskBFView[1][3]" << maskBFView[1][3] << "\n";
 
 #if 1
 
@@ -1096,17 +1093,17 @@ namespace osuCrypto
 									idx %= mBfSize;
 									auto theirBFMask = ZeroBlock;
 									memcpy(&theirBFMask, maskBFView[hIdx*mBfSize + idx].data(), bins.mMaskSize);
-									if(hIdx==1&&idx==3)
-										std::cout << "\nr[" << IdxP << "]-GarbleBF[1][3]" << theirBFMask << "\n";
+									/*if(hIdx==1&&idx==3)
+										std::cout << "\nr[" << IdxP << "]-GarbleBF[1][3]" << theirBFMask << "\n";*/
 
 									blkY = blkY ^ theirBFMask;
 								}								
 
-								if (inputIdx == 0)
+								/*if (inputIdx == 0)
 								{
 									std::cout << "inputIdx[" << inputIdx << "]-hIdx[" << hIdx << "]-OPRF" << bin.mValOPRF[IdxP];
 									std::cout << "\n----" << blkY << std::endl;
-								}
+								}*/
 								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
 							}
 						}
@@ -1126,7 +1123,7 @@ namespace osuCrypto
 
 	}
 
-	
+
 	void OPPRFReceiver::sendSSTableBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 	{
 		if (plaintexts.size() != mN)
@@ -1159,7 +1156,7 @@ namespace osuCrypto
 				//2 type of bins: normal bin in inital step + stash bin
 				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
 				{
-					bins.mMaskSize = roundUpTo(mStatSecParam + std::log2(bins.mSimpleBins.mNumBits[bIdxType]), 8) / 8;
+					bins.mMaskSize = roundUpTo(mStatSecParam + std::log2(bins.mSimpleBins.mMaxBinSize[bIdxType]), 8) / 8;
 
 
 					auto binCountSend = bins.mSimpleBins.mBinCount[bIdxType];
@@ -1344,7 +1341,7 @@ namespace osuCrypto
 		std::vector<std::thread>  thrds(chls.size());
 		// std::vector<std::thread>  thrds(1);        
 
-		BaseOPPRF mPoly;
+
 
 		std::mutex mtx;
 		NTL::vec_GF2E x; NTL::vec_GF2E y;
@@ -1370,12 +1367,12 @@ namespace osuCrypto
 
 				//2 type of bins: normal bin in inital step + stash bin
 
-				bins.mMaskSize = roundUpTo(mStatSecParam + std::log2(bins.mSimpleBins.mMaxBinSize[1]), 8) / 8;
-				mPoly.poly_init(bins.mMaskSize);
-
 				for (auto bIdxType = 0; bIdxType < 2; bIdxType++)
 				{
 
+					BaseOPPRF mPoly;
+					bins.mMaskSize = roundUpTo(mStatSecParam + std::log2(bins.mSimpleBins.mMaxBinSize[bIdxType]), 8) / 8;
+					mPoly.poly_init(bins.mMaskSize);
 
 					auto binCountSend = bins.mSimpleBins.mBinCount[bIdxType];
 					u64 binStart, binEnd;
@@ -1423,11 +1420,11 @@ namespace osuCrypto
 									//NOTE that it is fine to compute p(oprf(x[i]))=y[i] as long as receiver reconstruct y*=p(oprf(x*))
 
 									setY[i] = plaintexts[inputIdx] ^ bin.mValOPRF[IdxP][i];
-									if (bIdx == 0)
+									/*	if (bIdx == 0)
 									{
-										std::cout << "s bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP][i];
-										std::cout << "-----------" << setY[i] << std::endl;
-									}
+									std::cout << "s bin.mValOPRF[" << bIdx << "] " << bin.mValOPRF[IdxP][i];
+									std::cout << "-----------" << setY[i] << std::endl;
+									}*/
 								}
 
 								std::vector<block> coeffs;
@@ -1437,22 +1434,21 @@ namespace osuCrypto
 								mPoly.getBlkCoefficients(bins.mSimpleBins.mMaxBinSize[bIdxType],
 									bin.mValOPRF[IdxP], setY, coeffs);
 
-								if (bIdx == 0)
-								{
-									//Log::out << "coeffs.size(): " << coeffs.size()<< Log::endl;
+								//if (bIdx == 0)
+								//{
+								//	//Log::out << "coeffs.size(): " << coeffs.size()<< Log::endl;
 
-									for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
-										if (i == 3)
-											Log::out << IdxP << "s-coeffs[" << i << "] #" << coeffs[i] << Log::endl;
-								}
+								//	for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
+								//		if (i == 3)
+								//			Log::out << IdxP << "s-coeffs[" << i << "] #" << coeffs[i] << Log::endl;
+								//}
 
 								//it already contain a dummy item
 								for (u64 i = 0; i < bins.mSimpleBins.mMaxBinSize[bIdxType]; ++i)
 								{
 									memcpy(
 										maskView[baseMaskIdx].data() + i* bins.mMaskSize,
-										(u8*)&coeffs[i],  //make randome
-														  //	(u8*)&ZeroBlock,  //make randome
+										(u8*)&coeffs[i],  
 										bins.mMaskSize);
 								}
 
@@ -1469,38 +1465,10 @@ namespace osuCrypto
 							}
 						}
 
-#ifdef PRINT
-						Log::out << "maskSize: ";
-						for (size_t i = 0; i < maskView.size()[0]; i++)
-						{
-							for (size_t j = 0; j < mSimpleBins.mNumBits[bIdxType]; j++)
-							{
-								Log::out << static_cast<int16_t>(maskView[i][j]) << " ";
-							}
-							Log::out << Log::endl;
-
-							for (size_t j = 0; j < mSimpleBins.mMaxBinSize[bIdxType]; j++) {
-								auto theirMask = ZeroBlock;
-								memcpy(&theirMask, maskView[i].data() + j*maskSize + mSimpleBins.mNumBits[bIdxType], maskSize);
-								if (theirMask != ZeroBlock)
-								{
-									Log::out << theirMask << " " << Log::endl;
-								}
-							}
-						}
-#endif
 						chl.asyncSend(std::move(sendMaskBuff));
 
 					}
 				}
-				if (tIdx == 0) gTimer.setTimePoint("online.send.sendMask");
-
-				//	otSend.check(chl);
-
-
-
-				/* if (tIdx == 0)
-				chl.asyncSend(std::move(sendMaskBuff));*/
 
 				if (tIdx == 0) gTimer.setTimePoint("online.send.finalMask");
 #endif
@@ -1511,10 +1479,6 @@ namespace osuCrypto
 
 		for (auto& thrd : thrds)
 			thrd.join();
-
-		//    permThrd.join();
-
-
 
 	}
 	void OPPRFReceiver::sendFullPolyBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
@@ -1594,11 +1558,11 @@ namespace osuCrypto
 							vec_GF2E_X[hIdx].append(e);
 							size_vec_GF2E_X[hIdx]++;
 
-							if (inputIdx == 0)
+							/*if (inputIdx == 0)
 							{
-								std::cout << "inputIdx[" << inputIdx << "]-hIdx[" << hIdx << "]-OPRF" << bins.mSimpleBins.mOprfs[IdxP][inputIdx][hIdx];
-								std::cout << "\n----" << y << std::endl;
-							}
+							std::cout << "inputIdx[" << inputIdx << "]-hIdx[" << hIdx << "]-OPRF" << bins.mSimpleBins.mOprfs[IdxP][inputIdx][hIdx];
+							std::cout << "\n----" << y << std::endl;
+							}*/
 						}
 
 
@@ -1616,7 +1580,7 @@ namespace osuCrypto
 
 		for (auto& thrd : thrds)
 			thrd.join();
-		std::cout << bins.mN << " - " << bins.mSimpleBins.mNumHashes[0] << " " << bins.mSimpleBins.mNumHashes[1] << "\n";
+		/*std::cout << bins.mN << " - " << bins.mSimpleBins.mNumHashes[0] << " " << bins.mSimpleBins.mNumHashes[1] << "\n";*/
 
 
 
@@ -1624,8 +1588,8 @@ namespace osuCrypto
 		//because 2 h(x1) and h(x2) might have the same value
 		for (u64 hIdx = 0; hIdx < numHashes; ++hIdx)
 		{
-			std::cout << "bins.mN - size_vec_GF2E_X[" << hIdx << "]"
-				<< bins.mN - size_vec_GF2E_X[hIdx] << "\n";
+			/*std::cout << "bins.mN - size_vec_GF2E_X[" << hIdx << "]"
+				<< bins.mN - size_vec_GF2E_X[hIdx] << "\n";*/
 
 			for (u32 i = 0; i < bins.mN - size_vec_GF2E_X[hIdx]; i++)
 			{
@@ -1671,7 +1635,7 @@ namespace osuCrypto
 					bins.mMaskSize);
 			}
 		}
-		std::cout << "s[" << IdxP << "]-coeffs[1][3]" << coeffs[1][3] << "\n";
+		//std::cout << "s[" << IdxP << "]-coeffs[1][3]" << coeffs[1][3] << "\n";
 
 
 		auto& chl = *chls[0];
@@ -1688,7 +1652,6 @@ namespace osuCrypto
 
 		u32 numHashes = bins.mSimpleBins.mNumHashes[0] + bins.mSimpleBins.mNumHashes[1];
 
-		u64 extend_mN = mN * (bins.mCuckooBins.mParams.mNumHashes[0] + bins.mCuckooBins.mParams.mNumHashes[1]);
 
 		//our BF: y-oprf(x)=\xor hashBF_i(x)
 		//each x has 5 diffirent values oprf1(x),...,oprf5(x)
@@ -1801,13 +1764,13 @@ namespace osuCrypto
 							memcpy(maskBFView[hIdx*mBfSize + firstFreeIdx].data(), (u8*)&GarbleBF[hIdx][firstFreeIdx], bins.mMaskSize);
 
 
-							if (inputIdx == 0)
+							/*	if (inputIdx == 0)
 							{
-								block y = plaintexts[inputIdx] ^ bins.mSimpleBins.mOprfs[IdxP][inputIdx][hIdx];
+							block y = plaintexts[inputIdx] ^ bins.mSimpleBins.mOprfs[IdxP][inputIdx][hIdx];
 
-								std::cout << "inputIdx[" << inputIdx << "]-hIdx[" << hIdx << "]-OPRF" << bins.mSimpleBins.mOprfs[IdxP][inputIdx][hIdx];
-								std::cout << "\n----" << y << std::endl;
-							}
+							std::cout << "inputIdx[" << inputIdx << "]-hIdx[" << hIdx << "]-OPRF" << bins.mSimpleBins.mOprfs[IdxP][inputIdx][hIdx];
+							std::cout << "\n----" << y << std::endl;
+							}*/
 
 						}
 
@@ -1841,20 +1804,18 @@ namespace osuCrypto
 			}
 		}
 
-		std::cout << "\ns[" << IdxP << "]-maskBFView.size() " << maskBFView.size()[0] * maskBFView.size()[1] << "\n";
-		std::cout << "\ns[" << IdxP << "]-mBfSize " << mBfSize << "\n";
-		std::cout << "\ns[" << IdxP << "]-mMaskSize " << bins.mMaskSize << "\n";
+		//std::cout << "\ns[" << IdxP << "]-maskBFView.size() " << maskBFView.size()[0] << "\n";
+		//std::cout << "\ns[" << IdxP << "]-mBfSize " << mBfSize << "\n";
+		//std::cout << "\ns[" << IdxP << "]-mMaskSize " << bins.mMaskSize << "\n";
 
+		std::cout << "\ns[" << IdxP << "]-dataSent(bytes)" << maskBFView.size()[0] * maskBFView.size()[1] << "\n";
 
-		std::cout << "\ns[" << IdxP << "]-GarbleBF[1][3]" << GarbleBF[1][3] << "\n";
+		//std::cout << "\ns[" << IdxP << "]-GarbleBF[1][3]" << GarbleBF[1][3] << "\n";
 
-
-#if 1
 
 		auto& chl = *chls[0];
 		chl.asyncSend(std::move(sendMaskBuff));
 
-#endif // 0
 
 	}
 }

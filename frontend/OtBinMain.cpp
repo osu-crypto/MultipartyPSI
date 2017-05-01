@@ -30,7 +30,8 @@ std::vector<block> sendSet;
 std::vector<block> mSet;
 u64 nParties(3);
 
-u64 opt = 0;
+u64 opt = 2;
+bool isNTLThreadSafe = false;
 
 void Channel_test()
 {
@@ -2265,11 +2266,13 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 
 
 
-void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, std::vector<PRNG>& mSeedPrng, u64 nTrials)
+void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, std::vector<PRNG>& mSeedPrng,u64 opt, u64 nTrials)
 {
 	//opt = 1;
 
 	std::fstream runtime;
+
+
 
 	u64 leaderIdx = nParties - 1;
 	u64 clientdx = 0; //one of them
@@ -2490,29 +2493,28 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 
 		if (myIdx == leaderIdx)
 		{
-			//I am a sender to my next neigbour		
-
-			if (opt == 0 || opt == 3)
-			{
-				std::vector<std::thread>  pThrds(nParties - 1);
-				for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
-				{
-
-					pThrds[pIdx] = std::thread([&, pIdx]() {
-						if (pIdx != leaderIdx)
-							recv[pIdx].recvSS(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
-					});
-				}
-				for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
-					pThrds[pIdx].join();
-			}
-			else //since NTL does not support thread safe => running in pipeline
-			{
+				
+			if (!isNTLThreadSafe && (bins.mOpt == 1 || bins.mOpt == 2))
+			{//since NTL does not support thread safe => running in pipeline for poly-based-OPPRF
 				for (u64 pIdx = 0; pIdx < nParties - 1; ++pIdx)
 				{
 					if (pIdx != leaderIdx)
 						recv[pIdx].recvSS(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
 				}
+			}
+			else {
+				
+					std::vector<std::thread>  pThrds(nParties - 1);
+					for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+					{
+
+						pThrds[pIdx] = std::thread([&, pIdx]() {
+							if (pIdx != leaderIdx)
+								recv[pIdx].recvSS(pIdx, bins, recvPayLoads[pIdx], chls[pIdx]);
+						});
+					}
+					for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
+						pThrds[pIdx].join();				
 			}
 
 		}
@@ -2587,13 +2589,38 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 
 
 		if (myIdx == clientdx || myIdx == leaderIdx) {
-			//	if (myIdx == leaderIdx) {
+			
+			if (myIdx == clientdx)
+			{
+				std::cout << "\nClient Idx: " << myIdx << "\n";
+			}
+			else
+			{
+				std::cout << "\nLeader Idx: " << myIdx << "\n";
+			}
+
+			if (myIdx == leaderIdx) {
+				Log::out << "#Output Intersection: " << mIntersection.size() << Log::endl;
+				Log::out << "#Expected Intersection: " << expected_intersection << Log::endl;
+				num_intersection = mIntersection.size();
+			}
+
 			auto offlineTime = std::chrono::duration_cast<std::chrono::milliseconds>(initDone - start).count();
 			auto hashingTime = std::chrono::duration_cast<std::chrono::milliseconds>(hashingDone - initDone).count();
 			auto getOPRFTime = std::chrono::duration_cast<std::chrono::milliseconds>(getOPRFDone - hashingDone).count();
 			auto ssTime = std::chrono::duration_cast<std::chrono::milliseconds>(getSSDone - getOPRFDone).count();
 			auto intersectionTime = std::chrono::duration_cast<std::chrono::milliseconds>(getIntersection - getSSDone).count();
 
+			//divide by #thread since it uses single thread in this case
+			//NTL not thread safe
+			if (!isNTLThreadSafe && (bins.mOpt == 1 || bins.mOpt == 2))
+			{
+				if (myIdx == leaderIdx)
+					std::cout << "interpolate using 1 thread: " << ssTime << " ms\n";
+
+				ssTime = ssTime / (nParties - 1);
+			}
+			
 			double onlineTime = hashingTime + getOPRFTime + ssTime + intersectionTime;
 
 			double time = offlineTime + onlineTime;
@@ -2630,20 +2657,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 				}
 			}
 
-			if (myIdx == clientdx)
-			{
-				std::cout << "Client Idx: " << myIdx << "\n";
-			}
-			else
-			{
-				std::cout << "\nLeader Idx: " << myIdx << "\n";
-			}
-
-			if (myIdx == leaderIdx) {
-				Log::out << "#Output Intersection: " << mIntersection.size() << Log::endl;
-				Log::out << "#Expected Intersection: " << expected_intersection << Log::endl;
-				num_intersection = mIntersection.size();
-			}
+			
 
 			std::cout << "setSize: " << setSize << "\n"
 				<< "offlineTime:  " << offlineTime << " ms\n"
@@ -2678,12 +2692,12 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 		runtime << "=========avg==========\n";
 		runtime << "numParty: " << nParties
 			<< "  setSize: " << setSize
-			<< "  nTrials:" << nTrials << "\n";
+			<< "  nTrials:" << nTrials;
 
 		if (myIdx == 0)
 		{
 			std::cout << "Client Idx: " << myIdx << "\n";
-			runtime << "Client Idx: " << myIdx << "\n";
+			runtime << "  Client Idx: " << myIdx << "\n";
 
 		}
 		else
@@ -2692,11 +2706,31 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 			Log::out << "#Output Intersection: " << num_intersection << Log::endl;
 			Log::out << "#Expected Intersection: " << expected_intersection << Log::endl;
 
-			runtime << "Leader Idx: " << myIdx << "\n";
+			runtime << "  Leader Idx: " << myIdx << "\n";
 			runtime << "#Output Intersection: " << num_intersection << "\n";
 			runtime << "#Expected Intersection: " << expected_intersection << "\n";
 		}
 
+		if (opt == 0)
+		{
+			std::cout << "OPPRF: Table\n";
+			runtime << "OPPRF: Table\n";
+		}
+		else if (opt == 1)
+		{
+			std::cout << "OPPRF: Poly-per-bin\n";
+			runtime << "OPPRF: Poly-per-bin\n";
+		}
+		else if (opt == 2)
+		{
+			std::cout << "OPPRF: Poly-per-hash\n";
+			runtime << "OPPRF: Poly-per-hash\n";
+		}
+		else if (opt == 3)
+		{
+			std::cout << "OPPRF: BF\n";
+			runtime << "OPPRF: BF\n";
+		}
 
 
 		std::cout << "numParty: " << nParties
@@ -2705,8 +2739,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 			<< "offlineTime:  " << offlineAvgTime / nTrials << " ms\n"
 			<< "hashingTime:  " << hashingAvgTime / nTrials << " ms\n"
 			<< "getOPRFTime:  " << getOPRFAvgTime / nTrials << " ms\n"
-			<< "ssClientTime:  " << ss2DirAvgTime / nTrials << " ms\n"
-			<< "ssLeaderTime:  " << ssRoundAvgTime / nTrials << " ms\n"
+			<< "ss2DirTime:  " << ss2DirAvgTime / nTrials << " ms\n"
 			<< "intersection:  " << intersectionAvgTime / nTrials << " ms\n"
 			<< "onlineTime:  " << onlineAvgTime / nTrials << " ms\n"
 			<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
@@ -2718,8 +2751,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 		runtime << "offlineTime:  " << offlineAvgTime / nTrials << " ms\n"
 			<< "hashingTime:  " << hashingAvgTime / nTrials << " ms\n"
 			<< "getOPRFTime:  " << getOPRFAvgTime / nTrials << " ms\n"
-			<< "ssClientTime:  " << ss2DirAvgTime / nTrials << " ms\n"
-			<< "ssLeaderTime:  " << ssRoundAvgTime / nTrials << " ms\n"
+			<< "ss2DirTime:  " << ss2DirAvgTime / nTrials << " ms\n"
 			<< "intersection:  " << intersectionAvgTime / nTrials << " ms\n"
 			<< "onlineTime:  " << onlineAvgTime / nTrials << " ms\n"
 			<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
@@ -2908,7 +2940,7 @@ void OPPRFn_Aug_EmptrySet_Test_Impl()
 	{
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			//	Channel_party_test(pIdx);
-			aug_party(pIdx, nParties, mSet.size(), mSet, mPRNGSeeds[pIdx], 1);
+			aug_party(pIdx, nParties, mSet.size(), mSet, mPRNGSeeds[pIdx], opt,1);
 		});
 	}
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)

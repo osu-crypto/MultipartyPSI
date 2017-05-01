@@ -335,7 +335,6 @@ namespace osuCrypto
 	//#################POLYNOMIAL
 
 	void BaseOPPRF::poly_init(u64 numBytes) {
-		std::cout << "numBytes" << numBytes << "\n";
 		mGf2x.~GF2X();
 		mNumBytes = numBytes;
 		NTL::BuildIrred(mGf2x, numBytes*8);
