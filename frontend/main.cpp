@@ -41,10 +41,10 @@ int main(int argc, char** argv)
 	//OPPRFn_Aug_EmptrySet_Test_Impl();
 	//return 0;
 
-	u64 trials=10;
+	u64 trials=5;
 
 	std::vector<block> mSet;
-	 u64 setSize = 1 << 12, psiSecParam = 40, bitSize = 128;
+	 u64 setSize = 1 << 16, psiSecParam = 40, bitSize = 128;
 	 u64 nParties, tParties,opt_basedOPPRF;
 	 u64 roundOPPRF;
 	 PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 	 }
 
 
-	 aug_party(pIdx, nParties, mSet.size(), mSet, mPRNGSeeds[pIdx], opt_basedOPPRF, trials);
+	 aug_party(pIdx, nParties, mSet.size(), mSet, mPRNGSeeds[pIdx], opt_basedOPPRF, 1);
 	// tparty(pIdx, nParties, 4, setSize, trials);
 	 return 0;
 

@@ -20,7 +20,7 @@ using namespace osuCrypto;
 #include "Common/Timer.h"
 #include "Crypto/PRNG.h"
 #include <numeric>
-
+#include <iostream>
 //#define OOS
 //#define PRINT
 #define pows  { 16/*8,12,,20*/ }
@@ -2042,7 +2042,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 		std::vector<u64> mIntersection;
 		if (myIdx == leaderIdx) {
 
-			u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
+			//u64 maskSize = roundUpTo(psiSecParam + 2 * std::log2(setSize) - 1, 8) / 8;
 
 			for (u64 i = 0; i < setSize; ++i)
 			{
@@ -2054,7 +2054,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 					sum = sum ^ recvPayLoads[idxP][i];
 				}
 
-				if (!memcmp((u8*)&ZeroBlock, &sum, maskSize))
+				if (!memcmp((u8*)&ZeroBlock, &sum, bins.mMaskSize))
 				{
 					mIntersection.push_back(i);
 				}
@@ -2196,7 +2196,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 			<< "intersection:  " << intersectionAvgTime / nTrials << " ms\n"
 			<< "onlineTime:  " << onlineAvgTime / nTrials << " ms\n"
 			<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
-			<< "Total time: " << avgTime << " s\n"
+			<< "Total time: " << avgTime / nTrials << " s\n"
 			<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
 			<< "\t Recv: " << (dataRecv / std::pow(2.0, 20)) << " MB\n"
 			<< "------------------\n";
@@ -2209,7 +2209,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 			<< "intersection:  " << intersectionAvgTime / nTrials << " ms\n"
 			<< "onlineTime:  " << onlineAvgTime / nTrials << " ms\n"
 			<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
-			<< "Total time: " << avgTime << " s\n"
+			<< "Total time: " << avgTime / nTrials << " s\n"
 			<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
 			<< "\t Recv: " << (dataRecv / std::pow(2.0, 20)) << " MB\n"
 			<< "------------------\n";
@@ -2342,6 +2342,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 
 	for (u64 idxTrial = 0; idxTrial < nTrials; idxTrial++)
 	{
+				
 #pragma region input
 
 		std::vector<block> set(setSize);
@@ -2666,10 +2667,11 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 				<< "ss2DirTime:  " << ssTime << " ms\n"
 				<< "intersection:  " << intersectionTime << " ms\n"
 				<< "onlineTime:  " << onlineTime << " ms\n"
-				<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
-				<< "Total time: " << time << " s\n"
-				<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
-				<< "\t Recv: " << (dataRecv / std::pow(2.0, 20)) << " MB\n"
+				//<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
+				<< "Total time: " << time << " s\n";
+			if(myIdx == clientdx)
+				std::cout << "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
+				//<< "\t Recv: " << (dataRecv / std::pow(2.0, 20)) << " MB\n"
 				<< "------------------\n";
 
 			offlineAvgTime += offlineTime;
@@ -2682,7 +2684,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 		}
 		}
 
-
+#if 0
 	std::cout << IoStream::lock;
 	if (myIdx == clientdx || myIdx == leaderIdx) {
 		double avgTime = (offlineAvgTime + onlineAvgTime);
@@ -2743,7 +2745,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 			<< "intersection:  " << intersectionAvgTime / nTrials << " ms\n"
 			<< "onlineTime:  " << onlineAvgTime / nTrials << " ms\n"
 			<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
-			<< "Total time: " << avgTime << " s\n"
+			<< "Total time: " << avgTime / nTrials << " s\n"
 			<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
 			<< "\t Recv: " << (dataRecv / std::pow(2.0, 20)) << " MB\n"
 			<< "------------------\n";
@@ -2755,14 +2757,14 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 			<< "intersection:  " << intersectionAvgTime / nTrials << " ms\n"
 			<< "onlineTime:  " << onlineAvgTime / nTrials << " ms\n"
 			<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
-			<< "Total time: " << avgTime << " s\n"
+			<< "Total time: " << avgTime / nTrials << " s\n"
 			<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
 			<< "\t Recv: " << (dataRecv / std::pow(2.0, 20)) << " MB\n"
 			<< "------------------\n";
 		runtime.close();
 	}
 	std::cout << IoStream::unlock;
-
+#endif 
 	for (u64 i = 0; i < nParties; ++i)
 	{
 		if (i != myIdx)
