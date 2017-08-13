@@ -82,10 +82,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="OtBinMain.cpp" />
+    <ClCompile Include="PsiMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="OtBinMain.h" />
+    <ClInclude Include="PsiMain.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />

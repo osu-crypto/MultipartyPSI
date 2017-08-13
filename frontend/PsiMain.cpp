@@ -24,9 +24,6 @@ using namespace osuCrypto;
 #define threadss {1/*1,4,16,64*/}
 #define  numTrial 2
 
-
-
-
 std::vector<block> sendSet;
 std::vector<block> mSet;
 u64 nParties(3);

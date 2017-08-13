@@ -6,7 +6,7 @@ using namespace std;
 #include "Common/Defines.h"
 using namespace osuCrypto;
 
-#include "OtBinMain.h"
+#include "PsiMain.h"
 
 #include <numeric>
 #include "Common/Log.h"
@@ -50,10 +50,6 @@ int main(int argc, char** argv)
 	mSet.resize(setSize);
 	for (u64 i = 0; i < setSize; ++i)
 		mSet[i] = prng.get<block>();
-
-
-	//getBinSizeDistribution(setSize, mSet, psiSecParam);
-	//return 0;
 
 	
 //Augmented Model

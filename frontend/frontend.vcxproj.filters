@@ -18,16 +18,16 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OtBinMain.cpp">
+    <ClCompile Include="PsiMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="OtBinMain.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="CMakeLists.txt" />
+    <ClInclude Include="PsiMain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
