@@ -1,8 +1,11 @@
-setSize: 32
-offlineTime:  4052 ms
-hashingTime:  15 ms
-getOPRFTime:  74 ms
-secretSharing:  166 ms
-intersection:  0 ms
-onlineTime:  255 ms
-Total time: 4.308 s
+(ROUND OPPRF) numParty: 3  setSize: 32  nTrials:1
+offlineTime:  930 ms
+hashingTime:  5 ms
+getOPRFTime:  29 ms
+secretSharing:  92 ms
+intersection:  1 ms
+onlineTime:  127 ms
+Bandwidth: Send: 0.26752 Mbps,	 Recv: 0.26752 Mbps
+Total time: 1.057 s
+Total Comm: Send:0.035346 MB	 Recv: 0.0227032 MB
+------------------

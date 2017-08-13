@@ -49,7 +49,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>D:\libs\miracl;D:\libs\boost;D:\libs\NTL\include;$(SolutionDir)/libOTe;$(SolutionDir)/cryptoTools;$(solutionDir)thirdparty\win\boost\;$(SolutionDir)/libPSI_Tests;$(SolutionDir)/libOPRF;$(SolutionDir)/libPSI;$(SolutionDir)thirdparty\win\;$(SolutionDir)thirdparty/win/miracl;$(SolutionDir)thirdparty/win/NTL/include;C:/libs/boost;C:/libs/;C:/libs/NTL/include;C:/libs/miracl;C:\Program Files %28x86%29\Visual Leak Detector\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\libs\miracl;D:\libs\boost;D:\libs\NTL\include;$(SolutionDir)/libOTe;$(SolutionDir)/cryptoTools;$(solutionDir)thirdparty\win\boost\;$(SolutionDir)/libPSI_Tests;$(SolutionDir)/libOPRF;$(SolutionDir)thirdparty\win\;$(SolutionDir)thirdparty/win/miracl;$(SolutionDir)thirdparty/win/NTL/include;C:/libs/boost;C:/libs/;C:/libs/NTL/include;C:/libs/miracl;C:\Program Files %28x86%29\Visual Leak Detector\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>SOLUTION_DIR=R"**($(SolutionDir))**";_WIN32_WINNT=0x0501;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
@@ -76,18 +76,21 @@
     <ClCompile Include="AES_Tests.cpp" />
     <ClCompile Include="BtChannel_Tests.cpp" />
     <ClCompile Include="Common.cpp" />
+    <ClCompile Include="EQ_Tests.cpp" />
     <ClCompile Include="nPSI.cpp" />
     <ClCompile Include="OPPRF_Tests.cpp" />
     <ClCompile Include="OT_Tests.cpp" />
-    <ClCompile Include="ShamirSSScheme_Tests.cpp" />
+    <ClCompile Include="PM_Tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AES_Tests.h" />
     <ClInclude Include="BtChannel_Tests.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="EQ_Tests.h" />
     <ClInclude Include="nPSI.h" />
     <ClInclude Include="OPPRF_Tests.h" />
     <ClInclude Include="OT_Tests.h" />
+    <ClInclude Include="PM_Tests.h" />
     <ClInclude Include="ShamirSSScheme_Tests.h" />
   </ItemGroup>
   <ItemGroup>

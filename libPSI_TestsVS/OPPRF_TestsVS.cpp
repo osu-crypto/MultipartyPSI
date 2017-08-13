@@ -1,9 +1,10 @@
 #include "stdafx.h"
 //#include "CppUnitTest.h"
 #include "OPPRF_Tests.h"
+#include "PM_Tests.h"
+#include "EQ_Tests.h"
 //#include "nPSI.h"
 #include "Common.h"
-#include "ShamirSSScheme_Tests.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -24,22 +25,48 @@ namespace WeGarbleTests
             InitDebugPrinting();
 			OPPRF_EmptrySet_Test_Impl();
         }*/
-		/*TEST_METHOD(nOPPRF_EmptrySet_Test)
+		/*TEST_METHOD(OPPRF2_EmptrySet_Tes)
 		{
 			InitDebugPrinting();
-			nOPPRF_EmptrySet_Test_Impl();
+			OPPRF2_EmptrySet_Test_Impl()();
 		}*/
+
+			TEST_METHOD(EQ_EmptrySet_Test)
+		{
+			InitDebugPrinting();
+			EQ_EmptrySet_Test_Impl();
+
+		}
+
+			TEST_METHOD(Communication_Test)
+			{
+				InitDebugPrinting();
+				Communication_Test_Impl();
+
+			}
+
+			
+
+				TEST_METHOD(IknpOtExt4_Test)
+			{
+				InitDebugPrinting();
+				IknpOtExt4_Test_Impl();
+
+			}
+
+			TEST_METHOD(PM_Test)
+			{
+				InitDebugPrinting();
+				PM_Test_Impl();
+
+			}
+
 
 		TEST_METHOD(OPPRFn_EmptrySet_Test)
 		{
 			InitDebugPrinting();
 			OPPRFn_EmptrySet_Test_Impl();
 
-		}
-		TEST_METHOD(ShamirSSScheme)
-		{
-			InitDebugPrinting();
-			ShamirSSScheme_Test();
 		}
 
 		TEST_METHOD(OPPRFn_Aug_EmptrySet_Test)
@@ -62,17 +89,17 @@ namespace WeGarbleTests
 
  
 
-       /* TEST_METHOD(Bit_Position_Test)
+       /* TEST_METHOD(Table_Based_Test)
         {
             InitDebugPrinting();
-			Bit_Position_Test_Impl();
+			Table_Based_Test_Impl();
         }*/
 
 
-		/*TEST_METHOD(Bit_Position_Rec_Test)
+		/*TEST_METHOD(Table_Based_Rec_Test)
 		{
 			InitDebugPrinting();
-			Bit_Position_Recursive_Test_Impl();
+			Table_Based_Recursive_Test_Impl();
 		}*/
 		/*TEST_METHOD(OPPRF_EmptrySet_hashing_Test)
 		{
@@ -101,10 +128,10 @@ namespace WeGarbleTests
 			InitDebugPrinting();
 			findMaxBinSize_Test_Impl();
 		}
-		TEST_METHOD(Bit_Position_Random_Test)
+		TEST_METHOD(Table_Based_Random_Test)
 		{
 			InitDebugPrinting();
-			Bit_Position_Random_Test_Impl();
+			Table_Based_Random_Test_Impl();
 		}
 		TEST_METHOD(testShareValue_Test)
 		{
@@ -129,7 +156,7 @@ namespace WeGarbleTests
 			InitDebugPrinting();
 			GBF_Test_Impl();
 		}
-		TEST_METHOD(OPPRF2_EmptrySet_Test)
+		TEST_METHOD(OPRF2_EmptrySet_Test)
 		{
 			InitDebugPrinting();
 			OPPRF2_EmptrySet_Test_Impl();

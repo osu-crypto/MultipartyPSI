@@ -2,7 +2,7 @@
 #include <string>
 
 //
-void InitDebugPrinting(std::string file = "../../testout.txt");
+void InitDebugPrinting(std::string file = "../../testPMout.txt");
 //
  extern std::string SolutionDir;
 

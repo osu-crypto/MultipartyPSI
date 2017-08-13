@@ -33,7 +33,10 @@
     <ClCompile Include="nPSI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShamirSSScheme_Tests.cpp">
+    <ClCompile Include="EQ_Tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PM_Tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -57,6 +60,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ShamirSSScheme_Tests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EQ_Tests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PM_Tests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

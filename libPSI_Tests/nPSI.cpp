@@ -15,8 +15,8 @@
 #include "NChooseOne/Oos/OosNcoOtReceiver.h"
 #include "NChooseOne/Oos/OosNcoOtSender.h"
 
-#include "Hashing/CuckooHasher1.h"
-#include "Hashing/BitPosition.h"
+#include "Hashing/CuckooHash.h"
+#include "Hashing/Hints.h"
 #include "Common/Log.h"
 #include "Common/Log1.h"
 #include <array>
@@ -706,7 +706,7 @@ void nParty(u64 myIdx)
 	//### Offline Phasing
 	//##########################
 
-	bins.init(myIdx, mParties, setSize, psiSecParam,opt);
+	bins.init(myIdx, mParties, setSize, setSize, psiSecParam,opt);
 	u64 otCountRecv = bins.mCuckooBins.mBins.size();
 	u64 otCountSend = bins.mSimpleBins.mBins.size();
 

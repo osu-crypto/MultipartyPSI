@@ -31,7 +31,6 @@
     <ClInclude Include="TwoChooseOne\KosOtExtSender.h" />
     <ClInclude Include="TwoChooseOne\LzKosOtExtReceiver.h" />
     <ClInclude Include="TwoChooseOne\LzKosOtExtSender.h" />
-    <ClInclude Include="TwoChooseOne\OTExtInterface.h" />
     <ClInclude Include="TwoChooseOne\TcoOtDefines.h" />
   </ItemGroup>
   <ItemGroup>
