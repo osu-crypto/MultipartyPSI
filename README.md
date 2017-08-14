@@ -8,7 +8,7 @@ For programmable OPRF, this code implements:
 * Polynomial-based  OPPRF
 * BloomFilter-based OPPRF
 
-For PSI, we implement 2-party PSI (2PSI) and multi-party PSI (nPSI) in augmented-semihonest model and standard semihonest model.
+For PSI, we implement multi-party PSI (nPSI) in augmented-semihonest model and standard semihonest model.
 
 ## Installations
 
@@ -37,27 +37,17 @@ The database is generated randomly. The outputs include the average online/offli
 #### Flags:
     -u		unit test which computes PSI of 5 paries, 2 dishonestly colluding, each with set size 2^12 in semihonest setting
 	-n		number of parties
-	-p		party ID
+	-p      party ID
 	-m		set size
 	-t		number of corrupted parties (in semihonest setting)
 	-a		run in augmented semihonest model. Table-based OPPRF is by default.
 				0: Table-based; 1: POLY-seperated; 2-POLY-combined; 3-BloomFilter
-	-r		optimized 3PSI when r = 1			
+	-r      optimized 3PSI when r = 1			
 #### Examples: 
 ##### 1. Unit test:
 	./bin/frontend.exe -u
 	
-##### 2. two-party PSI:
-Compute PSI of 2 parties, each holds 2^2 items
-
-	./bin/frontend.exe -n 2 -m 12 -p 0 & ./bin/frontend.exe -n 2 -m 12 -p 1
-	
-##### 3. three-party PSI:
-Compute optimized PSI of 3 parties, each holds 2^2 items
-
-	./bin/frontend.exe -n 3 -r 1 -m 12 -p 0  & ./bin/frontend.exe -n 3 -r 1 -m 12 -p 1 & ./bin/frontend.exe -n 3 -r 1 -m 12 -p 2
-
-##### 4. nPSI:
+##### 2. nPSI:
 Compute PSI of 5 parties, 2 dishonestly colluding, each with set size 2^12 in semihonest setting
 
 	./bin/frontend.exe -n 5 -t 2 -m 12 -p 0 

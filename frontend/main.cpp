@@ -38,8 +38,6 @@ int main(int argc, char** argv)
 	//return 0;
 
 	u64 trials = 1;
-	std::vector<block> mSet;
-
 	u64 pSetSize = 5, psiSecParam = 40, bitSize = 128;
 
 	u64 nParties, tParties, opt_basedOPPRF, setSize, isAug;
@@ -134,11 +132,8 @@ int main(int argc, char** argv)
 				tparty(pIdx, nParties, tParties, setSize, trials);
 			}
 			else if (argv[3][1] == 'a')
-			{
-				std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
-				zero_sharing(mPRNGSeeds);
-				//cout << nParties << " " << opt_basedOPPRF << " " << setSize << " " << pIdx << "\n";
-				aug_party(pIdx, nParties, mSet.size(), mPRNGSeeds[pIdx], opt_basedOPPRF, trials);
+			{				
+				aug_party(pIdx, nParties, setSize,opt_basedOPPRF, trials);
 			}
 		}
 		else

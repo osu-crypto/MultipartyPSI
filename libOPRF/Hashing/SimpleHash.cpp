@@ -10,13 +10,13 @@ namespace osuCrypto
 {
 
 	SimpleParams k2n24s40SimpleParams
-	{ { 1.11,0.17 },{ 3,2 },{ 31,63 },{5,6} };
+	{ { 1.12,0.17 },{ 3,2 },{ 31,63 },{5,6} };
 	SimpleParams k2n20s40SimpleParams
-	{ { 1.12,0.17 },{ 3,2 },{ 30,63 } ,{ 5,6 } };
+	{ { 1.13,0.17 },{ 3,2 },{ 30,63 } ,{ 5,6 } };
 	SimpleParams k2n16s40SimpleParams
-	{ { 1.13,0.16 },{ 3,2 },{ 29,63 },{ 5,6 } };
+	{ { 1.14,0.16 },{ 3,2 },{ 29,63 },{ 5,6 } };
 	SimpleParams k2n14s40SimpleParams
-	{ { 1.14,0.16 },{ 3,2 },{ 28,63 },{ 5,6 } };
+	{ { 1.15,0.16 },{ 3,2 },{ 28,63 },{ 5,6 } };
 	SimpleParams k2n12s40SimpleParams
 	{ { 1.17,0.15 },{ 3,2 },{ 27,63 },{ 5,6 } };
 	SimpleParams k2n08s40SimpleParams

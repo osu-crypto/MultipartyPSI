@@ -2106,36 +2106,37 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 	ios.stop();
 }
 
-void zero_sharing(std::vector<std::vector<PRNG>>& mPRNGSeeds) {
-	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
-	//TODO(remove this hack: unconditional zero - sharing);
-	//only one time => very mirror effect on perfomance
-	std::vector<std::vector<block>> mSeeds(nParties);
-	mPRNGSeeds.resize(nParties);
-	//std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
-	for (u64 i = 0; i < nParties; ++i)
-	{
-		mSeeds[i].resize(nParties);
-		for (u64 j = 0; j < nParties; ++j)
-		{
-			if (i <= j)
-				mSeeds[i][j] = prng.get<block>();
-			else
-				mSeeds[i][j] = mSeeds[j][i];
-		}
-	}
-	for (u64 i = 0; i < nParties; ++i)
-	{
-		mPRNGSeeds[i].resize(nParties);
-		for (u64 j = 0; j < nParties; ++j)
-		{
-			mPRNGSeeds[i][j].SetSeed(mSeeds[i][j]);
-		}
-	}
-}
+//std::vector<PRNG> zero_sharing(u64 id) {
+//	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+//	//TODO(remove this hack: unconditional zero - sharing);
+//	//only one time => very mirror effect on perfomance
+//	std::vector<std::vector<block>> mSeeds(nParties);
+//	//mPRNGSeeds.resize(nParties);
+//	std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
+//	for (u64 i = 0; i < nParties; ++i)
+//	{
+//		mSeeds[i].resize(nParties);
+//		for (u64 j = 0; j < nParties; ++j)
+//		{
+//			if (i <= j)
+//				mSeeds[i][j] = prng.get<block>();
+//			else
+//				mSeeds[i][j] = mSeeds[j][i];
+//		}
+//	}
+//	for (u64 i = 0; i < nParties; ++i)
+//	{
+//		mPRNGSeeds[i].resize(nParties);
+//		for (u64 j = 0; j < nParties; ++j)
+//		{
+//			mPRNGSeeds[i][j].SetSeed(mSeeds[i][j]);
+//		}
+//	}
+//	return mPRNGSeeds[id];
+//}
 
 
-void aug_party(u64 myIdx, u64 nParties, u64 setSize,  std::vector<PRNG>& mSeedPrng, u64 opt, u64 nTrials)
+void aug_party(u64 myIdx, u64 nParties, u64 setSize,  u64 opt, u64 nTrials)
 {
 	//opt = 1;
 
@@ -2250,6 +2251,35 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize,  std::vector<PRNG>& mSeedPr
 		//##########################
 
 		auto start = timer.setTimePoint("start");
+
+
+
+
+
+		PRNG prng_zs(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+		//TODO(remove this hack: unconditional zero - sharing);
+		//only one time => very mirror effect on perfomance
+		std::vector<std::vector<block>> mSeeds(nParties);
+		
+		for (u64 i = 0; i < nParties; ++i)
+		{
+			mSeeds[i].resize(nParties);
+			for (u64 j = 0; j < nParties; ++j)
+			{
+				if (i <= j)
+					mSeeds[i][j] = prng_zs.get<block>();
+				else
+					mSeeds[i][j] = mSeeds[j][i];
+			}
+		}
+		
+		std::vector<PRNG> mSeedPrng(nParties);
+		for (u64 j = 0; j < nParties; ++j)
+		{
+			mSeedPrng[j].SetSeed(mSeeds[myIdx][j]);
+		}
+
+
 		if (myIdx == leaderIdx) //leader
 			for (u32 i = 0; i < recvPayLoads.size(); i++)
 			{
@@ -2538,10 +2568,10 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize,  std::vector<PRNG>& mSeedPr
 				<< "onlineTime:  " << onlineTime << " ms\n"
 				//<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
 				<< "Total time: " << time << " s\n";
-			if (myIdx == clientdx)
-				std::cout << "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
+			//if (myIdx == clientdx)
+			//	std::cout << "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
 				//<< "\t Recv: " << (dataRecv / std::pow(2.0, 20)) << " MB\n"
-				<< "------------------\n";
+			//	<< "------------------\n";
 
 			offlineAvgTime += offlineTime;
 			hashingAvgTime += hashingTime;
@@ -2657,7 +2687,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize,  std::vector<PRNG>& mSeedPr
 
 void OPPRFnt_EmptrySet_Test_Main()
 {
-	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128;
+	u64 setSize = 1 << 8, psiSecParam = 40, bitSize = 128;
 
 	u64 nParties = 5;
 	u64 tParties = 1;
@@ -2681,7 +2711,7 @@ void OPPRFnt_EmptrySet_Test_Main()
 
 void OPPRFn_EmptrySet_Test_Main()
 {
-	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128;
+	u64 setSize = 1 << 8, psiSecParam = 40, bitSize = 128;
 	u64 nParties = 4;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	mSet.resize(setSize);
@@ -2705,7 +2735,7 @@ void OPPRFn_EmptrySet_Test_Main()
 
 void OPPRF3_EmptrySet_Test_Main()
 {
-	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128;
+	u64 setSize = 1 << 8, psiSecParam = 40, bitSize = 128;
 	nParties = 3;
 	std::vector<std::thread>  pThrds(nParties);
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
@@ -2876,11 +2906,11 @@ void party2(u64 myIdx, u64 setSize,  u64 nTrials)
 
 		if (myIdx == 1) {
 			//I am a sender to my next neigbour
-			send.getOPRFkeysCombined(0, bins, chls[0], false);
+			send.sendPlain(0, bins, chls[0]);
 		}
 		else if (myIdx == 0) {
 			//I am a recv to my previous neigbour
-			recv.getOPRFkeysCombined(1, bins, chls[1], false);
+			recv.recvPlain(1, bins, chls[1]);
 		}
 		auto getOPRFDone = timer.setTimePoint("getOPRFDone");
 #ifdef PRINT
@@ -2898,18 +2928,18 @@ void party2(u64 myIdx, u64 setSize,  u64 nTrials)
 #endif
 
 
-		//##########################
-		//### online phasing - secretsharing
-		//##########################
+		////##########################
+		////### online phasing - secretsharing
+		////##########################
 
-		if (myIdx == 0)
-		{
-			recv.recvPlain(1, bins, chls[1]);
-		}
-		else if (myIdx == 1)
-		{
-			send.sendPlain(0, bins,  chls[0]);
-		}
+		//if (myIdx == 0)
+		//{
+		//	recv.recvPlain(1, bins, chls[1]);
+		//}
+		//else if (myIdx == 1)
+		//{
+		//	send.sendPlain(0, bins,  chls[0]);
+		//}
 
 
 		if (myIdx == 0) {
@@ -2970,7 +3000,7 @@ void party2(u64 myIdx, u64 setSize,  u64 nTrials)
 
 void OPPRF2_EmptrySet_Test_Main()
 {
-	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128;
+	u64 setSize = 1 << 8, psiSecParam = 40, bitSize = 128;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	mSet.resize(setSize);
 	for (u64 i = 0; i < setSize; ++i)
@@ -2993,7 +3023,7 @@ void OPPRF2_EmptrySet_Test_Main()
 
 void OPPRFn_Aug_EmptrySet_Test_Impl()
 {
-	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128;
+	u64 setSize = 1 << 8, psiSecParam = 40, bitSize = 128;
 	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	mSet.resize(setSize);
 	for (u64 i = 0; i < setSize; ++i)
@@ -3001,7 +3031,7 @@ void OPPRFn_Aug_EmptrySet_Test_Impl()
 		mSet[i] = prng.get<block>();
 	}
 
-	nParties = 4;
+	nParties = 5;
 
 	/*std::vector<std::vector<block>> mSeeds(nParties);
 	std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
@@ -3025,8 +3055,32 @@ void OPPRFn_Aug_EmptrySet_Test_Impl()
 		}
 	}*/
 
+//	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+	//TODO(remove this hack: unconditional zero - sharing);
+	//only one time => very mirror effect on perfomance
+	std::vector<std::vector<block>> mSeeds(nParties);
 	std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
-	zero_sharing(mPRNGSeeds);
+	mPRNGSeeds.resize(nParties);
+
+	for (u64 i = 0; i < nParties; ++i)
+	{
+		mSeeds[i].resize(nParties);
+		for (u64 j = 0; j < nParties; ++j)
+		{
+			if (i <= j)
+				mSeeds[i][j] = prng.get<block>();
+			else
+				mSeeds[i][j] = mSeeds[j][i];
+		}
+	}
+	for (u64 i = 0; i < nParties; ++i)
+	{
+		mPRNGSeeds[i].resize(nParties);
+		for (u64 j = 0; j < nParties; ++j)
+		{
+			mPRNGSeeds[i][j].SetSeed(mSeeds[i][j]);
+		}
+	}
 
 
 	//for (u64 i = 0; i < 1; ++i)
@@ -3060,7 +3114,7 @@ void OPPRFn_Aug_EmptrySet_Test_Impl()
 	{
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			//	Channel_party_test(pIdx);
-			aug_party(pIdx, nParties, mSet.size(), mPRNGSeeds[pIdx], opt, 1);
+			aug_party(pIdx, nParties, mSet.size(),  opt, 1);
 		});
 	}
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)

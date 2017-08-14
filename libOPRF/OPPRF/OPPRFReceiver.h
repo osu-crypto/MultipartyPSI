@@ -74,7 +74,6 @@ namespace osuCrypto
 		void recvPlain(u64 IdxTheirParty, binSet& bins, const std::vector<Channel*>& chls);
 
 
-
     };
 
 

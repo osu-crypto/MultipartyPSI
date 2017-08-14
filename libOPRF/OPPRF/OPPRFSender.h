@@ -82,7 +82,7 @@ namespace osuCrypto
 		void recvBFBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 
 		//for 2-party PSI
-		void sendPlain(u64 IdxTheirParty, binSet& bins,  const std::vector<Channel*>& chls);
+		void sendPlain(u64 IdxTheirParty, binSet& bins, const std::vector<Channel*>& chls);
 
 
     };
