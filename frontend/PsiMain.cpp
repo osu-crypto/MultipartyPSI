@@ -780,6 +780,7 @@ void party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet)
 //ROUND PSI
 void party3(u64 myIdx, u64 setSize, u64 nTrials)
 {
+	u64 opt = 0;
 	std::fstream runtime;
 	if (myIdx == 0)
 		runtime.open("./runtime3.txt", runtime.trunc | runtime.out);
@@ -1092,7 +1093,7 @@ void party3(u64 myIdx, u64 setSize, u64 nTrials)
 			time /= 1000;
 
 
-			dataSent = 0;
+			/*dataSent = 0;
 			dateRecv = 0;
 			Mbps = 0;
 			MbpsRecv = 0;
@@ -1107,12 +1108,12 @@ void party3(u64 myIdx, u64 setSize, u64 nTrials)
 						dateRecv += chls[i][j]->getTotalDataRecv();
 					}
 				}
-			}
+			}*/
 
-			Mbps = dataSent * 8 / time / (1 << 20);
-			MbpsRecv = dataSent * 8 / time / (1 << 20);
+			/*Mbps = dataSent * 8 / time / (1 << 20);
+			MbpsRecv = dataSent * 8 / time / (1 << 20);*/
 
-			for (u64 i = 0; i < nParties; ++i)
+			/*for (u64 i = 0; i < nParties; ++i)
 			{
 				if (i != myIdx) {
 					chls[i].resize(numThreads);
@@ -1121,7 +1122,7 @@ void party3(u64 myIdx, u64 setSize, u64 nTrials)
 						chls[i][j]->resetStats();
 					}
 				}
-			}
+			}*/
 
 
 			Log::out << "#Output Intersection: " << num_intersection << Log::endl;
@@ -1135,10 +1136,10 @@ void party3(u64 myIdx, u64 setSize, u64 nTrials)
 				<< "secretSharing:  " << secretSharingTime << " ms\n"
 				<< "intersection:  " << intersectionTime << " ms\n"
 				<< "onlineTime:  " << onlineTime << " ms\n"
-				<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
+				//<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
 				<< "Total time: " << time << " s\n"
-				<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
-				<< "\t Recv: " << (dateRecv / std::pow(2.0, 20)) << " MB\n"
+				//<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
+				//<< "\t Recv: " << (dateRecv / std::pow(2.0, 20)) << " MB\n"
 				<< "------------------\n";
 
 
@@ -1164,10 +1165,10 @@ void party3(u64 myIdx, u64 setSize, u64 nTrials)
 			<< "secretSharing:  " << secretSharingAvgTime / nTrials << " ms\n"
 			<< "intersection:  " << intersectionAvgTime / nTrials << " ms\n"
 			<< "onlineTime:  " << onlineAvgTime / nTrials << " ms\n"
-			<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
+			//<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
 			<< "Total time: " << avgTime/ nTrials << " s\n"
-			<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
-			<< "\t Recv: " << (dateRecv / std::pow(2.0, 20)) << " MB\n"
+			//<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
+			//<< "\t Recv: " << (dateRecv / std::pow(2.0, 20)) << " MB\n"
 			<< "------------------\n";
 
 		runtime << "(ROUND OPPRF) numParty: " << nParties
@@ -1179,10 +1180,10 @@ void party3(u64 myIdx, u64 setSize, u64 nTrials)
 			<< "secretSharing:  " << secretSharingAvgTime / nTrials << " ms\n"
 			<< "intersection:  " << intersectionAvgTime / nTrials << " ms\n"
 			<< "onlineTime:  " << onlineAvgTime / nTrials << " ms\n"
-			<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
+			//<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
 			<< "Total time: " << avgTime / nTrials << " s\n"
-			<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
-			<< "\t Recv: " << (dateRecv / std::pow(2.0, 20)) << " MB\n"
+			//<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
+			//<< "\t Recv: " << (dateRecv / std::pow(2.0, 20)) << " MB\n"
 			<< "------------------\n";
 		runtime.close();
 	}
@@ -1921,7 +1922,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 			time /= 1000;
 
 
-			dataSent = 0;
+			/*dataSent = 0;
 			dataRecv = 0;
 			Mbps = 0;
 			MbpsRecv = 0;
@@ -1935,12 +1936,12 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 						dataRecv += chls[i][j]->getTotalDataRecv();
 					}
 				}
-			}
+			}*/
 
-			Mbps = dataSent * 8 / time / (1 << 20);
-			MbpsRecv = dataRecv * 8 / time / (1 << 20);
+		/*	Mbps = dataSent * 8 / time / (1 << 20);
+			MbpsRecv = dataRecv * 8 / time / (1 << 20);*/
 
-			for (u64 i = 0; i < nParties; ++i)
+			/*for (u64 i = 0; i < nParties; ++i)
 			{
 				if (i != myIdx) {
 					chls[i].resize(numThreads);
@@ -1949,7 +1950,7 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 						chls[i][j]->resetStats();
 					}
 				}
-			}
+			}*/
 
 			if (myIdx == 0 || myIdx == 1)
 			{
@@ -1974,10 +1975,10 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 				<< "ssRoundTime:  " << ssServerTime << " ms\n"
 				<< "intersection:  " << intersectionTime << " ms\n"
 				<< "onlineTime:  " << onlineTime << " ms\n"
-				<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
+				//<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
 				<< "Total time: " << time << " s\n"
-				<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
-				<< "\t Recv: " << (dataRecv / std::pow(2.0, 20)) << " MB\n"
+				//<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
+				//<< "\t Recv: " << (dataRecv / std::pow(2.0, 20)) << " MB\n"
 				<< "------------------\n";
 
 
@@ -2037,10 +2038,10 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 			<< "ssLeaderTime:  " << ssRoundAvgTime / nTrials << " ms\n"
 			<< "intersection:  " << intersectionAvgTime / nTrials << " ms\n"
 			<< "onlineTime:  " << onlineAvgTime / nTrials << " ms\n"
-			<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
+			//<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
 			<< "Total time: " << avgTime / nTrials << " s\n"
-			<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
-			<< "\t Recv: " << (dataRecv / std::pow(2.0, 20)) << " MB\n"
+			//<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
+			//<< "\t Recv: " << (dataRecv / std::pow(2.0, 20)) << " MB\n"
 			<< "------------------\n";
 
 		runtime << "offlineTime:  " << offlineAvgTime / nTrials << " ms\n"
@@ -2050,10 +2051,10 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 			<< "ssLeaderTime:  " << ssRoundAvgTime / nTrials << " ms\n"
 			<< "intersection:  " << intersectionAvgTime / nTrials << " ms\n"
 			<< "onlineTime:  " << onlineAvgTime / nTrials << " ms\n"
-			<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
+			//<< "Bandwidth: Send: " << Mbps << " Mbps,\t Recv: " << MbpsRecv << " Mbps\n"
 			<< "Total time: " << avgTime / nTrials << " s\n"
-			<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
-			<< "\t Recv: " << (dataRecv / std::pow(2.0, 20)) << " MB\n"
+			//<< "Total Comm: Send:" << (dataSent / std::pow(2.0, 20)) << " MB"
+			//<< "\t Recv: " << (dataRecv / std::pow(2.0, 20)) << " MB\n"
 			<< "------------------\n";
 		runtime.close();
 	}
@@ -2105,7 +2106,36 @@ void tparty(u64 myIdx, u64 nParties, u64 tParties, u64 setSize, u64 nTrials)
 	ios.stop();
 }
 
-void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, std::vector<PRNG>& mSeedPrng, u64 opt, u64 nTrials)
+void zero_sharing(std::vector<std::vector<PRNG>>& mPRNGSeeds) {
+	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+	//TODO(remove this hack: unconditional zero - sharing);
+	//only one time => very mirror effect on perfomance
+	std::vector<std::vector<block>> mSeeds(nParties);
+	mPRNGSeeds.resize(nParties);
+	//std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
+	for (u64 i = 0; i < nParties; ++i)
+	{
+		mSeeds[i].resize(nParties);
+		for (u64 j = 0; j < nParties; ++j)
+		{
+			if (i <= j)
+				mSeeds[i][j] = prng.get<block>();
+			else
+				mSeeds[i][j] = mSeeds[j][i];
+		}
+	}
+	for (u64 i = 0; i < nParties; ++i)
+	{
+		mPRNGSeeds[i].resize(nParties);
+		for (u64 j = 0; j < nParties; ++j)
+		{
+			mPRNGSeeds[i][j].SetSeed(mSeeds[i][j]);
+		}
+	}
+}
+
+
+void aug_party(u64 myIdx, u64 nParties, u64 setSize,  std::vector<PRNG>& mSeedPrng, u64 opt, u64 nTrials)
 {
 	//opt = 1;
 
@@ -2467,26 +2497,26 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 			time /= 1000;
 
 
-			dataSent = 0;
-			dataRecv = 0;
-			Mbps = 0;
-			MbpsRecv = 0;
-			for (u64 i = 0; i < nParties; ++i)
-			{
-				if (i != myIdx) {
-					//chls[i].resize(numThreads);
-					for (u64 j = 0; j < numThreads; ++j)
-					{
-						dataSent += chls[i][j]->getTotalDataSent();
-						dataRecv += chls[i][j]->getTotalDataRecv();
-					}
-				}
-			}
+			//dataSent = 0;
+			//dataRecv = 0;
+			//Mbps = 0;
+			//MbpsRecv = 0;
+			//for (u64 i = 0; i < nParties; ++i)
+			//{
+			//	if (i != myIdx) {
+			//		//chls[i].resize(numThreads);
+			//		for (u64 j = 0; j < numThreads; ++j)
+			//		{
+			//			dataSent += chls[i][j]->getTotalDataSent();
+			//			dataRecv += chls[i][j]->getTotalDataRecv();
+			//		}
+			//	}
+			//}
 
-			Mbps = dataSent * 8 / time / (1 << 20);
-			MbpsRecv = dataRecv * 8 / time / (1 << 20);
+			//Mbps = dataSent * 8 / time / (1 << 20);
+			//MbpsRecv = dataRecv * 8 / time / (1 << 20);
 
-			for (u64 i = 0; i < nParties; ++i)
+			/*for (u64 i = 0; i < nParties; ++i)
 			{
 				if (i != myIdx) {
 					chls[i].resize(numThreads);
@@ -2495,7 +2525,7 @@ void aug_party(u64 myIdx, u64 nParties, u64 setSize, std::vector<block>& mSet, s
 						chls[i][j]->resetStats();
 					}
 				}
-			}
+			}*/
 
 
 
@@ -2630,7 +2660,7 @@ void OPPRFnt_EmptrySet_Test_Main()
 	u64 setSize = 1 << 5, psiSecParam = 40, bitSize = 128;
 
 	u64 nParties = 5;
-	u64 tParties = 2;
+	u64 tParties = 1;
 
 
 	std::vector<std::thread>  pThrds(nParties);
@@ -2723,12 +2753,12 @@ void party2(u64 myIdx, u64 setSize,  u64 nTrials)
 	{
 		if (i < myIdx)
 		{
-			u32 port = i * 10 + myIdx;//get the same port; i=1 & pIdx=2 =>port=102
+			u32 port = 1200 + i * 100 + myIdx;//get the same port; i=1 & pIdx=2 =>port=102
 			ep[i].start(ios, "localhost", port, false, name); //channel bwt i and pIdx, where i is sender
 		}
 		else if (i > myIdx)
 		{
-			u32 port = myIdx * 10 + i;//get the same port; i=2 & pIdx=1 =>port=102
+			u32 port = 1200 + myIdx * 100 + i;//get the same port; i=2 & pIdx=1 =>port=102
 			ep[i].start(ios, "localhost", port, true, name); //channel bwt i and pIdx, where i is receiver
 		}
 	}
@@ -2789,6 +2819,9 @@ void party2(u64 myIdx, u64 setSize,  u64 nTrials)
 		//### Offline Phasing
 		//##########################
 
+		Timer timer;
+		auto start = timer.setTimePoint("start");
+
 		bins.init(myIdx, nParties, setSize, setSize, psiSecParam, opt);
 		u64 otCountSend = bins.mSimpleBins.mBins.size();
 		u64 otCountRecv = bins.mCuckooBins.mBins.size();
@@ -2804,7 +2837,7 @@ void party2(u64 myIdx, u64 setSize,  u64 nTrials)
 			//recv.testReceiver();
 	}
 
-
+		auto initDone = timer.setTimePoint("initDone");
 
 #ifdef PRINT
 		std::cout << IoStream::lock;
@@ -2836,6 +2869,8 @@ void party2(u64 myIdx, u64 setSize,  u64 nTrials)
 		//### Online Phasing - compute OPRF
 		//##########################
 
+		auto hashingDone = timer.setTimePoint("hashingDone");
+
 		pThrds.clear();
 		pThrds.resize(nParties);
 
@@ -2847,7 +2882,7 @@ void party2(u64 myIdx, u64 setSize,  u64 nTrials)
 			//I am a recv to my previous neigbour
 			recv.getOPRFkeysCombined(1, bins, chls[1], false);
 		}
-
+		auto getOPRFDone = timer.setTimePoint("getOPRFDone");
 #ifdef PRINT
 		if (myIdx == 0)
 		{
@@ -2881,6 +2916,32 @@ void party2(u64 myIdx, u64 setSize,  u64 nTrials)
 			Log::out << "mIntersection.size(): " << recv.mIntersection.size() << Log::endl;
 			Log::out << "#Expected Intersection: " << expected_intersection << Log::endl;
 		}
+		auto getIntersection = timer.setTimePoint("getIntersection");
+
+		std::cout << IoStream::lock;
+
+		if (myIdx == 0) {
+			auto offlineTime = std::chrono::duration_cast<std::chrono::milliseconds>(initDone - start).count();
+			auto hashingTime = std::chrono::duration_cast<std::chrono::milliseconds>(hashingDone - initDone).count();
+			auto getOPRFTime = std::chrono::duration_cast<std::chrono::milliseconds>(getOPRFDone - hashingDone).count();
+			auto intersectionTime = std::chrono::duration_cast<std::chrono::milliseconds>(getIntersection - getOPRFDone).count();
+			
+			double onlineTime = hashingTime + getOPRFTime + intersectionTime;
+
+			double time = offlineTime + onlineTime;
+			time /= 1000;
+
+			std::cout << "setSize: " << setSize << "\n"
+				<< "offlineTime:  " << offlineTime << " ms\n"
+				<< "hashingTime:  " << hashingTime << " ms\n"
+				<< "getOPRFTime:  " << getOPRFTime << " ms\n"
+				<< "intersection:  " << intersectionTime << " ms\n"
+				<< "onlineTime:  " << onlineTime << " ms\n"
+				<< "Total time: " << time << " s\n"
+				<< "------------------\n";
+
+		}
+		std::cout << IoStream::unlock;
 
 }
 
@@ -2942,7 +3003,7 @@ void OPPRFn_Aug_EmptrySet_Test_Impl()
 
 	nParties = 4;
 
-	std::vector<std::vector<block>> mSeeds(nParties);
+	/*std::vector<std::vector<block>> mSeeds(nParties);
 	std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
 	for (u64 i = 0; i < nParties; ++i)
 	{
@@ -2962,7 +3023,11 @@ void OPPRFn_Aug_EmptrySet_Test_Impl()
 		{
 			mPRNGSeeds[i][j].SetSeed(mSeeds[i][j]);
 		}
-	}
+	}*/
+
+	std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
+	zero_sharing(mPRNGSeeds);
+
 
 	//for (u64 i = 0; i < 1; ++i)
 	//{
@@ -2989,13 +3054,13 @@ void OPPRFn_Aug_EmptrySet_Test_Impl()
 
 	//}
 
-
+	
 	std::vector<std::thread>  pThrds(nParties);
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)
 	{
 		pThrds[pIdx] = std::thread([&, pIdx]() {
 			//	Channel_party_test(pIdx);
-			aug_party(pIdx, nParties, mSet.size(), mSet, mPRNGSeeds[pIdx], opt, 1);
+			aug_party(pIdx, nParties, mSet.size(), mPRNGSeeds[pIdx], opt, 1);
 		});
 	}
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)

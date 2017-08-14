@@ -13,11 +13,12 @@ For PSI, we implement 2-party PSI (2PSI) and multi-party PSI (nPSI) in augmented
 ## Installations
 
 ### Required libraries
- C++ compiler with C++14 support. There are several library dependencies including [`Boost`](https://sourceforge.net/projects/boost/), [`Crypto++`](http://www.cryptopp.com/), [`Miracl`](https://github.com/miracl/MIRACL), [`Mpir`](http://mpir.org/), [`NTL`](http://www.shoup.net/ntl/) , and [`libOTe`](https://github.com/osu-crypto/libOTe). For [`libOTe`], it requires CPU supporting `PCLMUL`, `AES-NI`, and `SSE4.1`. Optional: `nasm` for improved SHA1 performance.   Our code has been tested on both Windows (Microsoft Visual Studio) and Linux. To install the required libraries: 
+ C++ compiler with C++14 support. There are several library dependencies including [`Boost`](https://sourceforge.net/projects/boost/), [`Miracl`](https://github.com/miracl/MIRACL), [`NTL`](http://www.shoup.net/ntl/) , and [`libOTe`](https://github.com/osu-crypto/libOTe). For `libOTe`, it requires CPU supporting `PCLMUL`, `AES-NI`, and `SSE4.1`. Optional: `nasm` for improved SHA1 performance.   Our code has been tested on both Windows (Microsoft Visual Studio) and Linux. To install the required libraries: 
   * windows: open PowerShell,  `cd ./thirdparty`, and `.\all_win.ps1` 
   * linux: `cd ./thirdparty`, and `bash .\all_linux.get`.   
-  
-  
+
+NOTE: If you meet problem with `all_win.ps1` or `all_linux.get` which builds boost, miracl and libOTe, please follow the more manual instructions at [`libOTe`](https://github.com/osu-crypto/libOTe) 
+
 ### Building the Project
 After cloning project from git,
 ##### Windows:
@@ -28,37 +29,50 @@ After cloning project from git,
 ##### Linux:
 1. make (requirements: `CMake`, `Make`, `g++` or similar)
 2. for test:
-	./Release/bOPRFmain.exe -u
+	./bin/frontend.exe -u
 
 
 ## Running the code
 The database is generated randomly. The outputs include the average online/offline/total runtime that displayed on the screen and output.txt. 
 #### Flags:
-    -u		unit test which computes PSI of 5 paries, each contains a set of size 2^8 in semihonest setting
+    -u		unit test which computes PSI of 5 paries, 2 dishonestly colluding, each with set size 2^12 in semihonest setting
 	-n		number of parties
-	-t		number of corrupted parties
+	-p		party ID
 	-m		set size
+	-t		number of corrupted parties (in semihonest setting)
 	-a		run in augmented semihonest model. Table-based OPPRF is by default.
-	-o		indicates which OPPRF protocol chosen. Requires -a be set. Table-based OPPRF is by default. 
 				0: Table-based; 1: POLY-seperated; 2-POLY-combined; 3-BloomFilter
+	-r		optimized 3PSI when r = 1			
 #### Examples: 
 ##### 1. Unit test:
-	./bOPRFmain.exe -u
+	./bin/frontend.exe -u
 	
 ##### 2. two-party PSI:
-Compute PSI of 2 parties, each holds 2^8 items
+Compute PSI of 2 parties, each holds 2^2 items
 
-	./bOPRFmain.exe -n 2 -m 8
+	./bin/frontend.exe -n 2 -m 12 -p 0 & ./bin/frontend.exe -n 2 -m 12 -p 1
 	
-##### 3. nPSI:
-Compute PSI of 5 parties, 2 dishonestly colluding, each with set size 2^8 in semihonest setting
+##### 3. three-party PSI:
+Compute optimized PSI of 3 parties, each holds 2^2 items
 
-	./bOPRFmain.exe -n 5 -t 2 -n 8 
+	./bin/frontend.exe -n 3 -r 1 -m 12 -p 0  & ./bin/frontend.exe -n 3 -r 1 -m 12 -p 1 & ./bin/frontend.exe -n 3 -r 1 -m 12 -p 2
+
+##### 4. nPSI:
+Compute PSI of 5 parties, 2 dishonestly colluding, each with set size 2^12 in semihonest setting
+
+	./bin/frontend.exe -n 5 -t 2 -m 12 -p 0 
+	& ./bin/frontend.exe -n 5 -t 2 -m 12 -p 1
+	& ./bin/frontend.exe -n 5 -t 2 -m 12 -p 2
+	& ./bin/frontend.exe -n 5 -t 2 -m 12 -p 3
+	& ./bin/frontend.exe -n 5 -t 2 -m 12 -p 4
 	
-Compute PSI of 5 parties, 2 dishonestly colluding, each with set size 2^8 in augmented semihonest setting with Bloom filter based OPPRF
+Compute PSI of 5 parties, 2 dishonestly colluding, each with set size 2^12 in augmented semihonest setting with Bloom filter based OPPRF
 
-	./bOPRFmain.exe -n 5 -t 2 -n 8 -a 1 -o 3
-
+	./bin/frontend.exe -n 5 -a 3 -m 12 -p 0 
+	& ./bin/frontend.exe -n 5 -a 3  -m 12 -p 1
+    & ./bin/frontend.exe -n 5 -a 3  -m 12 -p 2
+    & ./bin/frontend.exe -n 5 -a 3  -m 12 -p 3
+    & ./bin/frontend.exe -n 5 -a 3  -m 12 -p 4
 	
 ## Help
 For any questions on building or running the library, please contact [`Ni Trieu`](http://people.oregonstate.edu/~trieun/) at trieun at oregonstate dot edu

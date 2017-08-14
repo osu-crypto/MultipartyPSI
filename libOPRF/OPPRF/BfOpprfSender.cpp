@@ -201,7 +201,7 @@ namespace osuCrypto
 		//std::cout << "\ns[" << IdxP << "]-mMaskSize " << bins.mMaskSize << "\n";
 
 
-		std::cout << "s[" << IdxP << "]-dataSent(bytes)" << maskBFView.size()[0] * maskBFView.size()[1] << "----------\n";
+		//std::cout << "s[" << IdxP << "]-dataSent(bytes)" << maskBFView.size()[0] * maskBFView.size()[1] << "----------\n";
 
 		//std::cout << "\ns[" << IdxP << "]-arrayMask[1][3]" << arrayMask[1][3] << "\n";
 

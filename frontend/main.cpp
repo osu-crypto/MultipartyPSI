@@ -11,7 +11,7 @@ using namespace osuCrypto;
 #include <numeric>
 #include "Common/Log.h"
 
-#include "cuckoo/cuckooTests.h"
+//#include "cuckoo/cuckooTests.h"
 
 void usage(const char* argv0)
 {
@@ -19,124 +19,135 @@ void usage(const char* argv0)
 	std::cout << "\t 1. For unit test: " << argv0 << " -t" << std::endl;
 	std::cout << "\t 2. For simulation (3 parties <=> 3 terminals): " << std::endl;;
 	std::cout << "\t\t terminal: " << argv0 << " -p pIdx" << std::endl;
+
 }
 int main(int argc, char** argv)
 {
-	//std::cout << "fffffffff\n";
+
 	//myCuckooTest_stash();
 	//Table_Based_Random_Test();
-	//return 0;
 	//OPPRF2_EmptrySet_Test_Main();
 	//OPPRFn_EmptrySet_Test_Main();
 	//Transpose_Test();
 	//OPPRF3_EmptrySet_Test_Main();
-	//return 0;
-//	OPPRFnt_EmptrySet_Test_Main();
+	//OPPRFnt_EmptrySet_Test_Main();
 	//OPPRFnt_EmptrySet_Test_Main();
 	//OPPRFn_Aug_EmptrySet_Test_Impl();
 	//OPPRFnt_EmptrySet_Test_Impl();
-	OPPRF2_EmptrySet_Test_Main();
-	return 0;
+	//OPPRF2_EmptrySet_Test_Main();
+	//return 0;
 
 	u64 trials = 1;
-
 	std::vector<block> mSet;
 
-	u64 setSize = 1 << 20, psiSecParam = 40, bitSize = 128;
+	u64 pSetSize = 5, psiSecParam = 40, bitSize = 128;
 
-	u64 nParties, tParties, opt_basedOPPRF;
+	u64 nParties, tParties, opt_basedOPPRF, setSize, isAug;
+
 	u64 roundOPPRF;
-	PRNG prng(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
-	mSet.resize(setSize);
-	for (u64 i = 0; i < setSize; ++i)
-		mSet[i] = prng.get<block>();
 
-	
-//Augmented Model
-#if 1
-	opt_basedOPPRF = atoi(argv[1]);
-	nParties = atoi(argv[2]);
-	u64 pIdx = atoi(argv[3]);
 
-	//TODO(remove this hack: unconditional zero - sharing);
-	//only one time => very mirror effect on perfomance
-	std::vector<std::vector<block>> mSeeds(nParties);
-	std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
-	for (u64 i = 0; i < nParties; ++i)
-	{
-		mSeeds[i].resize(nParties);
-		for (u64 j = 0; j < nParties; ++j)
-		{
-			if (i <= j)
-				mSeeds[i][j] = prng.get<block>();
-			else
-				mSeeds[i][j] = mSeeds[j][i];
-		}
-	}
-	for (u64 i = 0; i < nParties; ++i)
-	{
-		mPRNGSeeds[i].resize(nParties);
-		for (u64 j = 0; j < nParties; ++j)
-		{
-			mPRNGSeeds[i][j].SetSeed(mSeeds[i][j]);
-		}
-	}
+	switch (argc) {
+	case 2: //unit test
+		if (argv[1][0] == '-' && argv[1][1] == 'u')
+			OPPRFnt_EmptrySet_Test_Main();
+		break;
 
-	
-	std::cout << "pIdx: " << pIdx << "\t";
-	std::cout << "nParties: " << nParties << "\n";
-	aug_party(pIdx, nParties, mSet.size(), mSet, mPRNGSeeds[pIdx], opt_basedOPPRF, 1);
-	return 0;
-#endif
-
-//Standard Model
-	if (argc == 7) {
+	case 7: //2PSI 
 		if (argv[1][0] == '-' && argv[1][1] == 'n')
 			nParties = atoi(argv[2]);
-
-
-		if (nParties == 3)
+		else
 		{
-			if (argv[3][0] == '-' && argv[3][1] == 'r')
-				roundOPPRF = atoi(argv[4]);
+			usage(argv[0]);
+			return 0;
+		}
 
-			if (argv[5][0] == '-' && argv[5][1] == 'p') {
-				u64 pIdx = atoi(argv[6]);
-				if (roundOPPRF == 1)
-				{
-					 party3(pIdx, setSize, trials);
-					//aug_party(pIdx, nParties, setSize, mSet, mPRNGSeeds[pIdx], opt_basedOPPRF, trials);
-				}
-				else
-				{
-					 tparty(pIdx, nParties, 2, setSize, trials);
-				//	std::cout << "aug_party";
-					//aug_party(pIdx, 2, mSet.size(), mSet, mPRNGSeeds[pIdx], opt_basedOPPRF, trials);
-				}
+		if (argv[3][0] == '-' && argv[3][1] == 'm')
+			setSize = 1 << atoi(argv[4]);
+		else
+		{
+			usage(argv[0]);
+			return 0;
+		}
 
+		if (argv[5][0] == '-' && argv[5][1] == 'p') {
+			u64 pIdx = atoi(argv[6]);
+			if (nParties == 2)
+				party2(pIdx, setSize, trials);
+			else
+			{
+				usage(argv[0]);
+				return 0;
 			}
 		}
 		else
 		{
-			if (argv[3][0] == '-' && argv[3][1] == 't')
-				tParties = atoi(argv[4]);
+			usage(argv[0]);
+			return 0;
+		}
+		break;
+	case 9: //nPSI or optimized 3PSI
+		cout << "9\n";
+		if (argv[1][0] == '-' && argv[1][1] == 'n')
+			nParties = atoi(argv[2]);
+		else
+		{
+			usage(argv[0]);
+			return 0;
+		}
+		if (argv[3][0] == '-' && argv[3][1] == 'r' && nParties == 3)
+		{
+			roundOPPRF = atoi(argv[4]);
+			tParties = 2;
+		}
+		else if (argv[3][0] == '-' && argv[3][1] == 't')
+			tParties = atoi(argv[4]);
 
-			if (argv[5][0] == '-' && argv[5][1] == 'p') {
-				u64 pIdx = atoi(argv[6]);
-				std::cout << "pIdx:  " << pIdx << "\n";
+		else if (argv[3][0] == '-' && argv[3][1] == 'a')
+			opt_basedOPPRF = atoi(argv[4]);
+
+		else
+		{
+			usage(argv[0]);
+			return 0;
+		}
+
+		if (argv[5][0] == '-' && argv[5][1] == 'm')
+			setSize = 1 << atoi(argv[6]);
+		else
+		{
+			usage(argv[0]);
+			return 0;
+		}
+
+		if (argv[7][0] == '-' && argv[7][1] == 'p') {
+			u64 pIdx = atoi(argv[8]);
+			if (roundOPPRF == 1 && nParties == 3)
+			{
+				//cout << nParties  << " " << roundOPPRF << " " << setSize << " " << pIdx << "\n";
+				party3(pIdx, setSize, trials);
+
+			}
+			else if (argv[3][1] == 't')
+			{
+				//cout << nParties << " " << tParties << " " << setSize << " " << pIdx << "\n";
 				tparty(pIdx, nParties, tParties, setSize, trials);
 			}
+			else if (argv[3][1] == 'a')
+			{
+				std::vector<std::vector<PRNG>> mPRNGSeeds(nParties);
+				zero_sharing(mPRNGSeeds);
+				//cout << nParties << " " << opt_basedOPPRF << " " << setSize << " " << pIdx << "\n";
+				aug_party(pIdx, nParties, mSet.size(), mPRNGSeeds[pIdx], opt_basedOPPRF, trials);
+			}
 		}
-
-	}
-	else if (argc == 2) {
-		if (argv[1][0] == '-' && argv[1][1] == 'u')
+		else
 		{
-			OPPRFnt_EmptrySet_Test_Main();
+			usage(argv[0]);
+			return 0;
 		}
+		break;
 	}
-	else {
-		usage(argv[0]);
-	}
+
 	return 0;
 }

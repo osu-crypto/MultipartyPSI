@@ -317,7 +317,7 @@ namespace osuCrypto
 		}
 		//std::cout << "s[" << IdxP << "]-coeffs[1][3]" << coeffs[1][3] << "\n";
 
-		std::cout << "s[" << IdxP << "]-dataSent(bytes)" << maskView.size()[0] * maskView.size()[1] << "----------\n";
+		//std::cout << "s[" << IdxP << "]-dataSent(bytes)" << maskView.size()[0] * maskView.size()[1] << "----------\n";
 
 		auto& chl = *chls[0];
 		chl.asyncSend(std::move(sendMaskBuff));

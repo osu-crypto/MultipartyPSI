@@ -67,23 +67,10 @@ add_subdirectory(libOTe)
 include_directories(libOTe)
 
 #############################################
-#               Build libPSI                 #
-#############################################
-add_subdirectory(libPSI)
-include_directories(libPSI)
-
-#############################################
 #               Build libOPRF                 #
 #############################################
 add_subdirectory(libOPRF)
 include_directories(libOPRF)
-
-
-#############################################
-#           Build libPSI Tests              #
-#############################################
-add_subdirectory(libPSI_Tests)
-include_directories(libPSI_Tests)
 
 
 #############################################
