@@ -34,13 +34,13 @@ After cloning project from git,
 ## Running the code
 The database is generated randomly. The outputs include the average online/offline/total runtime that displayed on the screen and output.txt. 
 #### Flags:
-    -u      unit test which computes PSI of 5 paries, each contains a set of size 2^8 in semihonest setting
+    -u		unit test which computes PSI of 5 paries, each contains a set of size 2^8 in semihonest setting
 	-n		number of parties
-	-t      number of corrupted parties
-	-m 		set size
-	-a      run in augmented semihonest model. Table-based OPPRF is by default.
-	-o      indicates which OPPRF protocol chosen. Requires -a be set. Table-based OPPRF is by default. 
-	        0: Table-based; 1: POLY-seperated; 2-POLY-combined; 3-BloomFilter
+	-t		number of corrupted parties
+	-m		set size
+	-a		run in augmented semihonest model. Table-based OPPRF is by default.
+	-o		indicates which OPPRF protocol chosen. Requires -a be set. Table-based OPPRF is by default. 
+				0: Table-based; 1: POLY-seperated; 2-POLY-combined; 3-BloomFilter
 #### Examples: 
 ##### 1. Unit test:
 	./bOPRFmain.exe -u
