@@ -22,13 +22,13 @@ For PSI, we implement 2-party PSI (2PSI) and multi-party PSI (nPSI) in augmented
 After cloning project from git,
 ##### Windows:
 1. build cryptoTools,libOTe, and libOPRF projects in order.
-2. add argument for bOPRFmain project (for example: -t)
+2. add argument for bOPRFmain project (for example: -u)
 3. run bOPRFmain project
  
 ##### Linux:
 1. make (requirements: `CMake`, `Make`, `g++` or similar)
 2. for test:
-	./Release/bOPRFmain.exe -t
+	./Release/bOPRFmain.exe -u
 
 
 ## Running the code
