@@ -37,12 +37,12 @@ The database is generated randomly. The outputs include the average online/offli
 #### Flags:
     -u		unit test which computes PSI of 5 paries, 2 dishonestly colluding, each with set size 2^12 in semihonest setting
 	-n		number of parties
-	-p      party ID
+	-p		party ID
 	-m		set size
 	-t		number of corrupted parties (in semihonest setting)
 	-a		run in augmented semihonest model. Table-based OPPRF is by default.
 				0: Table-based; 1: POLY-seperated; 2-POLY-combined; 3-BloomFilter
-	-r      optimized 3PSI when r = 1			
+	-r		optimized 3PSI when r = 1			
 #### Examples: 
 ##### 1. Unit test:
 	./bin/frontend.exe -u
