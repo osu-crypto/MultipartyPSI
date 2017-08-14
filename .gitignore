@@ -193,7 +193,12 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 /WeGarbleTests__
-/thirdparty
+/thirdparty/win/cryptopp/
+/thirdparty/win/boost/
+/thirdparty/win/mpir/
+/thirdparty/linux/cryptopp/
+/thirdparty/linux/boost/
+/thirdparty/linux/mpir/
 kProbe_*
 
 CodeDB

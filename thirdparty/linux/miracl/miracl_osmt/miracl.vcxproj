@@ -1,0 +1,499 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2D9CE94C-589A-45F5-B97B-0B6D29869B9E}</ProjectGuid>
+    <RootNamespace>Miracl</RootNamespace>
+    <ProjectName>Miracl</ProjectName>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)\source\curve;$(ProjectDir)\source\curve\pairing;$(ProjectDir)\include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)\source\curve;$(ProjectDir)\source\curve\pairing;$(ProjectDir)\include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="include\big.h" />
+    <ClInclude Include="include\brick.h" />
+    <ClInclude Include="include\crt.h" />
+    <ClInclude Include="include\ebrick.h" />
+    <ClInclude Include="include\ebrick2.h" />
+    <ClInclude Include="include\ec2.h" />
+    <ClInclude Include="include\ecn.h" />
+    <ClInclude Include="include\ecnzzn.h" />
+    <ClInclude Include="include\flash.h" />
+    <ClInclude Include="include\floating.h" />
+    <ClInclude Include="include\gf2m.h" />
+    <ClInclude Include="include\miracl.h" />
+    <ClInclude Include="include\mirdef.h" />
+    <ClInclude Include="include\mirdef.hpp" />
+    <ClInclude Include="include\zzn.h" />
+    <ClInclude Include="source\curve\complex.h" />
+    <ClInclude Include="source\curve\flpoly.h" />
+    <ClInclude Include="source\curve\pairing\ecn2.h" />
+    <ClInclude Include="source\curve\pairing\ecn3.h" />
+    <ClInclude Include="source\curve\pairing\ecn4.h" />
+    <ClInclude Include="source\curve\pairing\ecn6.h" />
+    <ClInclude Include="source\curve\pairing\gf2m12x.h" />
+    <ClInclude Include="source\curve\pairing\gf2m4x.h" />
+    <ClInclude Include="source\curve\pairing\gf2m6x.h" />
+    <ClInclude Include="source\curve\pairing\pairing_1.h" />
+    <ClInclude Include="source\curve\pairing\pairing_3.h" />
+    <ClInclude Include="source\curve\pairing\sf2m12x.h" />
+    <ClInclude Include="source\curve\pairing\zzn12.h" />
+    <ClInclude Include="source\curve\pairing\zzn12a.h" />
+    <ClInclude Include="source\curve\pairing\zzn12b.h" />
+    <ClInclude Include="source\curve\pairing\zzn18.h" />
+    <ClInclude Include="source\curve\pairing\zzn2.h" />
+    <ClInclude Include="source\curve\pairing\zzn24.h" />
+    <ClInclude Include="source\curve\pairing\zzn3.h" />
+    <ClInclude Include="source\curve\pairing\zzn36.h" />
+    <ClInclude Include="source\curve\pairing\zzn4.h" />
+    <ClInclude Include="source\curve\pairing\zzn6.h" />
+    <ClInclude Include="source\curve\pairing\zzn6a.h" />
+    <ClInclude Include="source\curve\pairing\zzn8.h" />
+    <ClInclude Include="source\curve\poly.h" />
+    <ClInclude Include="source\curve\poly2.h" />
+    <ClInclude Include="source\curve\poly2mod.h" />
+    <ClInclude Include="source\curve\poly2xy.h" />
+    <ClInclude Include="source\curve\polymod.h" />
+    <ClInclude Include="source\curve\polyxy.h" />
+    <ClInclude Include="source\curve\ps_big.h" />
+    <ClInclude Include="source\curve\ps_zzn.h" />
+    <ClInclude Include="source\curve\variable.h" />
+    <ClInclude Include="source\p1363\ecdh.h" />
+    <ClInclude Include="source\p1363\octet.h" />
+    <ClInclude Include="source\p1363\p1363.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\mirdef" />
+    <None Include="include\MIRDEF.AMD" />
+    <None Include="include\mirdef.arm" />
+    <None Include="include\mirdef.ash" />
+    <None Include="include\mirdef.atm" />
+    <None Include="include\mirdef.bfp" />
+    <None Include="include\mirdef.bpp" />
+    <None Include="include\mirdef.bs" />
+    <None Include="include\mirdef.ccc" />
+    <None Include="include\mirdef.cm" />
+    <None Include="include\mirdef.dll" />
+    <None Include="include\mirdef.gcc" />
+    <None Include="include\mirdef.gen" />
+    <None Include="include\mirdef.gfp" />
+    <None Include="include\mirdef.h16" />
+    <None Include="include\mirdef.h32" />
+    <None Include="include\mirdef.h64" />
+    <None Include="include\mirdef.haf" />
+    <None Include="include\mirdef.hio" />
+    <None Include="include\mirdef.hpc" />
+    <None Include="include\mirdef.ibe" />
+    <None Include="include\mirdef.kep" />
+    <None Include="include\mirdef.lnx" />
+    <None Include="include\mirdef.mik" />
+    <None Include="include\mirdef.mip" />
+    <None Include="include\mirdef.mmm" />
+    <None Include="include\mirdef.ol" />
+    <None Include="include\mirdef.pic" />
+    <None Include="include\mirdef.ppc" />
+    <None Include="include\mirdef.scr" />
+    <None Include="include\mirdef.sjc" />
+    <None Include="include\MIRDEF.SPR" />
+    <None Include="include\mirdef.tst" />
+    <None Include="include\mirdef.w64" />
+    <None Include="include\mirdef.wpp" />
+    <None Include="source\amd64.mcs" />
+    <None Include="source\arm.mcs" />
+    <None Include="source\avr.mcs" />
+    <None Include="source\avr2.mcs" />
+    <None Include="source\avr4.mcs" />
+    <None Include="source\blackfin.mcs" />
+    <None Include="source\bp160.ecs" />
+    <None Include="source\bpt160.ecs" />
+    <None Include="source\c.mcs" />
+    <None Include="source\c1.mcs" />
+    <None Include="source\c2.mcs" />
+    <None Include="source\clmul.mcs" />
+    <None Include="source\common.dss" />
+    <None Include="source\common.ecs" />
+    <None Include="source\common2.ecs" />
+    <None Include="source\cs.mcs" />
+    <None Include="source\edwards.ecs" />
+    <None Include="source\gcc386.mcs" />
+    <None Include="source\gccarm.mcs" />
+    <None Include="source\gcclmul.mcs" />
+    <None Include="source\gccmsp430.mcs" />
+    <None Include="source\gccppc.mcs" />
+    <None Include="source\gccsse2.mcs" />
+    <None Include="source\itanium.mcs" />
+    <None Include="source\kob163.ecs" />
+    <None Include="source\kob233.ecs" />
+    <None Include="source\kob283.ecs" />
+    <None Include="source\kob571.ecs" />
+    <None Include="source\mips.mcs" />
+    <None Include="source\mrcomba.tpl" />
+    <None Include="source\mrcomba2.tpl" />
+    <None Include="source\mrkcm.tpl" />
+    <None Include="source\mrmuldv.any" />
+    <None Include="source\mrmuldv.c32" />
+    <None Include="source\mrmuldv.ccc" />
+    <None Include="source\mrmuldv.g64" />
+    <None Include="source\mrmuldv.gcc" />
+    <None Include="source\mrmuldv.gpp" />
+    <None Include="source\mrmuldv.ppc" />
+    <None Include="source\mrmuldv.s" />
+    <None Include="source\mrmuldv.s64" />
+    <None Include="source\mrmuldv.tcc" />
+    <None Include="source\mrmuldv.w64" />
+    <None Include="source\ms86.mcs" />
+    <None Include="source\msp430.mcs" />
+    <None Include="source\my160.ecs" />
+    <None Include="source\nist163.ecs" />
+    <None Include="source\nist233.ecs" />
+    <None Include="source\nist283.ecs" />
+    <None Include="source\nist571.ecs" />
+    <None Include="source\pm112.ecs" />
+    <None Include="source\pm128.ecs" />
+    <None Include="source\pm160.ecs" />
+    <None Include="source\secp160.ecs" />
+    <None Include="source\secp192.ecs" />
+    <None Include="source\secp224.ecs" />
+    <None Include="source\secp256.ecs" />
+    <None Include="source\secp521.ecs" />
+    <None Include="source\smartmip.mcs" />
+    <None Include="source\sparc32.mcs" />
+    <None Include="source\sparc64.mcs" />
+    <None Include="source\sse2.mcs" />
+    <None Include="source\tc86.mcs" />
+    <None Include="source\win64.mcs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\big.cpp" />
+    <ClCompile Include="source\bmark.c" />
+    <ClCompile Include="source\brent.c" />
+    <ClCompile Include="source\brent.cpp" />
+    <ClCompile Include="source\brent_mt.c" />
+    <ClCompile Include="source\brick.c" />
+    <ClCompile Include="source\brick.cpp" />
+    <ClCompile Include="source\brute.c" />
+    <ClCompile Include="source\brute.cpp" />
+    <ClCompile Include="source\cardano.cpp" />
+    <ClCompile Include="source\crdecode.cpp" />
+    <ClCompile Include="source\crencode.cpp" />
+    <ClCompile Include="source\crgen.cpp" />
+    <ClCompile Include="source\crsetup.cpp" />
+    <ClCompile Include="source\crt.cpp" />
+    <ClCompile Include="source\curve\cm.cpp" />
+    <ClCompile Include="source\curve\complex.cpp" />
+    <ClCompile Include="source\curve\flpoly.cpp" />
+    <ClCompile Include="source\curve\glv.cpp" />
+    <ClCompile Include="source\curve\modpol.cpp" />
+    <ClCompile Include="source\curve\mueller.cpp" />
+    <ClCompile Include="source\curve\pairing\ake.cpp" />
+    <ClCompile Include="source\curve\pairing\ake12blsa.cpp" />
+    <ClCompile Include="source\curve\pairing\ake12bna.cpp" />
+    <ClCompile Include="source\curve\pairing\ake12bne.cpp" />
+    <ClCompile Include="source\curve\pairing\ake12bnr.cpp" />
+    <ClCompile Include="source\curve\pairing\ake12bnx.cpp" />
+    <ClCompile Include="source\curve\pairing\ake18kssx.cpp" />
+    <ClCompile Include="source\curve\pairing\ake1kmt.cpp" />
+    <ClCompile Include="source\curve\pairing\ake24blsa.cpp" />
+    <ClCompile Include="source\curve\pairing\ake2cpt.cpp" />
+    <ClCompile Include="source\curve\pairing\ake2cpt2.cpp" />
+    <ClCompile Include="source\curve\pairing\ake2cpw.cpp" />
+    <ClCompile Include="source\curve\pairing\ake2nsst.cpp" />
+    <ClCompile Include="source\curve\pairing\ake2sst.cpp" />
+    <ClCompile Include="source\curve\pairing\ake4cpt.cpp" />
+    <ClCompile Include="source\curve\pairing\ake4fsta.cpp" />
+    <ClCompile Include="source\curve\pairing\ake4mnta.cpp" />
+    <ClCompile Include="source\curve\pairing\ake4mntt.cpp" />
+    <ClCompile Include="source\curve\pairing\ake4sbt.cpp" />
+    <ClCompile Include="source\curve\pairing\ake6mnta.cpp" />
+    <ClCompile Include="source\curve\pairing\ake6mntt.cpp" />
+    <ClCompile Include="source\curve\pairing\ake6mntx.cpp" />
+    <ClCompile Include="source\curve\pairing\ake8bwt.cpp" />
+    <ClCompile Include="source\curve\pairing\ake8cpt.cpp" />
+    <ClCompile Include="source\curve\pairing\bgw.cpp" />
+    <ClCompile Include="source\curve\pairing\blmq.cpp" />
+    <ClCompile Include="source\curve\pairing\bls.cpp" />
+    <ClCompile Include="source\curve\pairing\bls12.cpp" />
+    <ClCompile Include="source\curve\pairing\bls24.cpp" />
+    <ClCompile Include="source\curve\pairing\bls_gen.cpp" />
+    <ClCompile Include="source\curve\pairing\bls_pair.cpp" />
+    <ClCompile Include="source\curve\pairing\bls_sign.cpp" />
+    <ClCompile Include="source\curve\pairing\bls_ver.cpp" />
+    <ClCompile Include="source\curve\pairing\bmc.cpp" />
+    <ClCompile Include="source\curve\pairing\bn.cpp" />
+    <ClCompile Include="source\curve\pairing\bn_pair.cpp" />
+    <ClCompile Include="source\curve\pairing\cpabe.cpp" />
+    <ClCompile Include="source\curve\pairing\cp_pair.cpp" />
+    <ClCompile Include="source\curve\pairing\daa.cpp" />
+    <ClCompile Include="source\curve\pairing\dl.cpp" />
+    <ClCompile Include="source\curve\pairing\dl2.cpp" />
+    <ClCompile Include="source\curve\pairing\ecn2.cpp" />
+    <ClCompile Include="source\curve\pairing\ecn3.cpp" />
+    <ClCompile Include="source\curve\pairing\ecn4.cpp" />
+    <ClCompile Include="source\curve\pairing\ecn6.cpp" />
+    <ClCompile Include="source\curve\pairing\folklore.cpp" />
+    <ClCompile Include="source\curve\pairing\freeman.cpp" />
+    <ClCompile Include="source\curve\pairing\fuzzy.cpp" />
+    <ClCompile Include="source\curve\pairing\gf2m12x.cpp" />
+    <ClCompile Include="source\curve\pairing\gf2m4x.cpp" />
+    <ClCompile Include="source\curve\pairing\gf2m6x.cpp" />
+    <ClCompile Include="source\curve\pairing\hibe.cpp" />
+    <ClCompile Include="source\curve\pairing\ipe.cpp" />
+    <ClCompile Include="source\curve\pairing\ipk_dec.cpp" />
+    <ClCompile Include="source\curve\pairing\ipk_enc.cpp" />
+    <ClCompile Include="source\curve\pairing\ipk_ext.cpp" />
+    <ClCompile Include="source\curve\pairing\ipk_set.cpp" />
+    <ClCompile Include="source\curve\pairing\irred.cpp" />
+    <ClCompile Include="source\curve\pairing\kss18.cpp" />
+    <ClCompile Include="source\curve\pairing\kss36.cpp" />
+    <ClCompile Include="source\curve\pairing\kss8.cpp" />
+    <ClCompile Include="source\curve\pairing\kss_pair.cpp" />
+    <ClCompile Include="source\curve\pairing\make_k1.cpp" />
+    <ClCompile Include="source\curve\pairing\mnt.cpp" />
+    <ClCompile Include="source\curve\pairing\mnt_pair.cpp" />
+    <ClCompile Include="source\curve\pairing\peks.cpp" />
+    <ClCompile Include="source\curve\pairing\sf2m12x.cpp" />
+    <ClCompile Include="source\curve\pairing\sk_1.cpp" />
+    <ClCompile Include="source\curve\pairing\sk_3.cpp" />
+    <ClCompile Include="source\curve\pairing\ss2_pair.cpp" />
+    <ClCompile Include="source\curve\pairing\ssp_pair.cpp" />
+    <ClCompile Include="source\curve\pairing\wang.cpp" />
+    <ClCompile Include="source\curve\pairing\zzn12.cpp" />
+    <ClCompile Include="source\curve\pairing\zzn12a.cpp" />
+    <ClCompile Include="source\curve\pairing\zzn12b.cpp" />
+    <ClCompile Include="source\curve\pairing\zzn18.cpp" />
+    <ClCompile Include="source\curve\pairing\zzn2.cpp" />
+    <ClCompile Include="source\curve\pairing\zzn24.cpp" />
+    <ClCompile Include="source\curve\pairing\zzn3.cpp" />
+    <ClCompile Include="source\curve\pairing\zzn36.cpp" />
+    <ClCompile Include="source\curve\pairing\zzn4.cpp" />
+    <ClCompile Include="source\curve\pairing\zzn6.cpp" />
+    <ClCompile Include="source\curve\pairing\zzn6a.cpp" />
+    <ClCompile Include="source\curve\pairing\zzn8.cpp" />
+    <ClCompile Include="source\curve\poly.cpp" />
+    <ClCompile Include="source\curve\poly2.cpp" />
+    <ClCompile Include="source\curve\poly2mod.cpp" />
+    <ClCompile Include="source\curve\poly2xy.cpp" />
+    <ClCompile Include="source\curve\polymod.cpp" />
+    <ClCompile Include="source\curve\polyxy.cpp" />
+    <ClCompile Include="source\curve\process.cpp" />
+    <ClCompile Include="source\curve\ps_big.cpp" />
+    <ClCompile Include="source\curve\ps_zzn.cpp" />
+    <ClCompile Include="source\curve\schoof.cpp" />
+    <ClCompile Include="source\curve\schoof2.cpp" />
+    <ClCompile Include="source\curve\sea.cpp" />
+    <ClCompile Include="source\curve\super2.cpp" />
+    <ClCompile Include="source\curve\trans.cpp" />
+    <ClCompile Include="source\curve\weil.cpp" />
+    <ClCompile Include="source\deciph.c" />
+    <ClCompile Include="source\deciph.cpp" />
+    <ClCompile Include="source\decode.c" />
+    <ClCompile Include="source\decode.cpp" />
+    <ClCompile Include="source\dssetup.c" />
+    <ClCompile Include="source\dssetup.cpp" />
+    <ClCompile Include="source\dssgen.c" />
+    <ClCompile Include="source\dssgen.cpp" />
+    <ClCompile Include="source\dssign.c" />
+    <ClCompile Include="source\dssign.cpp" />
+    <ClCompile Include="source\dssver.c" />
+    <ClCompile Include="source\dssver.cpp" />
+    <ClCompile Include="source\ebrick.c" />
+    <ClCompile Include="source\ebrick.cpp" />
+    <ClCompile Include="source\ebrick2.c" />
+    <ClCompile Include="source\ebrick2.cpp" />
+    <ClCompile Include="source\ec2.cpp" />
+    <ClCompile Include="source\ecn.cpp" />
+    <ClCompile Include="source\ecnzzn.cpp" />
+    <ClCompile Include="source\ecsgen.c" />
+    <ClCompile Include="source\ecsgen.cpp" />
+    <ClCompile Include="source\ecsgen2.c" />
+    <ClCompile Include="source\ecsgen2.cpp" />
+    <ClCompile Include="source\ecsign.c" />
+    <ClCompile Include="source\ecsign.cpp" />
+    <ClCompile Include="source\ecsign2.c" />
+    <ClCompile Include="source\ecsign2.cpp" />
+    <ClCompile Include="source\ecsver.c" />
+    <ClCompile Include="source\ecsver.cpp" />
+    <ClCompile Include="source\ecsver2.c" />
+    <ClCompile Include="source\ecsver2.cpp" />
+    <ClCompile Include="source\enciph.c" />
+    <ClCompile Include="source\enciph.cpp" />
+    <ClCompile Include="source\encode.c" />
+    <ClCompile Include="source\encode.cpp" />
+    <ClCompile Include="source\fact.c" />
+    <ClCompile Include="source\fact.cpp" />
+    <ClCompile Include="source\factor.c" />
+    <ClCompile Include="source\findbase.cpp" />
+    <ClCompile Include="source\flash.cpp" />
+    <ClCompile Include="source\floating.cpp" />
+    <ClCompile Include="source\fsample.cpp" />
+    <ClCompile Include="source\genkey.c" />
+    <ClCompile Include="source\genkey.cpp" />
+    <ClCompile Include="source\genprime.c" />
+    <ClCompile Include="source\genprime.cpp" />
+    <ClCompile Include="source\gf2m.cpp" />
+    <ClCompile Include="source\hail.c" />
+    <ClCompile Include="source\hail.cpp" />
+    <ClCompile Include="source\hilbert.c" />
+    <ClCompile Include="source\hilbert.cpp" />
+    <ClCompile Include="source\identity.c" />
+    <ClCompile Include="source\imratio.c" />
+    <ClCompile Include="source\imratio2.c" />
+    <ClCompile Include="source\index.c" />
+    <ClCompile Include="source\index.cpp" />
+    <ClCompile Include="source\irp.cpp" />
+    <ClCompile Include="source\kangaroo.c" />
+    <ClCompile Include="source\kangaroo.cpp" />
+    <ClCompile Include="source\lenstra.c" />
+    <ClCompile Include="source\lenstra.cpp" />
+    <ClCompile Include="source\limlee.c" />
+    <ClCompile Include="source\limlee.cpp" />
+    <ClCompile Include="source\mersenne.c" />
+    <ClCompile Include="source\mersenne.cpp" />
+    <ClCompile Include="source\mr87f.c" />
+    <ClCompile Include="source\mr87v.c" />
+    <ClCompile Include="source\mraes.c" />
+    <ClCompile Include="source\mralloc.c" />
+    <ClCompile Include="source\mrarth0.c" />
+    <ClCompile Include="source\mrarth1.c" />
+    <ClCompile Include="source\mrarth2.c" />
+    <ClCompile Include="source\mrarth3.c" />
+    <ClCompile Include="source\mrbits.c" />
+    <ClCompile Include="source\mrbrick.c" />
+    <ClCompile Include="source\mrbuild.c" />
+    <ClCompile Include="source\mrcore.c" />
+    <ClCompile Include="source\mrcrt.c" />
+    <ClCompile Include="source\mrcurve.c" />
+    <ClCompile Include="source\mrdouble.c" />
+    <ClCompile Include="source\mrebrick.c" />
+    <ClCompile Include="source\mrec2m.c" />
+    <ClCompile Include="source\mrecn2.c" />
+    <ClCompile Include="source\mrfast.c" />
+    <ClCompile Include="source\mrflash.c" />
+    <ClCompile Include="source\mrflsh1.c" />
+    <ClCompile Include="source\mrflsh2.c" />
+    <ClCompile Include="source\mrflsh3.c" />
+    <ClCompile Include="source\mrflsh4.c" />
+    <ClCompile Include="source\mrfpe.c" />
+    <ClCompile Include="source\mrfrnd.c" />
+    <ClCompile Include="source\mrgcd.c" />
+    <ClCompile Include="source\mrgcm.c" />
+    <ClCompile Include="source\mrgf2m.c" />
+    <ClCompile Include="source\mrio1.c" />
+    <ClCompile Include="source\mrio2.c" />
+    <ClCompile Include="source\mrjack.c" />
+    <ClCompile Include="source\mrlucas.c" />
+    <ClCompile Include="source\mrmonty.c" />
+    <ClCompile Include="source\mrmuldv.c" />
+    <ClCompile Include="source\mrpi.c" />
+    <ClCompile Include="source\mrpower.c" />
+    <ClCompile Include="source\mrprime.c" />
+    <ClCompile Include="source\mrrand.c" />
+    <ClCompile Include="source\mrround.c" />
+    <ClCompile Include="source\mrscrt.c" />
+    <ClCompile Include="source\mrsha3.c" />
+    <ClCompile Include="source\mrshs.c" />
+    <ClCompile Include="source\mrshs256.c" />
+    <ClCompile Include="source\mrshs512.c" />
+    <ClCompile Include="source\mrsmall.c" />
+    <ClCompile Include="source\mrsroot.c" />
+    <ClCompile Include="source\mrstrong.c" />
+    <ClCompile Include="source\mrxgcd.c" />
+    <ClCompile Include="source\mrzzn2.c" />
+    <ClCompile Include="source\mrzzn2b.c" />
+    <ClCompile Include="source\mrzzn3.c" />
+    <ClCompile Include="source\mrzzn4.c" />
+    <ClCompile Include="source\newbasis.cpp" />
+    <ClCompile Include="source\p1363\octet.c" />
+    <ClCompile Include="source\p1363\rsa.c" />
+    <ClCompile Include="source\p1363\test1363.c" />
+    <ClCompile Include="source\p1363\testecc.c" />
+    <ClCompile Include="source\palin.c" />
+    <ClCompile Include="source\palin.cpp" />
+    <ClCompile Include="source\pal_dec.cpp" />
+    <ClCompile Include="source\pal_enc.cpp" />
+    <ClCompile Include="source\pk-demo.c" />
+    <ClCompile Include="source\pk-demo.cpp" />
+    <ClCompile Include="source\pm.cpp" />
+    <ClCompile Include="source\pollard.c" />
+    <ClCompile Include="source\pollard.cpp" />
+    <ClCompile Include="source\qsieve.c" />
+    <ClCompile Include="source\qsieve.cpp" />
+    <ClCompile Include="source\romaker.c" />
+    <ClCompile Include="source\romaker2.c" />
+    <ClCompile Include="source\roots.c" />
+    <ClCompile Include="source\roots.cpp" />
+    <ClCompile Include="source\sample.c" />
+    <ClCompile Include="source\sample.cpp" />
+    <ClCompile Include="source\threadmp.cpp" />
+    <ClCompile Include="source\threadwn.cpp" />
+    <ClCompile Include="source\tp.cpp" />
+    <ClCompile Include="source\williams.c" />
+    <ClCompile Include="source\williams.cpp" />
+    <ClCompile Include="source\zzn.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

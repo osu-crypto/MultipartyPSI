@@ -1,0 +1,6 @@
+cat "downloading Miracl"
+echo "building Mircal"
+cd miracl/miracl/source/
+bash linux64
+cd miracl/miracl_ostm/source/
+bash linux64

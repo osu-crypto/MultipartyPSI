@@ -1,0 +1,1271 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\ecn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ecnzzn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\flash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\floating.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gf2m.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\miracl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mirdef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\mirdef.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\zzn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\big.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\brick.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\crt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ebrick.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ebrick2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ec2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\complex.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\flpoly.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\ecn2.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\ecn3.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\ecn4.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\ecn6.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\gf2m12x.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\gf2m4x.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\gf2m6x.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\pairing_1.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\pairing_3.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\sf2m12x.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\zzn12.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\zzn12a.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\zzn12b.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\zzn18.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\zzn2.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\zzn24.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\zzn3.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\zzn36.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\zzn4.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\zzn6.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\zzn6a.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\pairing\zzn8.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\poly.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\poly2.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\poly2mod.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\poly2xy.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\polymod.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\polyxy.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\ps_big.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\ps_zzn.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\curve\variable.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\p1363\ecdh.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\p1363\octet.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\p1363\p1363.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\mirdef">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\MIRDEF.AMD">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.arm">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.ash">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.atm">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.bfp">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.bpp">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.bs">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.ccc">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.cm">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.dll">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.gcc">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.gen">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.gfp">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.h16">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.h32">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.h64">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.haf">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.hio">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.hpc">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.ibe">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.kep">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.lnx">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.mik">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.mip">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.mmm">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.ol">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.pic">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.ppc">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.scr">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.sjc">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\MIRDEF.SPR">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.tst">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.w64">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="include\mirdef.wpp">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="source\avr2.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\avr4.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\blackfin.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\bp160.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\bpt160.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\c.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\c1.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\c2.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\clmul.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\common.dss">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\common.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\common2.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\cs.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\edwards.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\gcc386.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\gccarm.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\gcclmul.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\gccmsp430.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\gccppc.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\gccsse2.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\itanium.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\kob163.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\kob233.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\kob283.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\kob571.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mips.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrcomba.tpl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrcomba2.tpl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrkcm.tpl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrmuldv.any">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrmuldv.c32">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrmuldv.ccc">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrmuldv.g64">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrmuldv.gcc">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrmuldv.gpp">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrmuldv.ppc">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrmuldv.s">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrmuldv.s64">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrmuldv.tcc">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\mrmuldv.w64">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\ms86.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\msp430.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\my160.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\nist163.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\nist233.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\nist283.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\nist571.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\pm112.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\pm128.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\pm160.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\secp160.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\secp192.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\secp224.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\secp256.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\secp521.ecs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\smartmip.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\sparc32.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\sparc64.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\sse2.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\tc86.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\win64.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\amd64.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\arm.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="source\avr.mcs">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\big.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\bmark.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\brent.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\brent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\brent_mt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\brick.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\brick.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\brute.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\brute.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\cardano.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\crdecode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\crencode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\crgen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\crsetup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\crt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\deciph.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\deciph.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\decode.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\decode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\dssetup.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\dssetup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\dssgen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\dssgen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\dssign.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\dssign.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\dssver.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\dssver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ebrick.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ebrick.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ebrick2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ebrick2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ec2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecnzzn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecsgen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecsgen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecsgen2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecsgen2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecsign.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecsign.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecsign2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecsign2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecsver.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecsver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecsver2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ecsver2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\enciph.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\enciph.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\encode.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\encode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\fact.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\fact.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\factor.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\findbase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\flash.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\floating.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\fsample.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\genkey.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\genkey.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\genprime.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\genprime.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\gf2m.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hail.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hail.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hilbert.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hilbert.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\identity.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\imratio.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\imratio2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\index.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\index.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\irp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\kangaroo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\kangaroo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\lenstra.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\lenstra.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\limlee.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\limlee.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mersenne.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mersenne.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mr87f.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mr87v.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mraes.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mralloc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrarth0.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrarth1.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrarth2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrarth3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrbits.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrbrick.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrbuild.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrcore.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrcrt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrcurve.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrdouble.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrebrick.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrec2m.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrecn2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrfast.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrflash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrflsh1.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrflsh2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrflsh3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrflsh4.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrfpe.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrfrnd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrgcd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrgcm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrgf2m.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrio1.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrio2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrjack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrlucas.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrmonty.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrmuldv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrpi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrpower.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrprime.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrrand.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrround.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrscrt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrsha3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrshs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrshs256.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrshs512.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrsmall.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrsroot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrstrong.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrxgcd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrzzn2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrzzn2b.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrzzn3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\mrzzn4.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\newbasis.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\pal_dec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\pal_enc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\palin.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\palin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\pk-demo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\pk-demo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\pm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\pollard.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\pollard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\qsieve.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\qsieve.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\romaker.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\romaker2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\roots.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\roots.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\sample.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\sample.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\threadmp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\threadwn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\tp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\williams.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\williams.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\zzn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\cm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\complex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\flpoly.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\glv.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\modpol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\mueller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake12blsa.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake12bna.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake12bne.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake12bnr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake12bnx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake18kssx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake1kmt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake24blsa.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake2cpt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake2cpt2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake2cpw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake2nsst.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake2sst.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake4cpt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake4fsta.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake4mnta.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake4mntt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake4sbt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake6mnta.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake6mntt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake6mntx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake8bwt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ake8cpt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\bgw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\blmq.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\bls.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\bls12.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\bls24.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\bls_gen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\bls_pair.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\bls_sign.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\bls_ver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\bmc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\bn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\bn_pair.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\cpabe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\cp_pair.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\daa.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\dl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\dl2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ecn2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ecn3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ecn4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ecn6.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\folklore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\freeman.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\fuzzy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\gf2m12x.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\gf2m4x.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\gf2m6x.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\hibe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ipe.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ipk_dec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ipk_enc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ipk_ext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ipk_set.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\irred.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\kss18.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\kss36.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\kss8.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\kss_pair.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\make_k1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\mnt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\mnt_pair.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\peks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\sf2m12x.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\sk_1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\sk_3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ss2_pair.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\ssp_pair.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\wang.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\zzn12.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\zzn12a.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\zzn12b.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\zzn18.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\zzn2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\zzn24.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\zzn3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\zzn36.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\zzn4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\zzn6.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\zzn6a.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\pairing\zzn8.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\poly.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\poly2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\poly2mod.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\poly2xy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\polymod.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\polyxy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\process.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\ps_big.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\ps_zzn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\schoof.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\schoof2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\sea.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\super2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\trans.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\curve\weil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\p1363\octet.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\p1363\rsa.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\p1363\test1363.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\p1363\testecc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
