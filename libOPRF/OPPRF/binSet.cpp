@@ -12,6 +12,7 @@
 #include "TwoChooseOne/IknpOtExtReceiver.h"
 #include "TwoChooseOne/IknpOtExtSender.h"
 #include "Hashing/Hints.h"
+#include "Parameters.h"
 //#define PRINT
 namespace osuCrypto
 {
@@ -205,7 +206,7 @@ namespace osuCrypto
 				auto binStart = tIdx       * binCount / thrds.size();
 				auto binEnd = (tIdx + 1) * binCount / thrds.size();
 
-				const u64 stepSize = 16;
+//				const u64 stepSize = 16;
 
 				for (u64 bIdx = binStart; bIdx < binEnd;)
 				{

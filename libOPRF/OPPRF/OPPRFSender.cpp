@@ -7,6 +7,7 @@
 #include "Base/naor-pinkas.h"
 #include "TwoChooseOne/IknpOtExtReceiver.h"
 #include "TwoChooseOne/IknpOtExtSender.h"
+#include "Parameters.h"
 
 //#define PRINT
 namespace osuCrypto
@@ -254,7 +255,7 @@ namespace osuCrypto
 
 	}
 
-	void  OPPRFSender::getOPRFkeysSeperatedandTable(u64 IdxP, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF)
+	void  OPPRFSender::getOPRFkeysSeperatedandTable(u64 IdxP, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF)//
 	{
 
 		//std::vector<std::thread>  thrds(chls.size());
@@ -276,7 +277,7 @@ namespace osuCrypto
 				auto& chl = *chls[tIdx];
 
 				if (tIdx == 0) gTimer.setTimePoint("online.send.insert");
-				const u64 stepSize = 16;
+				//const u64 stepSize = 16;
 
 				std::vector<block> ncoInput(bins.mNcoInputBlkSize);
 
@@ -448,7 +449,7 @@ namespace osuCrypto
 				auto& chl = *chls[tIdx];
 
 				if (tIdx == 0) gTimer.setTimePoint("online.send.insert");
-				const u64 stepSize = 16;
+				//const u64 stepSize = 16;
 
 				std::vector<block> ncoInput(bins.mNcoInputBlkSize);
 
@@ -604,7 +605,7 @@ namespace osuCrypto
 				auto& chl = *chls[tIdx];
 
 				if (tIdx == 0) gTimer.setTimePoint("online.send.insert");
-				const u64 stepSize = 16;
+				//const u64 stepSize = 16;
 
 				std::vector<block> ncoInput(bins.mNcoInputBlkSize);
 

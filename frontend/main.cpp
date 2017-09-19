@@ -16,9 +16,9 @@ using namespace osuCrypto;
 void usage(const char* argv0)
 {
 	std::cout << "Error! Please use:" << std::endl;
-	std::cout << "\t 1. For unit test: " << argv0 << " -t" << std::endl;
-	std::cout << "\t 2. For simulation (3 parties <=> 3 terminals): " << std::endl;;
-	std::cout << "\t\t terminal: " << argv0 << " -p pIdx" << std::endl;
+	std::cout << "\t 1. For unit test: " << argv0 << " -u" << std::endl;
+	std::cout << "\t 2. For simulation (5 parties <=> 5 terminals): " << std::endl;;
+	std::cout << "\t\t each terminal: " << argv0 << " -n 5 -t 2 -m 12 -p [pIdx]" << std::endl;
 
 }
 int main(int argc, char** argv)
@@ -33,9 +33,9 @@ int main(int argc, char** argv)
 	//OPPRFnt_EmptrySet_Test_Main();
 	//OPPRFnt_EmptrySet_Test_Main();
 	//OPPRFn_Aug_EmptrySet_Test_Impl();
-	//OPPRFnt_EmptrySet_Test_Impl();
+	OPPRFnt_EmptrySet_Test_Main();
 	//OPPRF2_EmptrySet_Test_Main();
-	//return 0;
+	return 0;
 
 	u64 trials = 1;
 	u64 pSetSize = 5, psiSecParam = 40, bitSize = 128;

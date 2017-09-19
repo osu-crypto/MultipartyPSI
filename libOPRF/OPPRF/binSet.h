@@ -5,6 +5,7 @@
 #include "NChooseOne/NcoOtExt.h"
 #include "Hashing/CuckooHash.h"
 #include "Hashing/SimpleHash.h"
+#include "Parameters.h"
 
 namespace osuCrypto
 {
@@ -26,6 +27,7 @@ namespace osuCrypto
 		binSet();
         ~binSet();
 		
+		//const u64 stepSize = 16;
 
         u64 mN,mTheirN, mParties, mMyIdx, mStatSecParam, mNcoInputBlkSize;// , mOtMsgBlkSize;
         block mHashingSeed;

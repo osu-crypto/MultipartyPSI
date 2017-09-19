@@ -12,13 +12,14 @@
 #include "TwoChooseOne/IknpOtExtReceiver.h"
 #include "TwoChooseOne/IknpOtExtSender.h"
 #include "Hashing/Hints.h"
-
+#include "Parameters.h"
 
 //#define PRINT
 namespace osuCrypto
 {
 	void OPPRFReceiver::recvSSTableBased(u64 IdxP, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls)
 	{
+	//	std::cout << stepSize << "\n";
 
 		// this is the online phase.
 		gTimer.setTimePoint("online.recv.start");
@@ -41,7 +42,7 @@ namespace osuCrypto
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
 				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
+				//const u64 stepSize = 16;
 
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
 
@@ -171,8 +172,7 @@ void OPPRFReceiver::sendSSTableBased(u64 IdxP, binSet& bins, std::vector<block>&
 				if (tIdx == 0) gTimer.setTimePoint("online.send.thrdStart");
 
 				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
-
+				//const u64 stepSize = 16;
 #pragma region sendShare
 #if 1
 				if (tIdx == 0) gTimer.setTimePoint("online.send.sendShare");

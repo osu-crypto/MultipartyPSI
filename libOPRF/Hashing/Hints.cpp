@@ -71,6 +71,12 @@ namespace osuCrypto
 	}
 
 	//#################Table based
+	//To choose the seed $r$ for the encrypted table $T$ mentioned in the step 2 of our Table-based OPPRF protocol
+	//it is sufficient to find $m$ bit locations in which all elements are distinct, 
+	//We choose $m$ bit location out of the element length $128$ at random 
+	//until the index $h_i$ of each elements are distinct.
+	
+
 	bool TableBased::getMasks(std::vector<block>& codeword) {
 
 		u8 rs, idx;
@@ -518,66 +524,3 @@ namespace osuCrypto
 	}
 }
 
-//void BaseOPPRF::findPos(std::vector<block>& codewords) {
-//	bool isDone=false;
-//	mMasks.clear();
-//	std::set<u8>::iterator it;
-//	std::pair<std::set<u8>::iterator, bool> ret;
-//	std::pair<std::set<u8>::iterator, bool> retMask;
-
-//	mNumTrial = 0;
-//	while (!isDone) {
-//		mPos.clear();
-//		mMasks.clear();
-//		for (u8 i = 0; i < mSize; i++)
-//		{
-//			u64 rand = std::rand() % 128; //choose randome bit location
-//			ret = mPos.insert(rand);
-//			if (ret.second == false) 
-//				it = ret.first;
-//		}
-//	//	std::cout << "\n\n ";
-//		//print();
-//		isDone = true;	
-//		//std::set<u8> masks1;
-
-//		
-//		for (u8 i = 0; i < codewords.size(); i++)
-//		{
-//			auto m = map(codewords[i]);
-//			std::cout << static_cast<int16_t>(m) << " ";
-//			retMask = mMasks.insert(m);
-//			if (retMask.second == false) {
-//				//std::cout << mNumTrial << std::endl;
-//				isDone = false;
-//				mNumTrial++;
-//				break;
-//			}
-//		}
-//		std::cout <<"\n-------\n";
-//	}
-//	//std::cout << static_cast<int16_t>(masks[0]) << " ";
-//}
-
-//u8 BaseOPPRF::map(block& codeword) {
-//	u8 rs = 0;
-//	u8 idx = 0;
-//	for (auto it = mPos.begin(); it != mPos.end(); ++it)
-//	{
-//		//	int i = *it / 8; //index of a block of 8 bits
-//		//	int r = *it % 8;		//get bit location in i
-//
-//		////	std::cout << " " << i << ":" << r << std::endl;
-//		////	__int8 c = codeword.m128i_i8[i];  //a block of 8 bits
-//
-//		//	//std::cout << static_cast<int16_t>(c) << std::endl;
-//		//	u8 cq = ((codeword.m128i_i8[i] << (7 - r))); //shift to rightmost and left most to get only the single bit
-//		//	cq = (cq >> 7) << idx; //then shift to location r
-//		//	//std::cout << static_cast<int16_t>(cq) << std::endl;
-//		//	rs = rs ^ cq; 
-//		//	idx++;
-//		//std::cout << std::endl;
-//	}
-//	//	std::cout << "rs: " << static_cast<int16_t>(rs) << std::endl;
-//	return rs;
-//}

@@ -7,6 +7,7 @@
 #include "Base/naor-pinkas.h"
 #include "TwoChooseOne/IknpOtExtReceiver.h"
 #include "TwoChooseOne/IknpOtExtSender.h"
+#include "Parameters.h"
 
 //#define PRINT
 namespace osuCrypto
@@ -66,7 +67,7 @@ namespace osuCrypto
 				auto& chl = *chls[tIdx];
 
 				if (tIdx == 0) gTimer.setTimePoint("online.send.insert");
-				const u64 stepSize = 16;
+				//const u64 stepSize = 16;
 
 				std::vector<block> ncoInput(bins.mNcoInputBlkSize);
 

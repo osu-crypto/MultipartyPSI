@@ -7,6 +7,7 @@
 #include "Base/naor-pinkas.h"
 #include "TwoChooseOne/IknpOtExtReceiver.h"
 #include "TwoChooseOne/IknpOtExtSender.h"
+#include "Parameters.h"
 
 //#define PRINT
 namespace osuCrypto
@@ -38,7 +39,7 @@ namespace osuCrypto
 				if (tIdx == 0) gTimer.setTimePoint("online.send.thrdStart");
 
 				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
+				//const u64 stepSize = 16;
 
 #pragma region sendShare
 #if 1
@@ -196,7 +197,7 @@ namespace osuCrypto
 				if (tIdx == 0) gTimer.setTimePoint("online.send.thrdStart");
 
 				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
+				//const u64 stepSize = 16;
 
 #pragma region sendShare
 #if 1
@@ -350,7 +351,8 @@ namespace osuCrypto
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
 				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
+				//const u64 stepSize = 16;
+				
 
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
 
@@ -506,7 +508,7 @@ namespace osuCrypto
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
 				auto& chl = *chls[tIdx];
-				const u64 stepSize = 16;
+				//const u64 stepSize = 16;
 
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
 

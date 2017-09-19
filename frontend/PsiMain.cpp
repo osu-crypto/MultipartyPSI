@@ -28,7 +28,7 @@ std::vector<block> sendSet;
 std::vector<block> mSet;
 u64 nParties(3);
 
-u64 opt = 3;
+u64 opt = 0;
 
 bool isNTLThreadSafe = false;
 
@@ -2691,7 +2691,7 @@ void OPPRFnt_EmptrySet_Test_Main()
 
 	u64 nParties = 5;
 	u64 tParties = 1;
-
+	opt = TABLEb;
 
 	std::vector<std::thread>  pThrds(nParties);
 	for (u64 pIdx = 0; pIdx < pThrds.size(); ++pIdx)

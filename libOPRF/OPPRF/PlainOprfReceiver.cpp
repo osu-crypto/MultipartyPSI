@@ -12,6 +12,7 @@
 #include "TwoChooseOne/IknpOtExtReceiver.h"
 #include "TwoChooseOne/IknpOtExtSender.h"
 #include "Hashing/Hints.h"
+#include "Parameters.h"
 
 
 //#define PRINT
@@ -52,7 +53,7 @@ namespace osuCrypto
 
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.insertDone");
 
-				const u64 stepSize = 16;
+				//const u64 stepSize = 16;
 
 				std::vector<block> ncoInput(bins.mNcoInputBlkSize);
 
@@ -165,7 +166,7 @@ namespace osuCrypto
 					if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
 					auto& chl = *chls[tIdx];
-					const u64 stepSize = 16;
+					//const u64 stepSize = 16;
 
 					if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
 
