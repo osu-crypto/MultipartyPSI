@@ -33,20 +33,16 @@ namespace osuCrypto
 		mStatSecParam = statSecParam;
 		mOpt = opt;
 		mMaskSize = roundUpTo(mStatSecParam + 2 * std::log2(mN), 8) / 8;
+		if(opt==TABLEb)
+			mMaskSize = roundUpTo(mStatSecParam + 2 * std::log2(mN)+6, 8) / 8; //5 or 6 bits from sample 
+
 		//Hard-coding key for hash functions 
 		mHashingSeed = _mm_set_epi64x(1, 1);
 
 		mNcoInputBlkSize = 4;
-
-		//mOpprfSends.resize(mParties- mMyIdx);
-		//mOpprfRecvs.resize(mMyIdx);
-
-	/*	std::vector<OPPRFSender> mOpprfSends(3);
-		std::vector<OPPRFReceiver> mOpprfRecvs(3);*/
 		
-		
-			mSimpleBins.init(mN, mTheirN, mOpt);
-			mCuckooBins.init(mN, mTheirN, mOpt);
+		mSimpleBins.init(mN, mTheirN, mOpt);
+		mCuckooBins.init(mN, mTheirN, mOpt);
     }
 
 	void binSet::hashing2Bins(std::vector<block>& inputs, int numThreads)
@@ -66,7 +62,6 @@ namespace osuCrypto
 
 
         std::vector<std::thread>  thrds(numThreads);
-      //  std::vector<std::thread>  thrds(1);
 
         // since we are going to do this in parallel, these objects will
         // be used for synchronization. specifically, when all threads are 
@@ -80,8 +75,6 @@ namespace osuCrypto
 			insertFuture(insertProm.get_future()),
 			insertStashFuture(insertStashProm.get_future());
 
-      //  CuckooHash maskMap;
-        //maskMap.init(mN * mBins.mMaxBinSize, mStatSecParam, chls.size() > 1);
 
 		// this mutex is used to guard inserting things into the bin
 	   std::mutex mInsertBin;
@@ -165,19 +158,7 @@ namespace osuCrypto
 					insertStashFuture.get();
 				else
 					insertStashProm.set_value();
-
-
-
-
-				/*for (u64 i = 0; i < mBins.mBinCount; ++i)
-				{
-					if (i < 3 || (i < mN && i > mN - 2)) {
-						
-							std::cout << "r-Bin" << i << ": " << mBins.mBins[i].idx();
-					
-						std::cout << std::endl;
-					}
-				}*/
+							
 
 			//	mBins.print();
 
@@ -206,7 +187,6 @@ namespace osuCrypto
 				auto binStart = tIdx       * binCount / thrds.size();
 				auto binEnd = (tIdx + 1) * binCount / thrds.size();
 
-//				const u64 stepSize = 16;
 
 				for (u64 bIdx = binStart; bIdx < binEnd;)
 				{

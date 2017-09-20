@@ -235,11 +235,6 @@ namespace osuCrypto
 								e = NTL::eval(polynomial[hIdx], e); //get y=f(x) in GF2E
 								b.BlockFromGF2E(blkY, e, bins.mMaskSize);
 
-								/*if (inputIdx == 0)
-								{
-								std::cout << "inputIdx[" << inputIdx << "]-hIdx[" << hIdx << "]-OPRF" << bin.mValOPRF[IdxP];
-								std::cout << "\n----" << blkY << std::endl;
-								}*/
 								plaintexts[inputIdx] = bin.mValOPRF[IdxP] ^ blkY;
 							}
 						}

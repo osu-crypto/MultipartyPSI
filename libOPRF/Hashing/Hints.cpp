@@ -9,26 +9,6 @@
 
 namespace osuCrypto
 {
-	int isSet(block & v, int n)
-	{
-		__m128i chkmask = _mm_slli_epi16(_mm_set1_epi16(1), n & 0xF);
-		int     movemask = (1 << (n >> 3));
-		int     isSet = (((_mm_movemask_epi8(_mm_cmpeq_epi8(_mm_and_si128(chkmask, v), _mm_setzero_si128())) & movemask) ^ movemask));
-		return isSet;
-	}
-	void setBit(block & v, int pos)
-	{
-		__m128i shuf = _mm_set_epi8(15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
-		shuf = _mm_add_epi8(shuf, _mm_set1_epi8(16 - (pos >> 3)));
-		shuf = _mm_and_si128(shuf, _mm_set1_epi8(0x0F));
-		__m128i setmask = _mm_shuffle_epi8(_mm_cvtsi32_si128(1 << (pos & 0x7)), shuf);
-		v = _mm_or_si128(v, setmask);
-	}
-	bool TestBitN(__m128i value, int N)
-	{
-		__m128i positioned = _mm_slli_epi64(value, 7 - (N & 7));
-		return (_mm_movemask_epi8(positioned) & (1 << (N / 8))) != 0;
-	}
 
 
 

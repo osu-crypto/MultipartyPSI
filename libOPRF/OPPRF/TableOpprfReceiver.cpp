@@ -42,7 +42,6 @@ namespace osuCrypto
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.thrdStart");
 
 				auto& chl = *chls[tIdx];
-				//const u64 stepSize = 16;
 
 				if (tIdx == 0) gTimer.setTimePoint("online.recv.recvShare");
 
@@ -134,7 +133,6 @@ namespace osuCrypto
 
 
 			});
-			//	if (tIdx == 0) gTimer.setTimePoint("online.recv.done");
 		}
 		// join the threads.
 		for (auto& thrd : thrds)
