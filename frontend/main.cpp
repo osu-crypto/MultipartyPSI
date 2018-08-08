@@ -33,9 +33,9 @@ int main(int argc, char** argv)
 	//OPPRFnt_EmptrySet_Test_Main();
 	//OPPRFnt_EmptrySet_Test_Main();
 	//OPPRFn_Aug_EmptrySet_Test_Impl();
-	OPPRFnt_EmptrySet_Test_Main();
+	//OPPRFnt_EmptrySet_Test_Main();
 	//OPPRF2_EmptrySet_Test_Main();
-	return 0;
+	//return 0;
 
 	u64 trials = 1;
 	u64 pSetSize = 5, psiSecParam = 40, bitSize = 128;
