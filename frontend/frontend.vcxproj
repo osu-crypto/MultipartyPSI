@@ -13,19 +13,19 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C81DC04B-A0F0-4B77-8DCE-C8190E629467}</ProjectGuid>
     <RootNamespace>frontend</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -51,14 +51,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/cryptoTools;$(solutionDir)thirdparty\win\boost\;$(SolutionDir)/libOPRF;$(SolutionDir)thirdparty\win\;$(SolutionDir)thirdparty/win/NTL/include;$(SolutionDir)thirdparty/win/miracl;C:/libs/NTL/include;$(SolutionDir)/libOTe</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)/cryptoTools;$(solutionDir)thirdparty\win\boost\;$(SolutionDir)/libOPRF;$(SolutionDir)thirdparty\win\;$(SolutionDir)thirdparty/win/NTL/include;$(SolutionDir)thirdparty/win/miracl;C:/libs/NTL/include;$(SolutionDir)/libOTe;C:/libs/miracl;C:/libs/boost</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>SOLUTION_DIR=R"**($(SolutionDir))**";_WIN32_WINNT=0x0501;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>D:\libs;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories);$(SolutionDir)\thirdparty\win\boost\stage\lib;C:/libs/boost\stage\lib;$(OutDir);$(SolutionDir)thirdparty\win\;D:/libs/boost\stage\lib;C:/libs/;C:\Program Files %28x86%29\Visual Leak Detector\lib\Win64;$(libOTeDir)\x64\$(Configuration)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libOTe.lib;libPSI_Tests.lib;cryptoTools.lib;mpir\lib\x64\Debug\mpir.lib;mpir\lib\x64\Debug\mpirxx.lib;Miracl\x64\$(Configuration)\miracl.lib;cryptopp\x64\Output\$(Configuration)\cryptlib.lib;NTL\x64\$(Configuration)\NTL.lib;libOPRF.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libOTe.lib;cryptoTools.lib;Miracl\x64\$(Configuration)\miracl.lib;NTL\x64\$(Configuration)\NTL.lib;libOPRF.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
