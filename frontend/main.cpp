@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include "Network/BtChannel.h"
 #include "Network/BtEndpoint.h"
@@ -6,12 +7,13 @@ using namespace std;
 #include "Common/Defines.h"
 using namespace osuCrypto;
 
-#include "PsiMain.h"
+#include "OtBinMain.h"
+#include "bitPosition.h"
 
 #include <numeric>
 #include "Common/Log.h"
+//int miraclTestMain();
 
-//#include "cuckoo/cuckooTests.h"
 
 void usage(const char* argv0)
 {
@@ -71,7 +73,7 @@ int main(int argc, char** argv)
 		if (argv[5][0] == '-' && argv[5][1] == 'p') {
 			u64 pIdx = atoi(argv[6]);
 			if (nParties == 2)
-				party2(pIdx, setSize, trials);
+				party2(pIdx, setSize);
 			else
 			{
 				usage(argv[0]);
@@ -132,8 +134,8 @@ int main(int argc, char** argv)
 				tparty(pIdx, nParties, tParties, setSize, trials);
 			}
 			else if (argv[3][1] == 'a')
-			{				
-				aug_party(pIdx, nParties, setSize,opt_basedOPPRF, trials);
+			{
+				aug_party(pIdx, nParties, setSize, opt_basedOPPRF, trials);
 			}
 		}
 		else

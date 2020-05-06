@@ -2,9 +2,9 @@
 #include "Common/Defines.h"
 #include "Network/Channel.h"
 #include "NChooseOne/NcoOtExt.h"
-#include "Hashing/SimpleHash.h"
-#include "Hashing/CuckooHash.h"
-#include "Hashing/Hints.h"
+#include "Hashing/SimpleHasher1.h"
+#include "Hashing/CuckooHasher1.h"
+#include "Hashing/BitPosition.h"
 #include "OPPRF/binSet.h"
 namespace osuCrypto
 {
@@ -23,8 +23,8 @@ namespace osuCrypto
 
 		u64 mN, mParties, mStatSecParam, mNcoInputBlkSize,  mOtMsgBlkSize;
         block mHashingSeed;
-		//SimpleHash mSimpleBins;
-		//CuckooHash mCuckooBins;
+		//SimpleHasher1 mSimpleBins;
+		//CuckooHasher1 mCuckooBins;
 
 		u64 mNumBFhashs = 40;
 		u64 mBfSize;
@@ -80,9 +80,6 @@ namespace osuCrypto
 		void recvSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 		void recvFullPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 		void recvBFBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
-
-		//for 2-party PSI
-		void sendPlain(u64 IdxTheirParty, binSet& bins, const std::vector<Channel*>& chls);
 
 
     };

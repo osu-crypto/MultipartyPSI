@@ -11,8 +11,7 @@
 
 #include "TwoChooseOne/IknpOtExtReceiver.h"
 #include "TwoChooseOne/IknpOtExtSender.h"
-#include "Hashing/Hints.h"
-#include "Parameters.h"
+#include "Hashing/BitPosition.h"
 //#define PRINT
 namespace osuCrypto
 {
@@ -24,25 +23,28 @@ namespace osuCrypto
     {
     }
 
-    void binSet::init( u64 myIdx, u64 nParties, u64 mySetSize, u64 theirSetSize, u64 statSecParam, u64 opt)
+    void binSet::init( u64 myIdx, u64 nParties, u64 setSize, u64 statSecParam, u64 opt)
     {
 		mMyIdx = myIdx;
 		mParties = nParties;
-		mN = mySetSize;
-		mTheirN = theirSetSize;
+		mN = setSize;
 		mStatSecParam = statSecParam;
 		mOpt = opt;
 		mMaskSize = roundUpTo(mStatSecParam + 2 * std::log2(mN), 8) / 8;
-		if(opt==TABLEb)
-			mMaskSize = roundUpTo(mStatSecParam + 2 * std::log2(mN)+6, 8) / 8; //5 or 6 bits from sample 
-
 		//Hard-coding key for hash functions 
 		mHashingSeed = _mm_set_epi64x(1, 1);
 
 		mNcoInputBlkSize = 4;
+
+		//mOpprfSends.resize(mParties- mMyIdx);
+		//mOpprfRecvs.resize(mMyIdx);
+
+	/*	std::vector<OPPRFSender> mOpprfSends(3);
+		std::vector<OPPRFReceiver> mOpprfRecvs(3);*/
 		
-		mSimpleBins.init(mN, mTheirN, mOpt);
-		mCuckooBins.init(mN, mTheirN, mOpt);
+		
+			mSimpleBins.init(mN, mOpt);
+			mCuckooBins.init(mN, mOpt);
     }
 
 	void binSet::hashing2Bins(std::vector<block>& inputs, int numThreads)
@@ -52,16 +54,15 @@ namespace osuCrypto
         gTimer.setTimePoint("online.recv.start");
 
         // check that the number of inputs is as expected.
-		if (inputs.size() != mN)
-		{
-			std::cout << "inputs.size() != mN" << std::endl;
-			throw std::runtime_error(LOCATION);
-		}
+        if (inputs.size() != mN)
+            throw std::runtime_error(LOCATION);	
+
 		if (mOpt != 0)
 			mXsets = inputs;
 
 
         std::vector<std::thread>  thrds(numThreads);
+      //  std::vector<std::thread>  thrds(1);
 
         // since we are going to do this in parallel, these objects will
         // be used for synchronization. specifically, when all threads are 
@@ -75,6 +76,8 @@ namespace osuCrypto
 			insertFuture(insertProm.get_future()),
 			insertStashFuture(insertStashProm.get_future());
 
+      //  CuckooHasher1 maskMap;
+        //maskMap.init(mN * mBins.mMaxBinSize, mStatSecParam, chls.size() > 1);
 
 		// this mutex is used to guard inserting things into the bin
 	   std::mutex mInsertBin;
@@ -118,7 +121,7 @@ namespace osuCrypto
 					
 					std::vector<block> tempMaskBuff(currentStepSize);
 					std::vector<u64> tempIdxBuff(currentStepSize); 
-					CuckooHash::Workspace w(tempMaskBuff.size());
+					CuckooHasher1::Workspace w(tempMaskBuff.size());
 					MatrixView<u64> hashes(currentStepSize,mCuckooBins.mParams.mNumHashes[0]);
 
                     for (u64 j = 0; j < currentStepSize; ++j)
@@ -142,7 +145,7 @@ namespace osuCrypto
 					insertProm.set_value();
 
 				if (tIdx == 0) {
-					CuckooHash::Workspace stashW(mCuckooBins.mStashIdxs.size());
+					CuckooHasher1::Workspace stashW(mCuckooBins.mStashIdxs.size());
 					MatrixView<u64> stashHashes(mCuckooBins.mStashIdxs.size(), mCuckooBins.mParams.mNumHashes[1]);
 
 					for (u64 j = 0; j < mCuckooBins.mStashIdxs.size(); ++j)
@@ -158,7 +161,19 @@ namespace osuCrypto
 					insertStashFuture.get();
 				else
 					insertStashProm.set_value();
-							
+
+
+
+
+				/*for (u64 i = 0; i < mBins.mBinCount; ++i)
+				{
+					if (i < 3 || (i < mN && i > mN - 2)) {
+						
+							std::cout << "r-Bin" << i << ": " << mBins.mBins[i].idx();
+					
+						std::cout << std::endl;
+					}
+				}*/
 
 			//	mBins.print();
 
@@ -187,6 +202,7 @@ namespace osuCrypto
 				auto binStart = tIdx       * binCount / thrds.size();
 				auto binEnd = (tIdx + 1) * binCount / thrds.size();
 
+				const u64 stepSize = 16;
 
 				for (u64 bIdx = binStart; bIdx < binEnd;)
 				{

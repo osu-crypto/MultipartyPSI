@@ -30,27 +30,7 @@ namespace osuCrypto {
         xy2 = t4;
     }
 
-	double maxprob2(u64 balls, u64 bins, u64 k)
-	{
-		return std::log(bins * std::pow(balls * exp(1) / (bins * k), k)) / std::log(2);
-	}
 
-	u64 getMaxBinSize(u64 balls, u64 numBins)
-	{
-		
-		u64 maxBin;
-		for (maxBin = 15; maxBin < 64; maxBin++)
-		{
-			// finds the min number of bins needed to get max occ. to be maxBin
-			if (-maxprob2(balls, numBins, maxBin) < 40)
-			{
-				// maxBins is too small, skip it.
-				continue;
-			}
-			else
-				return maxBin;
-		}
-	}
 
     void eklundh_transpose128(array<block, 128>& inOut)
     {

@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8)
 
-project("nPSI")
+project("libPSI")
 
 
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
@@ -12,7 +12,7 @@ set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/lib)
 #            Flag and #defines              #
 #############################################
 add_definitions(-DSOLUTION_DIR=\"${CMAKE_SOURCE_DIR}\")
-set(CMAKE_C_FLAGS "-ffunction-sections -Wall  -maes -msse2 -msse4.1 -mpclmul -pthread")
+set(CMAKE_C_FLAGS "-ffunction-sections -Wall  -maes -msse2 -msse4.1 -mpclmul -Wfatal-errors -pthread")
 set(CMAKE_CXX_FLAGS  "${CMAKE_C_FLAGS}  -std=c++14")
 
 # Set a default build type for single-configuration
@@ -66,11 +66,19 @@ include_directories(cryptoTools)
 add_subdirectory(libOTe)
 include_directories(libOTe)
 
+
 #############################################
 #               Build libOPRF                 #
 #############################################
 add_subdirectory(libOPRF)
 include_directories(libOPRF)
+
+
+#############################################
+#           Build libPSI Tests              #
+#############################################
+#add_subdirectory(libPSI_Tests)
+#include_directories(libPSI_Tests)
 
 
 #############################################

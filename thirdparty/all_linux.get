@@ -14,9 +14,7 @@ sudo apt-get -y install  libboost-all-dev
 cd linux
 
 bash boost.get &
-bash cryptopp.get &
 bash miracl.get &
-bash mpir.get &
 bash ntl.get &
 
 wait

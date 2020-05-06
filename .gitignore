@@ -5,7 +5,6 @@
 *.suo
 *.user
 *.sln.docstates
-*.vs/*
 
 
 TestResults/
@@ -193,12 +192,7 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 /WeGarbleTests__
-/thirdparty/win/cryptopp/
-/thirdparty/win/boost/
-/thirdparty/win/mpir/
-/thirdparty/linux/cryptopp/
-/thirdparty/linux/boost/
-/thirdparty/linux/mpir/
+/thirdparty
 kProbe_*
 
 CodeDB

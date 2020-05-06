@@ -30,23 +30,31 @@ namespace osuCrypto
 		return (_mm_movemask_epi8(positioned) & (1 << (N / 8))) != 0;
 	}
 
-	
+
 
 	BaseOPPRF::BaseOPPRF()
-    {
-    }
+	{
+	}
 
 	BaseOPPRF::~BaseOPPRF()
-    {
-    }
+	{
+	}
 
-   
-    void BaseOPPRF::print() const
-    {
+	BitPosition::BitPosition()
+	{
+	}
+
+	BitPosition::~BitPosition()
+	{
+	}
+
+
+	void BitPosition::print() const
+	{
 		std::cout << "mPos: \n";
 		for (auto it = mPos.begin(); it != mPos.end(); ++it)
 		{
-				std::cout << static_cast<int16_t>(*it) << "  ";
+			std::cout << static_cast<int16_t>(*it) << "  ";
 		}
 		std::cout << std::endl;
 		std::cout << "Masks: ";
@@ -54,17 +62,17 @@ namespace osuCrypto
 			std::cout << static_cast<int16_t>((*iter)) << " ";
 		}
 
-    }
-	void BaseOPPRF::init(/*u64 numRealCodeWord,*/ u64 numMaxBitSize)
-    {
+	}
+	void BitPosition::init(/*u64 numRealCodeWord,*/ u64 numMaxBitSize)
+	{
 		/*mRealBitSize= std::floor(std::log2(numRealCodeWord)) + 1;*/
 		mMaxBitSize = numMaxBitSize;
 
-    }
-	
+	}
+
 	//#################Table based
-	bool BaseOPPRF::getMasks(std::vector<block>& codeword) {
-		
+	bool BitPosition::getMasks(std::vector<block>& codeword) {
+
 		u8 rs, idx;
 		for (int i = 0; i < codeword.size(); i++) {
 			rs = 0;
@@ -86,27 +94,27 @@ namespace osuCrypto
 			{
 				mMaps.clear();
 				return false;
-			}			
+			}
 		}
 		return true;
 	}
-	void BaseOPPRF::getMask(block& codeword, u8& mask) {
+	void BitPosition::getMask(block& codeword, u8& mask) {
 
-		u8 rs, idx;		
+		u8 rs, idx;
 		mask = 0;
-			idx = 1;
-			for (auto it = mPos.begin(); it != mPos.end(); ++it)
+		idx = 1;
+		for (auto it = mPos.begin(); it != mPos.end(); ++it)
+		{
+			if (TestBitN(codeword, *it))
 			{
-				if (TestBitN(codeword, *it))
-				{
-					mask = mask^idx;
-					//std::cout << static_cast<int16_t>(idx) << std::endl;
-				}
-				idx = idx << 1;
-			}		
+				mask = mask^idx;
+				//std::cout << static_cast<int16_t>(idx) << std::endl;
+			}
+			idx = idx << 1;
+		}
 	}
 
-	int BaseOPPRF::midIdx(std::vector<block>& codewords, int length)
+	int BitPosition::midIdx(std::vector<block>& codewords, int length)
 	{
 		int temp = 0;
 		int idx = 0;
@@ -161,55 +169,55 @@ namespace osuCrypto
 
 	std::vector<std::vector<block>> testSet;
 	int idxS = -1;
-	void BaseOPPRF::getPosHelper(std::vector<block>& codewords, int length)
+	void BitPosition::getPosHelper(std::vector<block>& codewords, int length)
 	{
 		idxS++;
 		int setSize = codewords.size();
 		std::vector<block> testSet1;
 		std::vector<block> testSet2;
-		
-		if (mPos.size() < mRealBitSize){
+
+		if (mPos.size() < mRealBitSize) {
 			int idx = midIdx(codewords, length);
 
 			//if (std::find(mPos.begin(), mPos.end(), idx) == mPos.end())
 			{
 				mPos.push_back(idx);
 				std::cout << std::endl;
-					for (size_t i = 0; i < setSize; i++)			
-						if (TestBitN(codewords[i], idx))
-						{
+				for (size_t i = 0; i < setSize; i++)
+					if (TestBitN(codewords[i], idx))
+					{
 						//	std::cout << codewords[i] << " " << idx << " "<< 1 << std::endl;
-							testSet1.push_back(codewords[i]);
-						
-						}
-						else
-						{
-							//std::cout << codewords[i] << " " << idx << " " << 0 << std::endl;
-							//std::cout << "TestBitN=0: " << i << std::endl;
-							testSet2.push_back(codewords[i]);
-						}
+						testSet1.push_back(codewords[i]);
 
-					for (size_t i = 0; i < testSet1.size(); i++)
-							std::cout << testSet1[i] << " " << idx << " "<< 1 << std::endl;
-					
-					std::cout << std::endl;
+					}
+					else
+					{
+						//std::cout << codewords[i] << " " << idx << " " << 0 << std::endl;
+						//std::cout << "TestBitN=0: " << i << std::endl;
+						testSet2.push_back(codewords[i]);
+					}
 
-					for (size_t i = 0; i < testSet2.size(); i++)
-						std::cout << testSet2[i] << " " << idx << " " << 0 << std::endl;
+				for (size_t i = 0; i < testSet1.size(); i++)
+					std::cout << testSet1[i] << " " << idx << " " << 1 << std::endl;
+
+				std::cout << std::endl;
+
+				for (size_t i = 0; i < testSet2.size(); i++)
+					std::cout << testSet2[i] << " " << idx << " " << 0 << std::endl;
 
 
-					testSet.push_back(testSet1);
-					testSet.push_back(testSet2);
-					//std::cout <<"testSet1 " <<  testSet1.size() << std::endl;
-					//std::cout <<"testSet2 "<< testSet2.size() << std::endl;
-					getPos(testSet[idxS], length);
-				}
+				testSet.push_back(testSet1);
+				testSet.push_back(testSet2);
+				//std::cout <<"testSet1 " <<  testSet1.size() << std::endl;
+				//std::cout <<"testSet2 "<< testSet2.size() << std::endl;
+				getPos(testSet[idxS], length);
+			}
 		}
 	}
 
-	void BaseOPPRF::getPos1(std::vector<block>& codewords, int length)
+	void BitPosition::getPos1(std::vector<block>& codewords, int length)
 	{
-		bool isFind=false;
+		bool isFind = false;
 
 		if (codewords.size() == 1) {
 			getRandPos();
@@ -221,10 +229,10 @@ namespace osuCrypto
 			{
 				u64 rand = std::rand() % length;
 				if (TestBitN(diff, rand))
-					{
-						mPos.push_back(rand);
-						isFind = true;
-					}
+				{
+					mPos.push_back(rand);
+					isFind = true;
+				}
 			}
 			getRandPos();
 			getMasks(codewords);
@@ -247,7 +255,7 @@ namespace osuCrypto
 			while (!isFind)
 			{
 				u64 rand = std::rand() % length;
-				if (TestBitN(diff, rand)==false && TestBitN(diff2, rand)==true)
+				if (TestBitN(diff, rand) == false && TestBitN(diff2, rand) == true)
 				{
 					if (std::find(mPos.begin(), mPos.end(), rand) == mPos.end())
 					{
@@ -263,7 +271,7 @@ namespace osuCrypto
 		{
 			std::vector<block> diff;
 
-			for (int i = 0; i+1 < codewords.size();i+=2) {
+			for (int i = 0; i + 1 < codewords.size(); i += 2) {
 				diff.push_back(codewords[i] ^ codewords[i + 1]);
 			}
 			if (codewords.size() % 2 == 1)
@@ -274,51 +282,51 @@ namespace osuCrypto
 			while (!isFind)
 			{
 				mMaps.clear();
-				mPos.clear();	
+				mPos.clear();
 				block m = ZeroBlock;
-					while(mPos.size() < mMaxBitSize)
+				while (mPos.size() < mMaxBitSize)
+				{
+					bool isRand = true;
+					while (isRand)
 					{
-						bool isRand = true;
-						while (isRand)
-						{
-							u64 rIdx = std::rand() % length;
-							u64 rDiffIdx = std::rand() % sizeDiff;
-							if (TestBitN(diff[rDiffIdx], rIdx))
-								if (std::find(mPos.begin(), mPos.end(), rIdx) == mPos.end())
-								{
-									mPos.push_back(rIdx);
-									isRand = false;
-									//setBit(m, rand);
-								}
-						}
+						u64 rIdx = std::rand() % length;
+						u64 rDiffIdx = std::rand() % sizeDiff;
+						if (TestBitN(diff[rDiffIdx], rIdx))
+							if (std::find(mPos.begin(), mPos.end(), rIdx) == mPos.end())
+							{
+								mPos.push_back(rIdx);
+								isRand = false;
+								//setBit(m, rand);
+							}
 					}
-					
-					//test mPos
-					/*for (size_t i = 0; i < codewords.size(); i++)
-					{
-						block a = codewords[i] & m;
-						Log::out << a << Log::endl;
-						checkUnique.push_back(a);
-					}*/
+				}
 
-					isFind=getMasks(codewords);
+				//test mPos
+				/*for (size_t i = 0; i < codewords.size(); i++)
+				{
+				block a = codewords[i] & m;
+				Log::out << a << Log::endl;
+				checkUnique.push_back(a);
+				}*/
 
-					//// using default comparison:
-					//std::vector<u8>::iterator it;
-					//it = std::unique(mMaps.begin(), mMaps.end());
+				isFind = getMasks(codewords);
 
-					////remove duplicate
-					//mMaps.resize(std::distance(mMaps.begin(), it));
-					
+				//// using default comparison:
+				//std::vector<u8>::iterator it;
+				//it = std::unique(mMaps.begin(), mMaps.end());
+
+				////remove duplicate
+				//mMaps.resize(std::distance(mMaps.begin(), it));
+
 			}
 		}
 	}
-	void BaseOPPRF::getPos(std::vector<block>& codewords, int length)
+	void BitPosition::getPos(std::vector<block>& codewords, int length)
 	{
 		getPosHelper(codewords, length);
 		//getRandPos();									 
 	}
-	void BaseOPPRF::getRandPos()
+	void BitPosition::getRandPos()
 	{
 		while (mPos.size()<mMaxBitSize)
 		{
@@ -337,19 +345,19 @@ namespace osuCrypto
 	void BaseOPPRF::poly_init(u64 numBytes) {
 		mGf2x.~GF2X();
 		mNumBytes = numBytes;
-		NTL::BuildIrred(mGf2x, numBytes*8);
+		NTL::BuildIrred(mGf2x, numBytes * 8);
 		NTL::GF2E::init(mGf2x);
-		
+
 	}
 
 	/*void BaseOPPRF::reset() {
-		mGf2x.~GF2X();
+	mGf2x.~GF2X();
 	}*/
 
-	void BaseOPPRF::GF2EFromBlock(NTL::GF2E &element, block& blk,u64 size) {
+	void BaseOPPRF::GF2EFromBlock(NTL::GF2E &element, block& blk, u64 size) {
 
 		//NTL::GF2X x1;
-		
+
 		//x1=NTL::BuildSparseIrred_GF2X(128);
 		//NTL::GF2E::init(x1);
 		//convert the Block to GF2X element.
@@ -361,8 +369,8 @@ namespace osuCrypto
 
 	}
 
-	void BaseOPPRF::BlockFromGF2E(block& blk, NTL::GF2E & element,u64 size) {	
-		
+	void BaseOPPRF::BlockFromGF2E(block& blk, NTL::GF2E & element, u64 size) {
+
 
 		//Get the bytes of the random element.
 		NTL::GF2X fromEl = NTL::rep(element); //convert the GF2E element to GF2X element.	
@@ -374,7 +382,7 @@ namespace osuCrypto
 	//computes coefficients (in blocks) of f such that f(x[i]) = y[i]
 	void BaseOPPRF::getBlkCoefficients(NTL::vec_GF2E& vecX, NTL::vec_GF2E& vecY, std::vector<block>& coeffs)
 	{
-		
+
 		NTL::GF2E e;
 
 		//interpolate
@@ -400,11 +408,11 @@ namespace osuCrypto
 
 		for (u64 i = 0; i < setX.size(); ++i)
 		{
-		//	Log::out << "setX["<<i<<"]: " << setX[i] << Log::endl;
-		//	Log::out << "setY[" << i << "]: " << setX[i] << Log::endl;
+			//	Log::out << "setX["<<i<<"]: " << setX[i] << Log::endl;
+			//	Log::out << "setY[" << i << "]: " << setX[i] << Log::endl;
 
 
-			GF2EFromBlock(e, setX[i],mNumBytes);
+			GF2EFromBlock(e, setX[i], mNumBytes);
 			x.append(e);
 
 			GF2EFromBlock(e, setY[i], mNumBytes);
@@ -421,7 +429,7 @@ namespace osuCrypto
 		// gererate a dummy poly dummy(x) of degree max_bin_size - degree of p1(x)
 		//send coff of poly dummy(x)*pRoot(x)+p1(x)
 		//if x*=xi =>pRoot(xi)=0 => get p1(x*)
-		
+
 		NTL::GF2EX root_polynomial;
 		NTL::BuildFromRoots(root_polynomial, x);
 
@@ -429,8 +437,8 @@ namespace osuCrypto
 		NTL::GF2EX dummy_polynomial;
 		/*for (u64 i = setX.size(); i < degree-1; ++i)
 		{
-			NTL::random(e);
-			x.append(e);
+		NTL::random(e);
+		x.append(e);
 		}*/
 
 		NTL::random(dummy_polynomial, degree - setX.size());
@@ -446,8 +454,8 @@ namespace osuCrypto
 		//	std::cout << x[i] << std::endl;
 		//}
 
-		
-		
+
+
 
 		//NTL::BuildFromRoots(dummy_polynomial, x);
 
@@ -455,20 +463,20 @@ namespace osuCrypto
 		// NTL::add(polynomial, d_polynomial, polynomial);
 		polynomial = polynomial + dummy_polynomial*root_polynomial;
 
-	//	dummy_polynomial.~GF2EX();
-	//	root_polynomial.~GF2EX();
+		//	dummy_polynomial.~GF2EX();
+		//	root_polynomial.~GF2EX();
 
-		 //for (u64 i = 0; i < setX.size(); ++i)
-		 //{
-			// NTL::GF2E e1 = NTL::eval(polynomial, x[i]); //get y=f(x) in GF2E
-			// if (e1 != y[i])
-			//	 throw std::runtime_error(LOCATION);
-			//// else
-			////	 std::cout << "ok" << std::endl;
-		 //}
+		//for (u64 i = 0; i < setX.size(); ++i)
+		//{
+		// NTL::GF2E e1 = NTL::eval(polynomial, x[i]); //get y=f(x) in GF2E
+		// if (e1 != y[i])
+		//	 throw std::runtime_error(LOCATION);
+		//// else
+		////	 std::cout << "ok" << std::endl;
+		//}
 
-		 
-		 //std::cout << NTL::deg(polynomial) << std::endl;
+
+		//std::cout << NTL::deg(polynomial) << std::endl;
 
 		////convert coefficient to vector<block> 
 		coeffs.resize(NTL::deg(polynomial) + 1);
@@ -506,7 +514,7 @@ namespace osuCrypto
 			GF2EFromBlock(e, coeffs[i], mNumBytes);
 			NTL::SetCoeff(res_polynomial, i, e); //build res_polynomial
 		}
-		return res_polynomial;		
+		return res_polynomial;
 	}
 }
 

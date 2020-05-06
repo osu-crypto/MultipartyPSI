@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
@@ -31,6 +31,7 @@
     <ClInclude Include="TwoChooseOne\KosOtExtSender.h" />
     <ClInclude Include="TwoChooseOne\LzKosOtExtReceiver.h" />
     <ClInclude Include="TwoChooseOne\LzKosOtExtSender.h" />
+    <ClInclude Include="TwoChooseOne\OTExtInterface.h" />
     <ClInclude Include="TwoChooseOne\TcoOtDefines.h" />
   </ItemGroup>
   <ItemGroup>
@@ -98,7 +99,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)/cryptoTools;$(ProjectDir);$(SolutionDir)thirdparty/win/boost;$(SolutionDir)thirdparty/win/NTL/include;$(SolutionDir)thirdparty/win/;$(SolutionDir)thirdparty/win/miracl;C:/libs/NTL/include;C:/libs/boost;C:/libs/miracl</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\libs\miracl;D:\libs\boost;D:\libs;H:\npsi\cryptoTools;$(SolutionDir)/cryptoTools;$(ProjectDir);$(SolutionDir)thirdparty/win/boost;$(SolutionDir)thirdparty/win/NTL/include;$(SolutionDir)thirdparty/win/;$(SolutionDir)thirdparty/win/miracl;C:/libs/boost;C:/libs/;C:/libs/NTL/include;C:/libs/miracl;C:\Program Files %28x86%29\Visual Leak Detector\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SOLUTION_DIR=R"**($(SolutionDir))**";_MBCS;%(PreprocessorDefinitions);_WIN32_WINNT=0x0501</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>

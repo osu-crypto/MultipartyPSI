@@ -10,15 +10,17 @@ namespace osuCrypto
 {
 
 	SimpleParam1 k2n24s40SimpleParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 31,64 },{5,6} };
+	{ { 1.11,0.17 },{ 3,2 },{ 31,63 },{5,6} };
 	SimpleParam1 k2n20s40SimpleParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 30,64 } ,{ 5,6 } };
+	{ { 1.12,0.17 },{ 3,2 },{ 30,63 } ,{ 5,6 } };
 	SimpleParam1 k2n16s40SimpleParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 29,64 },{ 5,6 } };
+	{ { 1.13,0.16 },{ 3,2 },{ 29,63 },{ 5,6 } };
+	SimpleParam1 k2n14s40SimpleParam1
+	{ { 1.14,0.16 },{ 3,2 },{ 28,63 },{ 5,6 } };
 	SimpleParam1 k2n12s40SimpleParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 27,64 },{ 5,6 } };
+	{ { 1.17,0.15 },{ 3,2 },{ 27,63 },{ 5,6 } };
 	SimpleParam1 k2n08s40SimpleParam1
-	{ { 1.15,0.17 },{ 3,2 },{ 27,64 },{ 5,6 } };
+	{ { 1.17,0.15 },{ 3,2 },{ 27,63 },{ 5,6 } };
 
 	// not sure if this needs a stash of 40, but should be safe enough.
 	SimpleParam1 k2n07s40SimpleParam1
@@ -35,6 +37,42 @@ namespace osuCrypto
 	}
 
 
+	u64 SimpleHasher1::maxRealBinSize() {
+	
+		u64 rs=0;
+		for (u64 i = 0; i < mBins.size(); ++i)
+		{
+			if (mBins[i].mIdx.size() > 0)
+			{
+				if (rs < mBins[i].mIdx.size())
+					rs = mBins[i].mIdx.size();
+			}
+		}
+		
+		realBinSizeCount1.resize(32);
+		for (u64 i = 0; i < mBinCount[0]; ++i)
+		{
+			for (u64 j = 0; j < realBinSizeCount1.size(); j++)
+			{
+				if (mBins[i].mIdx.size() == j)
+					realBinSizeCount1[j]++;
+			}
+			
+		}		
+
+		realBinSizeCount2.resize(64);
+		for (u64 i = mBinCount[0]; i < mBins.size(); ++i)
+		{
+			for (u64 j = 0; j < realBinSizeCount2.size(); j++)
+			{
+				if (mBins[i].mIdx.size() == j)
+					realBinSizeCount2[j]++;
+			}
+
+		}
+
+		return rs;
+	}
 
 	void SimpleHasher1::print(u64 IdxP, bool isIdx, bool isOPRF, 
 		bool isMap, bool isPos, u64 opt) const
@@ -52,6 +90,8 @@ namespace osuCrypto
 
 			//std::cout << " contains " << mBins[i].size() << " elements" << std::endl;
 			//Log::out << " contains " << mBins[i].size() << " elements" << Log::endl;
+		
+
 			if (mBins[i].mIdx.size() > 0)
 
 				if (isOPRF && mBins[i].mIdx.size() != mBins[i].mValOPRF[IdxP].size())
@@ -136,6 +176,8 @@ namespace osuCrypto
 			mParams = k2n08s40SimpleParam1;
 		else if (n <= 1 << 12)
 			mParams = k2n12s40SimpleParam1;
+		else if (n <= 1 << 14)
+			mParams = k2n14s40SimpleParam1;
 		else if (n <= 1 << 16)
 			mParams = k2n16s40SimpleParam1;
 		else if (n <= 1 << 20)
@@ -146,8 +188,10 @@ namespace osuCrypto
 			throw std::runtime_error("not implemented");
 
 		if (opt == 0)
-			mParams.mMaxBinSize[0] = 32;
-		
+		{
+			mParams.mMaxBinSize[0] = std::pow(2,std::ceil(std::log2(mParams.mMaxBinSize[0])));
+			mParams.mMaxBinSize[1] = std::pow(2, std::ceil(std::log2(mParams.mMaxBinSize[1])));
+		}
 
 
 		mMaxBinSize[0] = mParams.mMaxBinSize[0];

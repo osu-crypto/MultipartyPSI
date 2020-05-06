@@ -22,28 +22,43 @@
 
 namespace osuCrypto
 {
-	
- 
-    class BaseOPPRF
-    {
-    public:
-		BaseOPPRF();
-        ~BaseOPPRF();
 
-    
-        u64 mRealBitSize, mMaxBitSize, mNumTrial;
+	class BitPosition
+	{
+	public:
+		BitPosition();
+		~BitPosition();
+
+
+		u64 mRealBitSize, mMaxBitSize, mNumTrial;
 		std::vector<u8> mPos; //key: bit location; value: index of 
 		std::vector<u8> mMaps;
 
 		void print() const;
 		void init(/*u64 numRealCodeWord,*/ u64 numMaxBitSize);
 		bool getMasks(std::vector<block>& codeword);
-		void getMask(block& codeword,u8& mask);
+		void getMask(block& codeword, u8& mask);
 		void getPosHelper(std::vector<block>& codewords, int length);
 		void getPos(std::vector<block>& codewords, int length);
 		void getPos1(std::vector<block>& codewords, int length);
 		void getRandPos();
 		int midIdx(std::vector<block>& codewords, int length);
+
+
+		//void findPos(std::vector<block>& codewords);
+		//int isSet(block& codeword, int pos);
+		//void setBit(block& codeword, int pos);
+		//bool TestBitN(__m128i value, int N);
+
+	};
+
+	class BaseOPPRF
+	{
+	public:
+		BaseOPPRF();
+		~BaseOPPRF();
+
+
 
 		NTL::GF2X mGf2x;
 		u64 mNumBytes;
@@ -65,6 +80,6 @@ namespace osuCrypto
 		//compute y=f(x) giving coefficients (in block)
 		void evalPolynomial(std::vector<block>& coeffs, block& x, block& y);
 		NTL::GF2EX buildPolynomial(std::vector<block>& coeffs);
-    };
+	};
 
 }

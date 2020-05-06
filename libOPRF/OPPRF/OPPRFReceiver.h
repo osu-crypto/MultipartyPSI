@@ -3,8 +3,8 @@
 #include "Common/Defines.h"
 #include "Network/Channel.h"
 #include "NChooseOne/NcoOtExt.h"
-#include "Hashing/CuckooHash.h"
-#include "Hashing/SimpleHash.h"
+#include "Hashing/CuckooHasher1.h"
+#include "Hashing/SimpleHasher1.h"
 #include "OPPRF/binSet.h"
 
 namespace osuCrypto
@@ -28,8 +28,8 @@ namespace osuCrypto
 
 		std::vector<std::unique_ptr<NcoOtExtSender>> mOtSends;
         std::vector<std::unique_ptr<NcoOtExtReceiver>> mOtRecvs;
-		//CuckooHash mCuckooBins;
-		//SimpleHash mSimpleBins;
+		//CuckooHasher1 mCuckooBins;
+		//SimpleHasher1 mSimpleBins;
         PRNG mPrng;
 
 		u64 mNumBFhashs = 40;
@@ -41,7 +41,7 @@ namespace osuCrypto
 
 	
 
-		//void copy2Bins(CuckooHash& cuckooBins);
+		//void copy2Bins(CuckooHasher1& cuckooBins);
 
 		void getOPRFkeys( u64 IdxTheirParty, binSet& bins, Channel& chl, bool isOtherDirectionGetOPRF=true);
 		void getOPRFkeys(u64 IdxTheirParty, binSet& bins, const std::vector<Channel*>& chls, bool isOtherDirectionGetOPRF = true);
@@ -63,15 +63,14 @@ namespace osuCrypto
 		void recvSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 		void recvFullPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 		void recvBFBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
-		
-		
+
+
+
 		void sendSSTableBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 		void sendSSPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 		void sendFullPolyBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
 		void sendBFBased(u64 IdxTheirParty, binSet& bins, std::vector<block>& plaintexts, const std::vector<Channel*>& chls);
-	
-		//for 2-party PSI
-		void recvPlain(u64 IdxTheirParty, binSet& bins, const std::vector<Channel*>& chls);
+
 
 
     };

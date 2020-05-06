@@ -1,0 +1,183 @@
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2586 ms
+hashingTime:  4 ms
+getOPRFTime:  112 ms
+ssClientTime:  73 ms
+ssLeaderTime:  27 ms
+intersection:  0 ms
+onlineTime:  216 ms
+Total time: 2.802 s
+data/second: 0.272338 Mbps
+Total data: 0.0953865 MB
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2689 ms
+hashingTime:  4 ms
+getOPRFTime:  47 ms
+ssClientTime:  79 ms
+ssLeaderTime:  29 ms
+intersection:  0 ms
+onlineTime:  159 ms
+Total time: 2.848 s
+data/second: 0.26794 Mbps
+Total data: 0.0953865 MB
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2678 ms
+hashingTime:  4 ms
+getOPRFTime:  46 ms
+ssClientTime:  77 ms
+ssLeaderTime:  26 ms
+intersection:  0 ms
+onlineTime:  153 ms
+Total time: 2.831 s
+data/second: 0.269549 Mbps
+Total data: 0.0953865 MB
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2736 ms
+hashingTime:  4 ms
+getOPRFTime:  26 ms
+ssClientTime:  66 ms
+ssLeaderTime:  22 ms
+intersection:  0 ms
+onlineTime:  118 ms
+Total time: 2.854 s
+data/second: 0.267376 Mbps
+Total data: 0.0953865 MB
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2581 ms
+hashingTime:  8 ms
+getOPRFTime:  81 ms
+ssClientTime:  71 ms
+ssLeaderTime:  27 ms
+intersection:  0 ms
+onlineTime:  187 ms
+Total time: 2.768 s
+data/second: 0.275684 Mbps
+Total data: 0.0953865 MB
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2704 ms
+hashingTime:  4 ms
+getOPRFTime:  87 ms
+ssClientTime:  63 ms
+ssLeaderTime:  24 ms
+intersection:  0 ms
+onlineTime:  178 ms
+Total time: 2.882 s
+data/second: 0.264779 Mbps
+Total data: 0.0953865 MB
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2668 ms
+hashingTime:  3 ms
+getOPRFTime:  18 ms
+ssClientTime:  69 ms
+ssLeaderTime:  22 ms
+intersection:  0 ms
+onlineTime:  112 ms
+Total time: 2.78 s
+data/second: 0.274494 Mbps
+Total data: 0.0953865 MB
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2691 ms
+hashingTime:  4 ms
+getOPRFTime:  22 ms
+ssClientTime:  68 ms
+ssLeaderTime:  21 ms
+intersection:  0 ms
+onlineTime:  115 ms
+Total time: 2.806 s
+data/second: 0.27195 Mbps
+Total data: 0.0953865 MB
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2750 ms
+hashingTime:  4 ms
+getOPRFTime:  21 ms
+ssClientTime:  72 ms
+ssLeaderTime:  22 ms
+intersection:  0 ms
+onlineTime:  119 ms
+Total time: 2.869 s
+data/second: 0.265978 Mbps
+Total data: 0.0953865 MB
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2668 ms
+hashingTime:  3 ms
+getOPRFTime:  26 ms
+ssClientTime:  64 ms
+ssLeaderTime:  20 ms
+intersection:  0 ms
+onlineTime:  113 ms
+Total time: 2.781 s
+data/second: 0.274395 Mbps
+Total data: 0.0953865 MB
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2586 ms
+hashingTime:  4 ms
+getOPRFTime:  40 ms
+ssClientTime:  81 ms
+ssLeaderTime:  24 ms
+intersection:  0 ms
+onlineTime:  149 ms
+Total time: 2.735 s
+data/second: 0.27901 Mbps
+Total data: 0.0953865 MB
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2580 ms
+hashingTime:  4 ms
+getOPRFTime:  61 ms
+ssClientTime:  67 ms
+ssLeaderTime:  28 ms
+intersection:  0 ms
+onlineTime:  160 ms
+Total time: 2.74 s
+data/second: 0.278501 Mbps
+Total data: 0.0953865 MB
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2892 ms
+hashingTime:  4 ms
+getOPRFTime:  25 ms
+ssClientTime:  66 ms
+ssLeaderTime:  23 ms
+intersection:  0 ms
+onlineTime:  118 ms
+data/second: 0.253519 Mbps
+Total time: 3.01 s		Total data: 0.0953865 MB
+------------------
+=========avg==========
+numParty: 5  numCorrupted: 2  setSize: 32  nTrials:1
+Client Idx: 0
+offlineTime:  2628 ms
+hashingTime:  6 ms
+getOPRFTime:  54 ms
+ssClientTime:  96 ms
+ssLeaderTime:  28 ms
+intersection:  0 ms
+onlineTime:  184 ms
+Bandwidth: Send: 0.270979 Mbps,	 Recv: 0.148979 Mbps
+Total time: 2.812 s
+Total Comm: Send:0.0952492 MB	 Recv: 0.0523663 MB
+------------------
