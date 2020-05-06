@@ -16,6 +16,7 @@ cd linux
 bash boost.get &
 bash miracl.get &
 bash ntl.get &
+bash nasm.get &
 
 wait
 echo "all done!"
