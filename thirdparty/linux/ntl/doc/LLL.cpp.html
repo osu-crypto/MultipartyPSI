@@ -1,0 +1,442 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/LLL.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: LLL</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>Routines are provided for lattice basis reduction, including both</i></font><br>
+<font color="#0000ed"><i>exact-aritmetic variants (slow but sure) and floating-point variants</i></font><br>
+<font color="#0000ed"><i>(fast but only approximate).</i></font><br>
+<br>
+<font color="#0000ed"><i>For an introduction to the basics of LLL reduction, see</i></font><br>
+<font color="#0000ed"><i>[H. Cohen, A Course in Computational Algebraic Number Theory, Springer, 1993].</i></font><br>
+<br>
+<font color="#0000ed"><i>The LLL algorithm was introduced in [A. K. Lenstra, H. W. Lenstra, and</i></font><br>
+<font color="#0000ed"><i>L. Lovasz, Math. Ann. 261 (1982), 515-534].</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/mat_ZZ.h&gt;</font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Exact Arithmetic Variants</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;LLL(ZZ&amp; det2, mat_ZZ&amp; B, <font color="#008b00"><b>long</b></font>&nbsp;verbose = <font color="#ff8b00">0</font>);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;LLL(ZZ&amp; det2, mat_ZZ&amp; B, mat_ZZ&amp; U, <font color="#008b00"><b>long</b></font>&nbsp;verbose = <font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;LLL(ZZ&amp; det2, mat_ZZ&amp; B, <font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;verbose = <font color="#ff8b00">0</font>);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;LLL(ZZ&amp; det2, mat_ZZ&amp; B, mat_ZZ&amp; U, <font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;verbose = <font color="#ff8b00">0</font>);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// performs LLL reduction.</i></font><br>
+<br>
+<font color="#0000ed"><i>// B is an m x n matrix, viewed as m rows of n-vectors.&nbsp;&nbsp;m may be less</i></font><br>
+<font color="#0000ed"><i>// than, equal to, or greater than n, and the rows need not be</i></font><br>
+<font color="#0000ed"><i>// linearly independent.&nbsp;&nbsp;B is transformed into an LLL-reduced basis,</i></font><br>
+<font color="#0000ed"><i>// and the return value is the rank r of B.&nbsp;&nbsp;The first m-r rows of B</i></font><br>
+<font color="#0000ed"><i>// are zero.&nbsp;&nbsp;</i></font><br>
+<br>
+<font color="#0000ed"><i>// More specifically, elementary row transformations are performed on</i></font><br>
+<font color="#0000ed"><i>// B so that the non-zero rows of new-B form an LLL-reduced basis</i></font><br>
+<font color="#0000ed"><i>// for the lattice spanned by the rows of old-B.</i></font><br>
+<font color="#0000ed"><i>// The default reduction parameter is delta=3/4, which means</i></font><br>
+<font color="#0000ed"><i>// that the squared length of the first non-zero basis vector</i></font><br>
+<font color="#0000ed"><i>// is no more than 2^{r-1} times that of the shortest vector in</i></font><br>
+<font color="#0000ed"><i>// the lattice.</i></font><br>
+<br>
+<font color="#0000ed"><i>// det2 is calculated as the *square* of the determinant</i></font><br>
+<font color="#0000ed"><i>// of the lattice---note that sqrt(det2) is in general an integer</i></font><br>
+<font color="#0000ed"><i>// only when r = n.</i></font><br>
+<br>
+<font color="#0000ed"><i>// In the second version, U is set to the transformation matrix, so</i></font><br>
+<font color="#0000ed"><i>// that U is a unimodular m x m matrix with U * old-B = new-B.</i></font><br>
+<font color="#0000ed"><i>// Note that the first m-r rows of U form a basis (as a lattice)</i></font><br>
+<font color="#0000ed"><i>// for the kernel of old-B. </i></font><br>
+<br>
+<font color="#0000ed"><i>// The third and fourth versions allow an arbitrary reduction</i></font><br>
+<font color="#0000ed"><i>// parameter delta=a/b, where 1/4 &lt; a/b &lt;= 1, where a and b are positive</i></font><br>
+<font color="#0000ed"><i>// integers.</i></font><br>
+<font color="#0000ed"><i>// For a basis reduced with parameter delta, the squared length</i></font><br>
+<font color="#0000ed"><i>// of the first non-zero basis vector is no more than </i></font><br>
+<font color="#0000ed"><i>// 1/(delta-1/4)^{r-1} times that of the shortest vector in the</i></font><br>
+<font color="#0000ed"><i>// lattice (see, e.g., the article by Schnorr and Euchner mentioned below).</i></font><br>
+<br>
+<font color="#0000ed"><i>// The algorithm employed here is essentially the one in Cohen's book.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// Some variations:</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;LLL_plus(vec_ZZ&amp; D, mat_ZZ&amp; B, <font color="#008b00"><b>long</b></font>&nbsp;verbose = <font color="#ff8b00">0</font>);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;LLL_plus(vec_ZZ&amp; D, mat_ZZ&amp; B, mat_ZZ&amp; U, <font color="#008b00"><b>long</b></font>&nbsp;verbose = <font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;LLL_plus(vec_ZZ&amp; D, mat_ZZ&amp; B, <font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;verbose = <font color="#ff8b00">0</font>);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;LLL_plus(vec_ZZ&amp; D, mat_ZZ&amp; B, mat_ZZ&amp; U, <font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;verbose = <font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// These are variations that return a bit more information about the</i></font><br>
+<font color="#0000ed"><i>// reduced basis.&nbsp;&nbsp;If r is the rank of B, then D is a vector of length</i></font><br>
+<font color="#0000ed"><i>// r+1, such that D[0] = 1, and for i = 1..r, D[i]/D[i-1] is equal to</i></font><br>
+<font color="#0000ed"><i>// the square of the length of the i-th vector of the Gram-Schmidt basis</i></font><br>
+<font color="#0000ed"><i>// corresponding to the (non-zero) rows of the LLL reduced basis B.</i></font><br>
+<font color="#0000ed"><i>// In particular, D[r] is equal to the value det2 computed by the</i></font><br>
+<font color="#0000ed"><i>// plain LLL routines.</i></font><br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Computing Images and Kernels</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;image(ZZ&amp; det2, mat_ZZ&amp; B, <font color="#008b00"><b>long</b></font>&nbsp;verbose = <font color="#ff8b00">0</font>);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;image(ZZ&amp; det2, mat_ZZ&amp; B, mat_ZZ&amp; U, <font color="#008b00"><b>long</b></font>&nbsp;verbose = <font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// This computes the image of B using a &quot;cheap&quot; version of the LLL:</i></font><br>
+<font color="#0000ed"><i>// it performs the usual &quot;size reduction&quot;, but it only swaps</i></font><br>
+<font color="#0000ed"><i>// vectors when linear dependencies are found.</i></font><br>
+<font color="#0000ed"><i>// I haven't seen this described in the literature, but it works </i></font><br>
+<font color="#0000ed"><i>// fairly well in practice, and can also easily be shown</i></font><br>
+<font color="#0000ed"><i>// to run in a reasonable amount of time with reasonably bounded</i></font><br>
+<font color="#0000ed"><i>// numbers.</i></font><br>
+<br>
+<font color="#0000ed"><i>// As in the above LLL routines, the return value is the rank r of B, and the</i></font><br>
+<font color="#0000ed"><i>// first m-r rows will be zero.&nbsp;&nbsp;U is a unimodular m x m matrix with </i></font><br>
+<font color="#0000ed"><i>// U * old-B = new-B.&nbsp;&nbsp;det2 has the same meaning as above.</i></font><br>
+<br>
+<font color="#0000ed"><i>// Note that the first m-r rows of U form a basis (as a lattice)</i></font><br>
+<font color="#0000ed"><i>// for the kernel of old-B. </i></font><br>
+<font color="#0000ed"><i>// This is a reasonably practical algorithm for computing kernels.</i></font><br>
+<font color="#0000ed"><i>// One can also apply image() to the kernel to get somewhat</i></font><br>
+<font color="#0000ed"><i>// shorter basis vectors for the kernels (there are no linear</i></font><br>
+<font color="#0000ed"><i>// dependencies, but the size reduction may anyway help).</i></font><br>
+<font color="#0000ed"><i>// For even shorter kernel basis vectors, on can apply</i></font><br>
+<font color="#0000ed"><i>// LLL(). </i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Finding a vector in a lattice </i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;LatticeSolve(vec_ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;mat_ZZ&amp; A, <font color="#008b00"><b>const</b></font>&nbsp;vec_ZZ&amp; y, <font color="#008b00"><b>long</b></font>&nbsp;reduce=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// This tests if for given A and y, there exists x such that x*A = y;</i></font><br>
+<font color="#0000ed"><i>// if so, x is set to a solution, and the value 1 is returned;</i></font><br>
+<font color="#0000ed"><i>// otherwise, x is left unchanged, and the value 0 is returned.</i></font><br>
+<br>
+<font color="#0000ed"><i>// The optional parameter reduce controls the 'quality' of the</i></font><br>
+<font color="#0000ed"><i>// solution vector;&nbsp;&nbsp;if the rows of A are linearly dependent, </i></font><br>
+<font color="#0000ed"><i>// there are many solutions, if there are any at all.</i></font><br>
+<font color="#0000ed"><i>// The value of reduce controls the amount of effort that goes</i></font><br>
+<font color="#0000ed"><i>// into finding a 'short' solution vector x.</i></font><br>
+<br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;reduce = 0: No particular effort is made to find a short solution.</i></font><br>
+<br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;reduce = 1: A simple 'size reduction' algorithm is run on kernel(A);</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;this is fast, and may yield somewhat shorter</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;solutions than the default, but not necessarily</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;very close at all to optimal.</i></font><br>
+<br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;reduce = 2: the LLL algorithm is run on kernel(A);</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;this may be significantly slower than the other options,</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;but yields solutions that are provably close to optimal.</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;More precisely, if kernel(A) has rank k,</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;then the squared length of the obtained solution</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;is no more than max(1, 2^(k-2)) times that of </i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the optimal solution.&nbsp;&nbsp;This makes use of slight</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;variation of Babai's approximately nearest vector algorithm.</i></font><br>
+<br>
+<font color="#0000ed"><i>// Of course, if the the rows of A are linearly independent, then</i></font><br>
+<font color="#0000ed"><i>// the value of reduce is irrelevant: the solution, if it exists,</i></font><br>
+<font color="#0000ed"><i>// is unique.</i></font><br>
+<br>
+<font color="#0000ed"><i>// Note that regardless of the value of reduce, the algorithm</i></font><br>
+<font color="#0000ed"><i>// runs in polynomial time, and hence the bit-length of the solution</i></font><br>
+<font color="#0000ed"><i>// vector is bounded by a polynomial in the bit-length of the inputs.</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Floating Point Variants</i></font><br>
+<br>
+<font color="#0000ed"><i>There are a number of floating point LLL variants available:</i></font><br>
+<font color="#0000ed"><i>you can choose the precision, the orthogonalization strategy,</i></font><br>
+<font color="#0000ed"><i>and the reduction condition.</i></font><br>
+<br>
+<font color="#0000ed"><i>The wide variety of choices may seem a bit bewildering.</i></font><br>
+<font color="#0000ed"><i>See below the discussion &quot;How to choose?&quot;.</i></font><br>
+<br>
+<font color="#0000ed"><i>*** Precision:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;FP -- double</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;QP -- quad_float (quasi quadruple precision)</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;this is useful when roundoff errors can cause problems</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;XD -- xdouble (extended exponent doubles)</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;this is useful when numbers get too big</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;RR -- RR (arbitrary precision floating point)</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;this is useful for large precision and magnitudes</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Generally speaking, the choice FP will be the fastest,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;but may be prone to roundoff errors and/or overflow.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;</i></font><br>
+<br>
+<font color="#0000ed"><i>*** Orthogonalization Strategy: </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;-- Classical Gramm-Schmidt Orthogonalization.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; This choice uses classical methods for computing</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; the Gramm-Schmidt othogonalization.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; It is fast but prone to stability problems.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; This strategy was first proposed by Schnorr and Euchner</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; [C. P. Schnorr and M. Euchner, Proc. Fundamentals of Computation Theory, </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; LNCS 529, pp. 68-85, 1991].&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; The version implemented here is substantially different, improving</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; both stability and performance.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;-- Givens Orthogonalization.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; This is a bit slower, but generally much more stable,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; and is really the preferred orthogonalization strategy.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; For a nice description of this, see Chapter 5 of&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; [G. Golub and C. van Loan, Matrix Computations, 3rd edition,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; Johns Hopkins Univ. Press, 1996].</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>*** Reduction Condition:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;-- LLL: the classical LLL reduction condition.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;-- BKZ: Block Korkin-Zolotarev reduction.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; This is slower, but yields a higher-quality basis,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; i.e., one with shorter vectors.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; See the Schnorr-Euchner paper for a description of this.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; This basically generalizes the LLL reduction condition</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; from blocks of size 2 to blocks of larger size.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>************* Calling Syntax for LLL routines ***************</i></font><br>
+<br>
+<font color="#0000ed"><i>long </i></font><br>
+<font color="#0000ed"><i>[G_]LLL_{FP,QP,XD,RR} (mat_ZZ&amp; B, [ mat_ZZ&amp; U, ] double delta = 0.99, </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; long deep = 0, LLLCheckFct check = 0, long verbose = 0);</i></font><br>
+<br>
+<font color="#0000ed"><i>* The [ ... ] notation indicates something optional,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;and the { ... } indicates something that is chosen from</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;among several alternatives.</i></font><br>
+<br>
+<font color="#0000ed"><i>* The return value is the rank of B (but see below if check != 0).</i></font><br>
+<br>
+<font color="#0000ed"><i>* The optional prefix G_ indicates that Givens rotations are to be used;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;otherwise, classical Gramm-Schmidt is used.</i></font><br>
+<br>
+<font color="#0000ed"><i>* The choice FP, QP, XD, RR determines the precision used.</i></font><br>
+<br>
+<font color="#0000ed"><i>* If the optional parameter U is given, then U is computed</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;as the transition matrix:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; U * old_B = new_B</i></font><br>
+<br>
+<font color="#0000ed"><i>* The optional argument &quot;delta&quot; is the reduction parameter, and may</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;be set so that 0.50 &lt;= delta &lt; 1.&nbsp;&nbsp;Setting it close to 1 yields</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;shorter vectors, and also improves the stability, but increases the</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;running time.&nbsp;&nbsp;Recommended value: delta = 0.99.</i></font><br>
+<br>
+<font color="#0000ed"><i>* The optional parameter &quot;deep&quot; can be set to any positive integer,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;which allows &quot;deep insertions&quot; of row k into row i, provided i &lt;=</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;deep or k-i &lt;= deep.&nbsp;&nbsp;Larger values of deep will usually yield</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;shorter vectors, but the running increases exponentially.&nbsp;&nbsp;</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;NOTE: use of &quot;deep&quot; is obsolete, and has been &quot;deprecated&quot;.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;It is recommended to use BKZ_FP to achieve higher-quality reductions.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Moreover, the Givens versions do not support &quot;deep&quot;, and setting</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;deep != 0 will raise an error in this case.</i></font><br>
+<br>
+<font color="#0000ed"><i>* The optional parameter &quot;check&quot; is a function that is invoked after</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;each size reduction with the current row as an argument.&nbsp;&nbsp;If this</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;function returns a non-zero value, the LLL procedure is immediately</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;terminated.&nbsp;&nbsp;Note that it is possible that some linear dependencies</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;remain undiscovered, so that the calculated rank value is in fact</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;too large.&nbsp;&nbsp;In any case, zero rows discovered by the algorithm</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;will be placed at the beginning, as usual.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;The check argument (if not zero) should be a routine taking</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;a const vec_ZZ&amp; as an argument and return value of type long.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;LLLCheckFct is defined via a typedef as:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; typedef long (*LLLCheckFct)(const vec_ZZ&amp;);</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;See the file subset.c for an example of the use of this feature.</i></font><br>
+<br>
+<font color="#0000ed"><i>* The optional parameter &quot;verbose&quot; can be set to see all kinds of fun</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;things printed while the routine is executing.&nbsp;&nbsp;A status report is</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;printed every once in a while, and the current basis is optionally</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;dumped to a file.&nbsp;&nbsp;The behavior can be controlled with these global</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;variables:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; extern char *LLLDumpFile;&nbsp;&nbsp;// file to dump basis, 0 =&gt; no dump; </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// initially 0</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp; extern double LLLStatusInterval; // seconds between status reports </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// initially 900s = 15min</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>&nbsp;</i></font><br>
+<font color="#0000ed"><i>************* Calling Syntax for BKZ routines ***************</i></font><br>
+<br>
+<font color="#0000ed"><i>long </i></font><br>
+<font color="#0000ed"><i>[G_]BKZ_{FP,QP,QP1,XD,RR} (mat_ZZ&amp; B, [ mat_ZZ&amp; U, ] double delta=0.99,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;long BlockSize=10, long prune=0, </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;LLLCheckFct check = 0, long verbose = 0);</i></font><br>
+<br>
+<font color="#0000ed"><i>These functions are equivalent to the LLL routines above,</i></font><br>
+<font color="#0000ed"><i>except that Block Korkin-Zolotarev reduction is applied.</i></font><br>
+<font color="#0000ed"><i>We describe here only the differences in the calling syntax.</i></font><br>
+<br>
+<font color="#0000ed"><i>* The optional parameter &quot;BlockSize&quot; specifies the size of the blocks</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;in the reduction.&nbsp;&nbsp;High values yield shorter vectors, but the</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;running time increases exponentially with BlockSize.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;BlockSize should be between 2 and the number of rows of B.</i></font><br>
+<br>
+<font color="#0000ed"><i>* The optional parameter &quot;prune&quot; can be set to any positive number to</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;invoke the Volume Heuristic from [Schnorr and Horner, Eurocrypt</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;'95].&nbsp;&nbsp;This can significantly reduce the running time, and hence</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;allow much bigger block size, but the quality of the reduction is</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;of course not as good in general.&nbsp;&nbsp;Higher values of prune mean</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;better quality, and slower running time.&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;When prune == 0, pruning is disabled.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Recommended usage: for BlockSize &gt;= 30, set 10 &lt;= prune &lt;= 15.</i></font><br>
+<br>
+<font color="#0000ed"><i>* The QP1 variant uses quad_float precision to compute Gramm-Schmidt,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;but uses double precision in the search phase of the block reduction</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;algorithm.&nbsp;&nbsp;This seems adequate for most purposes, and is faster</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;than QP, which uses quad_float precision uniformly throughout.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>******************** How to choose? *********************</i></font><br>
+<br>
+<font color="#0000ed"><i>I think it is safe to say that nobody really understands</i></font><br>
+<font color="#0000ed"><i>how the LLL algorithm works.&nbsp;&nbsp;The theoretical analyses are a long way</i></font><br>
+<font color="#0000ed"><i>from describing what &quot;really&quot; happens in practice.&nbsp;&nbsp;Choosing the best</i></font><br>
+<font color="#0000ed"><i>variant for a certain application ultimately is a matter of trial</i></font><br>
+<font color="#0000ed"><i>and error.</i></font><br>
+<br>
+<font color="#0000ed"><i>The first thing to try is LLL_FP.</i></font><br>
+<font color="#0000ed"><i>It is the fastest of the routines, and is adequate for many applications.</i></font><br>
+<br>
+<font color="#0000ed"><i>If there are precision problems, you will most likely get</i></font><br>
+<font color="#0000ed"><i>a warning message, something like &quot;warning--relaxing reduction&quot;.</i></font><br>
+<font color="#0000ed"><i>If there are overflow problems, you should get an error message</i></font><br>
+<font color="#0000ed"><i>saying that the numbers are too big.</i></font><br>
+<br>
+<font color="#0000ed"><i>If either of these happens, the next thing to try is G_LLL_FP,</i></font><br>
+<font color="#0000ed"><i>which uses the somewhat slower, but more stable, Givens rotations.</i></font><br>
+<font color="#0000ed"><i>This approach also has the nice property that the numbers remain</i></font><br>
+<font color="#0000ed"><i>smaller, so there is less chance of an overflow.</i></font><br>
+<br>
+<font color="#0000ed"><i>If you are still having precision problems with G_LLL_FP,</i></font><br>
+<font color="#0000ed"><i>try LLL_QP or G_LLL_QP, which uses quadratic precision.</i></font><br>
+<br>
+<font color="#0000ed"><i>If you are still having overflow problems, try LLL_XD or G_LLL_XD.</i></font><br>
+<br>
+<font color="#0000ed"><i>I haven't yet come across a case where one *really* needs the</i></font><br>
+<font color="#0000ed"><i>extra precision available in the RR variants.</i></font><br>
+<br>
+<font color="#0000ed"><i>All of the above discussion applies to the BKZ variants as well.</i></font><br>
+<font color="#0000ed"><i>In addition, if you have a matrix with really big entries, you might try </i></font><br>
+<font color="#0000ed"><i>using G_LLL_FP or LLL_XD first to reduce the sizes of the numbers,</i></font><br>
+<font color="#0000ed"><i>before running one of the BKZ variants.</i></font><br>
+<br>
+<font color="#0000ed"><i>Also, one shouldn't rule out using the &quot;all integer&quot; LLL routines.</i></font><br>
+<font color="#0000ed"><i>For some highly structured matrices, this is not necessarily</i></font><br>
+<font color="#0000ed"><i>much worse than some of the floating point versions, and can</i></font><br>
+<font color="#0000ed"><i>under certain circumstances even be better.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>******************** Implementation notes *********************</i></font><br>
+<br>
+<font color="#0000ed"><i>For all the floating point variants, I use a &quot;relaxed&quot; size reduction</i></font><br>
+<font color="#0000ed"><i>condition.&nbsp;&nbsp;Normally in LLL one makes all |\mu_{i,j}| &lt;= 1/2.</i></font><br>
+<font color="#0000ed"><i>However, this can easily lead to infinite loops in floating point arithemetic.</i></font><br>
+<font color="#0000ed"><i>So I use the condition |\mu_{i,j}| &lt;= 1/2 + fudge, where fudge is </i></font><br>
+<font color="#0000ed"><i>a very small number.&nbsp;&nbsp;Even with this, one can fall into an infinite loop.</i></font><br>
+<font color="#0000ed"><i>To handle this situation, I added some logic that detects, at quite low cost,</i></font><br>
+<font color="#0000ed"><i>when an infinite loop has been entered.&nbsp;&nbsp;When that happens, fudge</i></font><br>
+<font color="#0000ed"><i>is replaced by fudge*2, and a warning message &quot;relaxing reduction condition&quot;</i></font><br>
+<font color="#0000ed"><i>is printed.&nbsp;&nbsp; We may do this relaxation several times.</i></font><br>
+<font color="#0000ed"><i>If fudge gets too big, we give up and abort, except that </i></font><br>
+<font color="#0000ed"><i>LLL_FP and BKZ_FP make one last attempt to recover:&nbsp;&nbsp;they try to compute the</i></font><br>
+<font color="#0000ed"><i>Gramm-Schmidt coefficients using RR and continue.&nbsp;&nbsp;As described above,</i></font><br>
+<font color="#0000ed"><i>if you run into these problems, which you'll see in the error/warning</i></font><br>
+<font color="#0000ed"><i>messages, it is more effective to use the QP and/or Givens variants.</i></font><br>
+<br>
+<font color="#0000ed"><i>For the Gramm-Schmidt orthogonalization, lots of &quot;bookeeping&quot; is done</i></font><br>
+<font color="#0000ed"><i>to avoid computing the same thing twice.</i></font><br>
+<br>
+<font color="#0000ed"><i>For the Givens orthogonalization, we cannot do so many bookeeping tricks.</i></font><br>
+<font color="#0000ed"><i>Instead, we &quot;cache&quot; a certain amount of information, which</i></font><br>
+<font color="#0000ed"><i>allows us to avoid computing certain things over and over again.</i></font><br>
+<br>
+<font color="#0000ed"><i>There are many other hacks and tricks to speed things up even further.</i></font><br>
+<font color="#0000ed"><i>For example, if the matrix elements are small enough to fit in</i></font><br>
+<font color="#0000ed"><i>double precision floating point, the algorithms avoid almost</i></font><br>
+<font color="#0000ed"><i>all big integer arithmetic.&nbsp;&nbsp;This is done in a dynamic, on-line</i></font><br>
+<font color="#0000ed"><i>fashion, so even if the numbers start out big, whenever they</i></font><br>
+<font color="#0000ed"><i>get small, we automatically switch to floating point arithmetic.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Other Stuff</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;ComputeGS(<font color="#008b00"><b>const</b></font>&nbsp;mat_ZZ&amp; B, mat_RR&amp; mu, vec_RR&amp; c);<br>
+<br>
+<font color="#0000ed"><i>// Computes Gramm-Schmidt data for B.&nbsp;&nbsp;Assumes B is an m x n matrix of</i></font><br>
+<font color="#0000ed"><i>// rank m.&nbsp;&nbsp;Let if { B^*(i) } is the othogonal basis, then c(i) =</i></font><br>
+<font color="#0000ed"><i>// |B^*(i)|^2, and B^*(i) = B(i) - \sum_{j=1}^{i-1} mu(i,j) B^*(j).</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;NearVector(vec_ZZ&amp; w, <font color="#008b00"><b>const</b></font>&nbsp;mat_ZZ&amp; B, <font color="#008b00"><b>const</b></font>&nbsp;vec_ZZ&amp; a);<br>
+<br>
+<font color="#0000ed"><i>// Computes a vector w that is an approximation to the closest vector</i></font><br>
+<font color="#0000ed"><i>// in the lattice spanned by B to a, using the &quot;closest plane&quot;</i></font><br>
+<font color="#0000ed"><i>// algorithm from [Babai, Combinatorica 6:1-13, 1986].&nbsp;&nbsp;B must be a</i></font><br>
+<font color="#0000ed"><i>// square matrix, and it is assumed that B is already LLL or BKZ</i></font><br>
+<font color="#0000ed"><i>// reduced (the better the reduction the better the approximation).</i></font><br>
+<font color="#0000ed"><i>// Note that arithmetic in RR is used with the current value of</i></font><br>
+<font color="#0000ed"><i>// RR::precision().</i></font><br>
+<br>
+<font color="#0000ed"><i>// NOTE: Both of these routines use classical Gramm-Schmidt</i></font><br>
+<font color="#0000ed"><i>// orthogonalization.</i></font><br>
+<br>
+<br>
+</font></body>
+</html>

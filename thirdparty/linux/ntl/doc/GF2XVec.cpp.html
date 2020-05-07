@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/GF2XVec.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: GF2XVec</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>The class GF2XVec implements vectors of fixed-length GF2X's.&nbsp;&nbsp;You can</i></font><br>
+<font color="#0000ed"><i>allocate a vector of GF2X's of a specified length, where the maximum</i></font><br>
+<font color="#0000ed"><i>size of each GF2X is also specified.&nbsp;&nbsp;These parameters can be specified</i></font><br>
+<font color="#0000ed"><i>either with a constructor, or with SetSize.&nbsp;&nbsp;It is an error to</i></font><br>
+<font color="#0000ed"><i>try to re-size a vector of non-xero , or store a GF2X that doesn't fit.&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>The space can be released with &quot;kill&quot;, and then you are free to call SetSize</i></font><br>
+<font color="#0000ed"><i>again.&nbsp;&nbsp;If you want more flexible---but less efficient---vectors, use</i></font><br>
+<font color="#0000ed"><i>vec_GF2X.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/GF2X.h&gt;</font><br>
+<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;GF2XVec {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+&nbsp;&nbsp; GF2XVec();<br>
+<br>
+&nbsp;&nbsp; GF2XVec&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;GF2XVec&amp;); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// first kill()'s destination (unless source and destination are</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// identical)</i></font><br>
+<br>
+&nbsp;&nbsp; GF2XVec(<font color="#008b00"><b>const</b></font>&nbsp;GF2XVec&amp;); <br>
+&nbsp;&nbsp; ~GF2XVec();<br>
+<br>
+&nbsp;&nbsp; GF2XVec(<font color="#008b00"><b>long</b></font>&nbsp;n, <font color="#008b00"><b>long</b></font>&nbsp;d);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// sets length to n and max size of each element to d,</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// where the size d measures the number of words </i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;SetSize(<font color="#008b00"><b>long</b></font>&nbsp;n, <font color="#008b00"><b>long</b></font>&nbsp;d);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// sets length to n and max size of each element to d,</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// where the size d measures the number of words </i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;length() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// length of vector</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;BaseSize() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// max size of each element</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;kill();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// release space</i></font><br>
+<br>
+<br>
+&nbsp;&nbsp; GF2X* elts();<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2X* elts() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// pointer to first element</i></font><br>
+<br>
+&nbsp;&nbsp; GF2X&amp; <font color="#b02f60"><b>operator</b></font>[](<font color="#008b00"><b>long</b></font>&nbsp;i);<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; <font color="#b02f60"><b>operator</b></font>[](<font color="#008b00"><b>long</b></font>&nbsp;i) <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// indexing operator; starts at 0; no range checking</i></font><br>
+};<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;swap(GF2XVec&amp; x, GF2XVec&amp; y);<br>
+<font color="#0000ed"><i>// swaps x and y by swapping pointers</i></font><br>
+<br>
+</font></body>
+</html>

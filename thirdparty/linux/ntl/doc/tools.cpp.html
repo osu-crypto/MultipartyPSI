@@ -1,0 +1,208 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/tools.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: tools</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>Some useful tools that are used throughout NTL.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;cstdlib&gt;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;cmath&gt;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;iostream&gt;</font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/config.h&gt;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/mach_desc.h&gt;</font><br>
+<br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>double</b></font>&nbsp;GetTime();<br>
+<font color="#0000ed"><i>// returns number of seconds of CPU time used by this process;</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;PrintTime(ostream&amp; s, <font color="#008b00"><b>double</b></font>&nbsp;t);<br>
+<font color="#0000ed"><i>// prints the time t (in seconds) to s in the format</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp; ss&nbsp;&nbsp;or&nbsp;&nbsp;mm:ss&nbsp;&nbsp;or&nbsp;&nbsp;hh:mm:ss,</i></font><br>
+<font color="#0000ed"><i>// where the value t is first rounded to the nearest integer.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsWhiteSpace(<font color="#008b00"><b>long</b></font>&nbsp;c);<br>
+<font color="#0000ed"><i>// returns 1 if c is &quot;white space&quot; (as defined by isspace is the</i></font><br>
+<font color="#0000ed"><i>// standard library...usually blanks, tabs, newlines), and 0 otherwise.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;SkipWhiteSpace(istream&amp; s);<br>
+<font color="#0000ed"><i>// skips white space (as defined by IsWhiteSpace).</i></font><br>
+<font color="#0000ed"><i>// Return value is 0 if end-of-file is reached; otherwise,</i></font><br>
+<font color="#0000ed"><i>// return value is 1.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsEOFChar(<font color="#008b00"><b>long</b></font>&nbsp;c);<br>
+<font color="#0000ed"><i>// test if c == EOF</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;CharToIntVal(<font color="#008b00"><b>long</b></font>&nbsp;c);<br>
+<font color="#0000ed"><i>// returns the hexidecimal value of c if c is '0'..'9', 'A'..'F', or 'a'..'f';</i></font><br>
+<font color="#0000ed"><i>// otherwise, the return value is -1.</i></font><br>
+<br>
+<font color="#008b00"><b>char</b></font>&nbsp;IntValToChar(<font color="#008b00"><b>long</b></font>&nbsp;x);<br>
+<font color="#0000ed"><i>// returns the hexadecimal digit '0'..'9', 'a'..'f' representing x;</i></font><br>
+<font color="#0000ed"><i>// an error is raised if x &lt; 0 or x &gt; 15.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsFinite(<font color="#008b00"><b>double</b></font>&nbsp;*p);<br>
+<font color="#0000ed"><i>// Returns 1 if *p is a &quot;finite&quot; floating point number.</i></font><br>
+<font color="#0000ed"><i>// A pointer is used to ensure that the number is in memory,</i></font><br>
+<font color="#0000ed"><i>// which on some architectures (notably x86/Pentium) can make a difference.</i></font><br>
+<br>
+<font color="#0000ed"><i>// some min/max and swap routines:</i></font><br>
+<br>
+<font color="#008b00"><b>int</b></font>&nbsp;min(<font color="#008b00"><b>int</b></font>&nbsp;a, <font color="#008b00"><b>int</b></font>&nbsp;b);<br>
+<font color="#008b00"><b>int</b></font>&nbsp;max(<font color="#008b00"><b>int</b></font>&nbsp;a, <font color="#008b00"><b>int</b></font>&nbsp;b);<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;min(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;max(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;min(<font color="#008b00"><b>int</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;max(<font color="#008b00"><b>int</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;min(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>int</b></font>&nbsp;b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;max(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>int</b></font>&nbsp;b);<br>
+<br>
+<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>int</b></font>&nbsp;min(<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>int</b></font>&nbsp;a, <font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>int</b></font>&nbsp;b);<br>
+<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>int</b></font>&nbsp;max(<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>int</b></font>&nbsp;a, <font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>int</b></font>&nbsp;b);<br>
+<br>
+<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;min(<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;max(<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;min(<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>int</b></font>&nbsp;a, <font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;max(<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>int</b></font>&nbsp;a, <font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;min(<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>int</b></font>&nbsp;b);<br>
+<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;max(<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>int</b></font>&nbsp;b);<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;swap(<font color="#008b00"><b>long</b></font>&amp; a, <font color="#008b00"><b>long</b></font>&amp; b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;swap(<font color="#008b00"><b>int</b></font>&amp; a, <font color="#008b00"><b>int</b></font>&amp; b);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// defined here are all the conversion routines among the types </i></font><br>
+<font color="#0000ed"><i>// int, long, float, double.&nbsp;&nbsp;See conversions.txt for complete details.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// The following platform-dependent macros are defined:</i></font><br>
+<br>
+<font color="#1773cc">#define NTL_BITS_PER_LONG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(...)&nbsp;&nbsp;</font><font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>&nbsp;bits in a long </i></font><font color="#0000ed"><i>*/</i></font><br>
+<font color="#1773cc">#define NTL_MAX_LONG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (...)&nbsp;&nbsp;</font><font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>&nbsp;max value of a long </i></font><font color="#0000ed"><i>*/</i></font><br>
+<font color="#1773cc">#define NTL_MIN_LONG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (...)&nbsp;&nbsp;</font><font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>&nbsp;min value of a long </i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#define NTL_BITS_PER_INT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (...)&nbsp;&nbsp;</font><font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>&nbsp;bits in a int </i></font><font color="#0000ed"><i>*/</i></font><br>
+<font color="#1773cc">#define NTL_MAX_INT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(...)&nbsp;&nbsp;</font><font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>&nbsp;max value of a int </i></font><font color="#0000ed"><i>*/</i></font><br>
+<font color="#1773cc">#define NTL_MIN_INT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(...)&nbsp;&nbsp;</font><font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>&nbsp;min value of a int </i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#define NTL_DOUBLE_PRECISION&nbsp;&nbsp; (...)&nbsp;&nbsp;</font><font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>&nbsp;# of bits of precision in a double </i></font><font color="#0000ed"><i>*/</i></font><br>
+<font color="#1773cc">#define NTL_FDOUBLE_PRECISION&nbsp;&nbsp;(...)&nbsp;&nbsp;</font><font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>&nbsp;the double value </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2^{NTL_DOUBLE_PRECISION-1} </i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#define NTL_ARITH_RIGHT_SHIFT&nbsp;&nbsp;(...)&nbsp;&nbsp;</font><font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>&nbsp;1 if signed right-shift is</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;arithmetic; 0 otherwise </i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#define NTL_EXT_DOUBLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (...)&nbsp;&nbsp;</font><font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>&nbsp;1 if platform has &quot;extended&quot; doubles;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0 otherwise </i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// ERROR HANDLING</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;TerminalError(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*s);<br>
+<font color="#0000ed"><i>// print an error message and call abort</i></font><br>
+<br>
+<font color="#008b00"><b>extern</b></font>&nbsp;<font color="#008b00"><b>void</b></font>&nbsp;(*ErrorMsgCallback)(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*);<br>
+<font color="#008b00"><b>extern</b></font>&nbsp;<font color="#008b00"><b>void</b></font>&nbsp;(*ErrorCallback)();<br>
+<font color="#0000ed"><i>// Pointers (initially NULL) to callback functions.</i></font><br>
+<font color="#0000ed"><i>// Upon encountering an unrecoverable error with an error</i></font><br>
+<font color="#0000ed"><i>// message s, the following happens:</i></font><br>
+<font color="#0000ed"><i>//</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;if (ErrorMsgCallback)</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (*ErrorMsgCallback)(s);</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;else</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cerr &lt;&lt; s &lt;&lt; &quot;\n&quot;;</i></font><br>
+<font color="#0000ed"><i>// </i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;if (ErrorCallback) (*ErrorCallback)();</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;abort();</i></font><br>
+<font color="#0000ed"><i>//</i></font><br>
+<font color="#0000ed"><i>// NOTE: if threads are enabled, these are actually thread_local variables.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// The following classes are defined even if exceptions are not</i></font><br>
+<font color="#0000ed"><i>// enabled with NTL_EXCEPTIONS</i></font><br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;ErrorObject : <font color="#b02f60"><b>public</b></font>&nbsp;runtime_error {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+&nbsp;&nbsp; ErrorObject(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*msg);<br>
+};<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;LogicErrorObject : <font color="#b02f60"><b>public</b></font>&nbsp;ErrorObject {<br>
+<font color="#b02f60"><b>public</b></font>: <br>
+&nbsp;&nbsp; LogicErrorObject(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*msg);<br>
+};<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;ArithmeticErrorObject : <font color="#b02f60"><b>public</b></font>&nbsp;ErrorObject {<br>
+<font color="#b02f60"><b>public</b></font>: <br>
+&nbsp;&nbsp; ArithmeticErrorObject(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*msg);<br>
+};<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;ResourceErrorObject : <font color="#b02f60"><b>public</b></font>&nbsp;ErrorObject {<br>
+<font color="#b02f60"><b>public</b></font>: <br>
+&nbsp;&nbsp; ResourceErrorObject(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*msg);<br>
+};<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;FileErrorObject : <font color="#b02f60"><b>public</b></font>&nbsp;ErrorObject {<br>
+<font color="#b02f60"><b>public</b></font>: <br>
+&nbsp;&nbsp; FileErrorObject(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*msg);<br>
+};<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;InputErrorObject : <font color="#b02f60"><b>public</b></font>&nbsp;ErrorObject {<br>
+<font color="#b02f60"><b>public</b></font>: <br>
+&nbsp;&nbsp; InputErrorObject(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*msg);<br>
+};<br>
+<br>
+<br>
+<font color="#0000ed"><i>// The following functions throw the indicated exception if</i></font><br>
+<font color="#0000ed"><i>// exceptions are enabled with NTL_EXCEPTIONS; otherwise,</i></font><br>
+<font color="#0000ed"><i>// they simply invoke TerminalError.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MemoryError();<br>
+<font color="#0000ed"><i>// throws bad_alloc</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;Error(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*msg);<br>
+<font color="#0000ed"><i>// throws ErrorObject</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;LogicError(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*msg);<br>
+<font color="#0000ed"><i>// throws LogicErrorObject</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;ArithmeticError(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*msg);<br>
+<font color="#0000ed"><i>// throws ArithmeticErrorObject</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;ResourceError(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*msg);<br>
+<font color="#0000ed"><i>// throws ResourceErrorObject</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;FileError(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*msg);<br>
+<font color="#0000ed"><i>// throws FileErrorObject</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;InputError(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*msg);<br>
+<font color="#0000ed"><i>// throws InputErrorObject</i></font><br>
+<br>
+<br>
+<br>
+</font></body>
+</html>

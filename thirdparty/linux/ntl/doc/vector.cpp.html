@@ -1,0 +1,464 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/vector.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: vector</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>Template class for dynamic-sized vectors.</i></font><br>
+<br>
+<font color="#0000ed"><i>The declaration</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; Vec&lt;T&gt; v;</i></font><br>
+<br>
+<font color="#0000ed"><i>creates a zero-length vector.&nbsp;&nbsp;To grow this vector to length n,</i></font><br>
+<font color="#0000ed"><i>execute</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; v.SetLength(n)</i></font><br>
+<br>
+<font color="#0000ed"><i>This causes space to be allocated for (at least) n elements, and also</i></font><br>
+<font color="#0000ed"><i>causes the delault constructor for T to be called to initialize these</i></font><br>
+<font color="#0000ed"><i>elements.</i></font><br>
+<br>
+<font color="#0000ed"><i>The current length of a vector is available as v.length().</i></font><br>
+<br>
+<font color="#0000ed"><i>The i-th vector element (counting from 0) is accessed as v[i].&nbsp;&nbsp;If the</i></font><br>
+<font color="#0000ed"><i>macro NTL_RANGE_CHECK is defined, code is emitted to test if 0 &lt;= i &lt;</i></font><br>
+<font color="#0000ed"><i>v.length().&nbsp;&nbsp;This check is not performed by default.</i></font><br>
+<br>
+<font color="#0000ed"><i>For old-time FORTRAN programmers, the i-th vector element (counting</i></font><br>
+<font color="#0000ed"><i>from 1) is accessed as v(i).</i></font><br>
+<br>
+<font color="#0000ed"><i>Let n = v.length().&nbsp;&nbsp;Calling v.SetLength(m) with m &lt;= n sets the</i></font><br>
+<font color="#0000ed"><i>current length of v to m (but does not call any destructors or free</i></font><br>
+<font color="#0000ed"><i>any space).&nbsp;&nbsp;Calling v.SetLength(m) with m &gt; n will allocate space and</i></font><br>
+<font color="#0000ed"><i>initialize as necessary, but will leave the values of the already</i></font><br>
+<font color="#0000ed"><i>allocated elements unchanged (although their addresses may change).</i></font><br>
+<font color="#0000ed"><i>If T has a user-defined default constructor, that is invoked.</i></font><br>
+<font color="#0000ed"><i>Otherwise, the new memory locations are &quot;default initialized&quot;.</i></font><br>
+<font color="#0000ed"><i>In particular, this means that POD types may be uninitialized.</i></font><br>
+<br>
+<font color="#0000ed"><i>v.MaxLength() is the largest value of n for which v.SetLength(n) was invoked,</i></font><br>
+<font color="#0000ed"><i>and is equal to the number of entries that have been initialized.</i></font><br>
+<font color="#0000ed"><i>v.SetMaxLength(n) will allocate space for and initialize up to n elements,</i></font><br>
+<font color="#0000ed"><i>without changing v.length().</i></font><br>
+<br>
+<font color="#0000ed"><i>When v's destructor is called, all constructed elements will be</i></font><br>
+<font color="#0000ed"><i>destructed, and all space will be relinquished.</i></font><br>
+<br>
+<font color="#0000ed"><i>Space is managed using malloc, realloc, and free.&nbsp;&nbsp;When a vector is</i></font><br>
+<font color="#0000ed"><i>grown, a bit more space may be allocated than was requested for</i></font><br>
+<font color="#0000ed"><i>efficiency reasons.</i></font><br>
+<br>
+<font color="#0000ed"><i>Note that when a vector is grown, the space is reallocated using</i></font><br>
+<font color="#0000ed"><i>realloc, and thus the addresses of vector elements may change,</i></font><br>
+<font color="#0000ed"><i>possibly creating dangling references to vector elements.&nbsp;&nbsp;One has to</i></font><br>
+<font color="#0000ed"><i>be especially careful of this when using vectors passed as reference</i></font><br>
+<font color="#0000ed"><i>parameters that may alias one another.</i></font><br>
+<br>
+<font color="#0000ed"><i>Because realloc is used to grow a vector, the objects stored</i></font><br>
+<font color="#0000ed"><i>in a vector should be &quot;relocatable&quot;---that is, they shouldn't care</i></font><br>
+<font color="#0000ed"><i>what their actual address is, which may change over time.</i></font><br>
+<font color="#0000ed"><i>Most reasonable objects satisfy this constraint.</i></font><br>
+<br>
+<font color="#0000ed"><i>v.allocated() is the number of elements which have been allocated,</i></font><br>
+<font color="#0000ed"><i>which may be more than the number elements initialized.</i></font><br>
+<font color="#0000ed"><i>Note that if n &lt;= v.allocated(), then v.SetLength(n) is guaranteed</i></font><br>
+<font color="#0000ed"><i>not to cause any memory allocation, or movement of objects.</i></font><br>
+<br>
+<font color="#0000ed"><i>IMPLEMENTATION DETAILS:</i></font><br>
+<br>
+<font color="#0000ed"><i>A Vec&lt;T&gt; object is just a pointer to the first element of the array.</i></font><br>
+<font color="#0000ed"><i>There is a control block immediately before the first element that</i></font><br>
+<font color="#0000ed"><i>keeps track of several parameters: </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; len&nbsp;&nbsp;&nbsp;&nbsp;-- the logical length of the array (returned by length())</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; init&nbsp;&nbsp; -- the number of elements constructed (returned ny MaxLength())</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; alloc&nbsp;&nbsp;-- the number of elements for which space has been allocated</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (returned by allocated())</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; fixed&nbsp;&nbsp;-- flag that indicates that the length is fixed </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (returned by fixed())</i></font><br>
+<br>
+<font color="#0000ed"><i>Note that 0 &lt;= len &lt;= init &lt;- alloc</i></font><br>
+<br>
+<font color="#0000ed"><i>COMPARISON TO STL VECTORS:</i></font><br>
+<br>
+<font color="#0000ed"><i>When the length of an NTL vector is reduced, no objects are destroyed.</i></font><br>
+<font color="#0000ed"><i>In contrast, when the length of an STL vector is reduced, objects are</i></font><br>
+<font color="#0000ed"><i>destroyed (effectively, maintaining the invariant len == init).</i></font><br>
+<br>
+<font color="#0000ed"><i>When the length of an NTL vector is increased, and the new value of len</i></font><br>
+<font color="#0000ed"><i>exceeds the current value of alloc, the underying array of objects is</i></font><br>
+<font color="#0000ed"><i>resized using malloc.&nbsp;&nbsp;This implies that existing objects are moved using</i></font><br>
+<font color="#0000ed"><i>a bit-wise copy.&nbsp;&nbsp;As mentioned above, this means that objects should</i></font><br>
+<font color="#0000ed"><i>be &quot;relocatable&quot;, in the sense that they do not care what their actual</i></font><br>
+<font color="#0000ed"><i>address is.&nbsp;&nbsp;Most reasonable objects satisfy this constraint.&nbsp;&nbsp;An example</i></font><br>
+<font color="#0000ed"><i>of an object that does not is one that stores in one data member a pointer</i></font><br>
+<font color="#0000ed"><i>to another data member within the same object.</i></font><br>
+<br>
+<font color="#0000ed"><i>In contrast, when the length of an STL vector is increased, an new array</i></font><br>
+<font color="#0000ed"><i>is allocated, and objects from the old array are copied to the new array,</i></font><br>
+<font color="#0000ed"><i>and then destroyed in the old array.&nbsp;&nbsp;This obviously is much more expensive</i></font><br>
+<font color="#0000ed"><i>that NTL's strategy.&nbsp;&nbsp;However, the new &quot;move semantics&quot;, introduced in C++11,</i></font><br>
+<font color="#0000ed"><i>mitigate this issue somewhat.</i></font><br>
+<br>
+<font color="#0000ed"><i>Because of NTL's relocatability requirement, it is not recommended to use NTL</i></font><br>
+<font color="#0000ed"><i>vectors over classes coming from the standard library, which may not satisfy</i></font><br>
+<font color="#0000ed"><i>the requirement.&nbsp;&nbsp;In those cases, you could either use an STL vector, or use an</i></font><br>
+<font color="#0000ed"><i>NTL vector and wrap the suspect classes in an NTL smart pointer of some kind</i></font><br>
+<font color="#0000ed"><i>(e.g., SmartPtr or CopiedPtr).</i></font><br>
+<br>
+<font color="#0000ed"><i>Note also that Facebook's open source &quot;folly&quot; library also provides</i></font><br>
+<font color="#0000ed"><i>a vector class that uses realloc in a manner very similar to NTL's vector class.</i></font><br>
+<font color="#0000ed"><i>See <a href="https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md">https://github.com/facebook/folly/blob/master/folly/docs/FBVector.md</a></i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// EXCEPTIONS: all functions below do not throw any exceptions,</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; except as noted</i></font><br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+<font color="#008b00"><b>class</b></font>&nbsp;Vec {&nbsp;&nbsp;<br>
+<font color="#b02f60"><b>public</b></font>:&nbsp;&nbsp;<br>
+<br>
+&nbsp;&nbsp; Vec();&nbsp;&nbsp;<font color="#0000ed"><i>// initially length 0</i></font><br>
+<br>
+&nbsp;&nbsp; Vec(<font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;T&gt;&amp; a); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// copy constructor;&nbsp;&nbsp;uses the assignment operator of T</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// for copying into locations that have already been initialized,</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// and uses the copy constructor for T for initializing new locations.</i></font><br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw</i></font><br>
+<br>
+&nbsp;&nbsp; Vec&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;T&gt;&amp; a);&nbsp;&nbsp;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// assignment;&nbsp;&nbsp;uses the assignment operator of T</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// for copying into locations that have already been initialized,</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// and uses the copy constructor for T for initializing new locations.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: weak ES (but if it throws, neither length nor MaxLength</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;will change, although some previously initialized elements</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;may have been assigned new values).</i></font><br>
+<br>
+&nbsp;&nbsp; ~Vec();&nbsp;&nbsp;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// destructor: calls T's destructor for all initialized</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// elements in the vector, and then frees the vector itself</i></font><br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;SetLength(<font color="#008b00"><b>long</b></font>&nbsp;n);&nbsp;&nbsp;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// set current length to n, growing vector if necessary</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// new objects are initialized using the default contructor for T</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: strong ES (but the vector may have been</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;reallocated)</i></font><br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;SetLength(<font color="#008b00"><b>long</b></font>&nbsp;n, <font color="#008b00"><b>const</b></font>&nbsp;T&amp; a);&nbsp;&nbsp;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// set current length to n, growing vector if necessary</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// new objects are initialized using the copy contructor for T</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: strong ES (but the vector may have been</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;reallocated)</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;F&gt;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;SetLengthAndApply(<font color="#008b00"><b>long</b></font>&nbsp;n, F f);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// set current length to n, growing vector if necessary</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// any new objects are initialized using defauly constructor</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// for T, and after that, f is applied to each new object x</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// as f(x).</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: strong ES (but the vector may have been</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;reallocated)</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;length() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// current length</i></font><br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp; T&amp; <font color="#b02f60"><b>operator</b></font>[](<font color="#008b00"><b>long</b></font>&nbsp;i);<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;T&amp; <font color="#b02f60"><b>operator</b></font>[](<font color="#008b00"><b>long</b></font>&nbsp;i) <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// indexing operation, starting from 0.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// The first version is applied to non-const Vec&lt;T&gt;,</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// and returns a non-const reference to a T, while the second version</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// is applied to a const Vec&lt;T&gt; and returns a const reference to a T.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw if range checking turned on, strong ES</i></font><br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp; T&amp; <font color="#b02f60"><b>operator</b></font>()(<font color="#008b00"><b>long</b></font>&nbsp;i);<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;T&amp; <font color="#b02f60"><b>operator</b></font>()(<font color="#008b00"><b>long</b></font>&nbsp;i) <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// indexing operation, starting from 1</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// The first version is applied to non-const Vec&lt;T&gt;,</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// and returns a non-const reference to a T, while the second version</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// is applied to a const Vec&lt;T&gt; and returns a const reference to a T.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw if range checking turned on, strong ES</i></font><br>
+&nbsp;&nbsp;<br>
+&nbsp;&nbsp; T* elts();<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;T* elts() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// returns address of first vector element (or 0 if no space has been</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allocated for this vector).&nbsp;&nbsp;If a vector potentially has length 0, it is</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// safer to write v.elts() instead of &amp;v[0]: the latter is not well defined</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// by the C++ standard (although this is likely an academic concern).</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// The first version is applied to non-const Vec&lt;T&gt;, and returns a non-const</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// pointer to a T, while the second version is applied to a const Vec&lt;T&gt; and</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// returns a const reference to a T.</i></font><br>
+<br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;swap(Vec&lt;T&gt;&amp; y);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// swap with y (fast: just swaps pointers)</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: throws if vectors are fixed and lengths do not match, strong ES</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;append(<font color="#008b00"><b>const</b></font>&nbsp;T&amp; a);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// append a to end of vector; uses the assignment operator of T</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// for copying into locations that have already been initialized,</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// and uses the copy constructor for T for initializing new locations.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: strong ES if initializing a new element (and in any </i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;case, if an exception throws, length and MaxLength remain </i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;unchanged).</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;append(<font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;T&gt;&amp; w);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// append w to end of vector; uses the assignment operator of T</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// for copying into locations that have already been initialized,</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// and uses the copy constructor for T for initializing new locations.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: strong ES if initializing new elements (and in any </i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;case, if an exception throws, length and MaxLength remain </i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;unchanged).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// Alternative access interface </i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;T&amp; get(<font color="#008b00"><b>long</b></font>&nbsp;i) <font color="#008b00"><b>const</b></font>; <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// v.get(i) returns v[i]</i></font><br>
+&nbsp;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;put(<font color="#008b00"><b>long</b></font>&nbsp;i, <font color="#008b00"><b>const</b></font>&nbsp;T&amp; a); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// v.put(i, a) equivalent to v[i] = q</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// Some STL compatibility</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;T value_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;value_type&amp; reference;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;value_type&amp; const_reference;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;value_type *iterator;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;value_type *const_iterator; <br>
+<br>
+&nbsp;&nbsp; T* data();<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;T* data() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// v.data() same as v.elts()</i></font><br>
+<br>
+&nbsp;&nbsp; T* begin();<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;T* begin() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// v.begin() same as v.elts()</i></font><br>
+<br>
+&nbsp;&nbsp; T* end();<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;T* end() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// pointer to last element (or NULL)</i></font><br>
+<br>
+&nbsp;&nbsp; T&amp; at(<font color="#008b00"><b>long</b></font>&nbsp;i);<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;T&amp; at(<font color="#008b00"><b>long</b></font>&nbsp;i) <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// indexing with range checking</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// the remaining member functions are a bit esoteric (skip on first</i></font><br>
+<font color="#0000ed"><i>// reading)</i></font><br>
+<br>
+&nbsp;&nbsp; Vec(INIT_SIZE_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// Vec(INIT_SIZE, n) initializes vector with an intial length of n.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// new objects are initialized using the default contructor for T</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw</i></font><br>
+<br>
+&nbsp;&nbsp; Vec(INIT_SIZE_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;n, <font color="#008b00"><b>const</b></font>&nbsp;T&amp; a);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// Vec(INIT_SIZE, n, a) initializes vector with an intial length of n.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// new objects are initialized using the copy contructor for T</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;kill(); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// release space and set to length 0</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;SetMaxLength(<font color="#008b00"><b>long</b></font>&nbsp;n); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allocates space and initializes up to n elements. Does not change</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// current length</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw, strong ES</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;FixLength(<font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// sets length to n and prohibits all future length changes.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// FixLength may only be invoked immediately after the default</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// construction or kill.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// The kill operation is also subsequently prohibited, and swap is</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allowed on fixed length vectors of the same length.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// FixLength is provided mainly to implement Mat&lt;T&gt;, to enforce</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// the restriction that all rows have the same length.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw, strong ES</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;FixAtCurrentLength();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// fixes the length at the cuurent length and prohibits</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// all future length changes.&nbsp;&nbsp;</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// It is required that length() == MaxLength() when called.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: if length() != MaxLength() and error is raised;</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// if length() == 0, a memory allocation error may be raised.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// Strong ES.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;fixed() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// test if length has been fixed by FixLength() or FixAtCurrentLength()</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;MaxLength() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// maximum length, i.e., number of allocated and initialized elements</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;allocated() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// the number of objects for which space has been allocated, but not</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// necessarily initialized;&nbsp;&nbsp;this may be larger than MaxLength().</i></font><br>
+<br>
+&nbsp;&nbsp; T&amp; RawGet(<font color="#008b00"><b>long</b></font>&nbsp;i);<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;T&amp; RawGet(<font color="#008b00"><b>long</b></font>&nbsp;i) <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// indexing with no range checking</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;position(<font color="#008b00"><b>const</b></font>&nbsp;T&amp; a) <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// returns position of a in the vector, or -1 if it is not there.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// The search is conducted from position 0 to allocated()-1 the vector, </i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// and an error is raised if the object is found at position MaxLength()</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// or higher (in which case a references an uninitialized object).</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// Note that if NTL_CLEAN_PTR flag is set, this routine takes</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// linear time, and otherwise, it takes constant time.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw (as indicated above)</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;position1(<font color="#008b00"><b>const</b></font>&nbsp;T&amp; a) <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// returns position of a in the vector, or -1 if it is not there.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// The search is conducted from position 0 to length()-1 of the vector.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// Note that if NTL_CLEAN_PTR flag is set, this routine takes</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// linear time, and otherwise, it takes constant time.</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <br>
+};&nbsp;&nbsp; <br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Some utility routines</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+&nbsp;&nbsp; <br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+<font color="#008b00"><b>void</b></font>&nbsp;swap(Vec&lt;T&gt;&amp; x, Vec&lt;T&gt;&amp; y);<br>
+<font color="#0000ed"><i>// swaps x &amp; y; same as x.swap(y)</i></font><br>
+<br>
+<font color="#0000ed"><i>// EXCEPTIONS: same as for swap member function</i></font><br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+<font color="#008b00"><b>void</b></font>&nbsp;append(Vec&lt;T&gt;&amp; v, <font color="#008b00"><b>const</b></font>&nbsp;T&amp; a); <br>
+<font color="#0000ed"><i>// appends a to the end of v; same as v.append(a)</i></font><br>
+<br>
+<font color="#0000ed"><i>// EXCEPTIONS: same as for append member function</i></font><br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+<font color="#008b00"><b>void</b></font>&nbsp;append(Vec&lt;T&gt;&amp; v, <font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;T&gt;&amp; w);<br>
+<font color="#0000ed"><i>// appends w to the end of v; same as v.append(w)</i></font><br>
+<br>
+<font color="#0000ed"><i>// EXCEPTIONS: same as for append member function</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Input/Output</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>The I/O format for a vector v with n elements is:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; [v[0] v[1] ... v[n-1]]</i></font><br>
+<br>
+<font color="#0000ed"><i>Uses corresponding I/O operators for T</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+istream&amp; <font color="#b02f60"><b>operator</b></font>&gt;&gt;(istream&amp;, Vec&lt;T&gt;&amp;);&nbsp;&nbsp;<br>
+<br>
+<font color="#0000ed"><i>// EXCEPTIONS: may throw, weak ES</i></font><br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+ostream&amp; <font color="#b02f60"><b>operator</b></font>&lt;&lt;(ostream&amp;, <font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;T&gt;&amp;);&nbsp;&nbsp;<br>
+<br>
+<font color="#0000ed"><i>// EXCEPTIONS: may throw, weak ES</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Equality Testing</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(<font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;T&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;T&gt;&amp; b);&nbsp;&nbsp;<br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(<font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;T&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;T&gt;&amp; b);<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Customized Constructors and Destructors</i></font><br>
+<font color="#0000ed"><i>&nbsp;</i></font><br>
+<font color="#0000ed"><i>Esoteric: skip on first reading...also these interfaces are subject to change</i></font><br>
+<br>
+<font color="#0000ed"><i>When new elements in a vector need to be constructed, one of the</i></font><br>
+<font color="#0000ed"><i>following routines is called:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; void BlockConstruct(T* p, long n); </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // invokes T() to initialize p[i] for i = 0..n-1</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; void BlockConstructFromVec(T* p, long n, const T* q);</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // invokes T(q[i]) to initialize p[i] for i = 0..n-1;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // q points to elements from a Vec&lt;T&gt;</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; void BlockConstructFromObj(T* p, long n, const T&amp; q);</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // invokes T(q) to initialize p[i] for i = 0..n-1</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>When a vector is destroyed, the following routine is called:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; void BlockDestroy(T* p, long n);</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // invokes ~T() on p[i] for i = 0..n-1</i></font><br>
+<br>
+<font color="#0000ed"><i>The default behavior of these routines may be modified by </i></font><br>
+<font color="#0000ed"><i>overloading these functions with a custom implementation.</i></font><br>
+<br>
+<font color="#0000ed"><i>EXCEPTIONS:</i></font><br>
+<font color="#0000ed"><i>In order to provide exception safe code, the Construct routines</i></font><br>
+<font color="#0000ed"><i>should provide strong ES; in particular, if any constructor</i></font><br>
+<font color="#0000ed"><i>throws, all newly constructed objects should be destroyed.</i></font><br>
+<font color="#0000ed"><i>Moreover, the BlockDestroy routine should not throw at all.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>In NTL, these routines are overridden for the ZZ_p and GF2E classes,</i></font><br>
+<font color="#0000ed"><i>so that many vector entries will be packed into contiguous storage</i></font><br>
+<font color="#0000ed"><i>locations.&nbsp;&nbsp;This reduces the number of invocations of malloc, and</i></font><br>
+<font color="#0000ed"><i>increases locality of reference.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+</font></body>
+</html>

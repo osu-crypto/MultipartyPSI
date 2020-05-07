@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/ZZXFactoring.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>****************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: ZZXFactoring</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>Routines are provided for factoring in ZZX.</i></font><br>
+<br>
+<font color="#0000ed"><i>See IMPLEMENTATION DETAILS below for a discussion of the algorithms used,</i></font><br>
+<font color="#0000ed"><i>and of the flags available for selecting among these algorithms.</i></font><br>
+<br>
+<font color="#0000ed"><i>\****************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/ZZX.h&gt;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/pair_ZZX_long.h&gt;</font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SquareFreeDecomp(vec_pair_ZZX_long&amp; u, <font color="#008b00"><b>const</b></font>&nbsp;ZZX&amp; f);<br>
+<font color="#008b00"><b>const</b></font>&nbsp;vector(pair_ZZX_long SquareFreeDecomp(<font color="#008b00"><b>const</b></font>&nbsp;ZZX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// input is primitive, with positive leading coefficient.&nbsp;&nbsp;Performs</i></font><br>
+<font color="#0000ed"><i>// square-free decomposition.&nbsp;&nbsp;If f = prod_i g_i^i, then u is set to a</i></font><br>
+<font color="#0000ed"><i>// lest of pairs (g_i, i).&nbsp;&nbsp;The list is is increasing order of i, with</i></font><br>
+<font color="#0000ed"><i>// trivial terms (i.e., g_i = 1) deleted.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MultiLift(vec_ZZX&amp; A, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_pX&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;e,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// Using current value p of zz_p::modulus(), this lifts the</i></font><br>
+<font color="#0000ed"><i>// square-free factorization a mod p of f to a factorization A mod p^e</i></font><br>
+<font color="#0000ed"><i>// of f.&nbsp;&nbsp;It is required that f and all the polynomials in a are</i></font><br>
+<font color="#0000ed"><i>// monic.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SFFactor(vec_ZZX&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;ZZX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>, <font color="#008b00"><b>long</b></font>&nbsp;bnd=<font color="#ff8b00">0</font>);<br>
+vec_ZZX SFFactor(<font color="#008b00"><b>const</b></font>&nbsp;ZZX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>, <font color="#008b00"><b>long</b></font>&nbsp;bnd=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// input f is primitive and square-free, with positive leading</i></font><br>
+<font color="#0000ed"><i>// coefficient.&nbsp;&nbsp;bnd, if not zero, indicates that f divides a</i></font><br>
+<font color="#0000ed"><i>// polynomial h whose Euclidean norm is bounded by 2^{bnd} in absolute</i></font><br>
+<font color="#0000ed"><i>// value.&nbsp;&nbsp;This uses the routine SFCanZass in zz_pXFactoring and then</i></font><br>
+<font color="#0000ed"><i>// performs a MultiLift, followed by a brute-force search for the</i></font><br>
+<font color="#0000ed"><i>// factors.&nbsp;&nbsp;</i></font><br>
+<br>
+<font color="#0000ed"><i>// A number of heuristics are used to speed up the factor-search step.</i></font><br>
+<font color="#0000ed"><i>// See &quot;implementation details&quot; below.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;factor(ZZ&amp; c,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vec_pair_ZZX_long&amp; factors,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;ZZX&amp; f,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;bnd=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// input f is is an arbitrary polynomial.&nbsp;&nbsp;c is the content of f, and</i></font><br>
+<font color="#0000ed"><i>// factors is the facrorization of its primitive part.&nbsp;&nbsp;bnd is as in</i></font><br>
+<font color="#0000ed"><i>// SFFactor.&nbsp;&nbsp;The routine calls SquareFreeDecomp and SFFactor.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(ZZX&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_pair_ZZX_long&amp; a);<br>
+ZZX mul(<font color="#008b00"><b>const</b></font>&nbsp;vec_pair_ZZX_long&amp; a);<br>
+<font color="#0000ed"><i>// multiplies polynomials, with multiplcities.</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>****************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>IMPLEMENTATION DETAILS</i></font><br>
+<br>
+<font color="#0000ed"><i>To factor a polynomial, first its content is extracted, and it is</i></font><br>
+<font color="#0000ed"><i>made squarefree.&nbsp;&nbsp;This is typically very fast.</i></font><br>
+<br>
+<font color="#0000ed"><i>Second, a simple hack is performed: if the polynomial is of the</i></font><br>
+<font color="#0000ed"><i>form g(x^l), then an attempt is made to factor g(k^m),</i></font><br>
+<font color="#0000ed"><i>for divisors m of l, which can in some cases greatly simplify</i></font><br>
+<font color="#0000ed"><i>the factorization task.</i></font><br>
+<font color="#0000ed"><i>You can turn this &quot;power hack&quot; on/off by setting the following variable</i></font><br>
+<font color="#0000ed"><i>to 1/0:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; extern long ZZXFac_PowerHack;&nbsp;&nbsp;// initial value = 1</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>Third, the polynomial is factored modulo several</i></font><br>
+<font color="#0000ed"><i>small primes, and one small prime p is selected as the &quot;best&quot;.</i></font><br>
+<font color="#0000ed"><i>You can choose the number of small primes that you want to use</i></font><br>
+<font color="#0000ed"><i>by setting the following variable:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; extern long ZZXFac_InitNumPrimes;&nbsp;&nbsp;// initial value = 7</i></font><br>
+<br>
+<font color="#0000ed"><i>Fourth, The factorization mod p is &quot;lifted&quot; to a factorization mod p^k</i></font><br>
+<font color="#0000ed"><i>for a sufficiently large k.&nbsp;&nbsp;This is done via quadratic Hensel</i></font><br>
+<font color="#0000ed"><i>lifting.&nbsp;&nbsp;Despite &quot;folk wisdom&quot; to the contrary, this is much</i></font><br>
+<font color="#0000ed"><i>more efficient than linear Hensel lifting, especially since NTL</i></font><br>
+<font color="#0000ed"><i>has very fast polynomial arithmetic.</i></font><br>
+<br>
+<font color="#0000ed"><i>After the &quot;lifting phase&quot; comes the &quot;factor recombination phase&quot;.</i></font><br>
+<font color="#0000ed"><i>The factorization mod p^k may be &quot;finer&quot; than the true factorization</i></font><br>
+<font color="#0000ed"><i>over the integers, hence we have to &quot;combine&quot; subsets of modular factors</i></font><br>
+<font color="#0000ed"><i>and test if these are factors over the integers.</i></font><br>
+<br>
+<font color="#0000ed"><i>There are two basic strategies:&nbsp;&nbsp;the &quot;Zassenhaus&quot; method</i></font><br>
+<font color="#0000ed"><i>and the &quot;van Hoeij&quot; method.</i></font><br>
+<br>
+<font color="#0000ed"><i>The van Hoeij method:</i></font><br>
+<br>
+<font color="#0000ed"><i>The van Hoeij method is fairly new, but it is so much better than</i></font><br>
+<font color="#0000ed"><i>the older, Zassenhaus method, that it is now the default.</i></font><br>
+<font color="#0000ed"><i>For a description of the method, go to Mark van Hoeij's home page:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; <a href="http://www.openmath.org/~hoeij/">http://www.openmath.org/~hoeij/</a></i></font><br>
+<br>
+<font color="#0000ed"><i>The van Hoeij method is not really a specific algorithm, but a general</i></font><br>
+<font color="#0000ed"><i>algorithmic approach: many parameters and strategies have to be selected</i></font><br>
+<font color="#0000ed"><i>to obtain a specific algorithm, and it is a challenge to</i></font><br>
+<font color="#0000ed"><i>make all of these choices so that the resulting algorithm works</i></font><br>
+<font color="#0000ed"><i>fairly well on all input polynomials.</i></font><br>
+<br>
+<font color="#0000ed"><i>Set the following variable to 1 to enable the van Hoeij method,</i></font><br>
+<font color="#0000ed"><i>and to 0 to revert to the Zassenhaus method:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; extern long ZZXFac_van_Hoeij; // initial value = 1</i></font><br>
+<br>
+<font color="#0000ed"><i>Note that the &quot;power hack&quot; is still on by default when using van Hoeij's</i></font><br>
+<font color="#0000ed"><i>method, but we have arranged things so that the &quot;power hack&quot; strategy </i></font><br>
+<font color="#0000ed"><i>is abandoned if it appears to be too much a waste of time.</i></font><br>
+<font color="#0000ed"><i>Unlike with the Zassenhaus method, using the &quot;power hack&quot; method with</i></font><br>
+<font color="#0000ed"><i>van Hoeij can sometimes be a huge waste of time if one is not careful.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>The Zassenhaus method:</i></font><br>
+<br>
+<font color="#0000ed"><i>The Zassenhaus method is essentially a brute-force search, but with</i></font><br>
+<font color="#0000ed"><i>a lot of fancy &quot;pruning&quot; techniques, as described in the paper</i></font><br>
+<font color="#0000ed"><i>[J. Abbott, V. Shoup, P. Zimmermann, &quot;Factoring in Z[x]: the searching phase&quot;,</i></font><br>
+<font color="#0000ed"><i>ISSAC 2000].</i></font><br>
+<br>
+<font color="#0000ed"><i>These heuristics are fairly effective, and allow one to easily deal</i></font><br>
+<font color="#0000ed"><i>with up to around 30-40 modular factors, which is *much* more</i></font><br>
+<font color="#0000ed"><i>than other Zassenhaus-based factorizers can deal with; however, after this, </i></font><br>
+<font color="#0000ed"><i>the exponential behavior of the algorithm really starts to dominate.</i></font><br>
+<br>
+<font color="#0000ed"><i>The behaviour of these heuristics can be fine tuned by</i></font><br>
+<font color="#0000ed"><i>setting the following global variables:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; extern long ZZXFac_MaxNumPrimes;&nbsp;&nbsp;// initial value = 50</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // During the factor recombination phase, if not much progress</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // is being made, occasionally more &quot;local&quot; information is </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // collected by factoring f modulo another prime.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // This &quot;local&quot; information is used to rule out degrees </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // of potential factors during recombination.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // This value bounds the total number of primes modulo which f </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // is factored.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; extern long ZZXFac_MaxPrune;&nbsp;&nbsp;// initial value = 10</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // A kind of &quot;meet in the middle&quot; strategy is used</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // to prune the search space during recombination.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // For many (but not all) polynomials, this can greatly</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // reduce the running time.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // When it does work, there is a time-space tradeoff:</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // If t = ZZXFac_MaxPrune, the running time will be reduced by a factor near</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // 2^t, but the table will take (at most) t*2^(t-1) bytes of storage.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // Note that ZZXFac_MaxPrune is treated as an upper bound on t---the</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // factoring algorithm may decide to use a smaller value of t for</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // a number of reasons.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>\****************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+</font></body>
+</html>

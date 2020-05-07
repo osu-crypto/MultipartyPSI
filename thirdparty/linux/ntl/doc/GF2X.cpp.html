@@ -1,0 +1,825 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/GF2X.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: GF2X</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>The class GF2X implements polynomial arithmetic modulo 2.</i></font><br>
+<br>
+<font color="#0000ed"><i>Polynomial arithmetic is implemented using a combination of classical</i></font><br>
+<font color="#0000ed"><i>routines and Karatsuba.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/GF2.h&gt;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/vec_GF2.h&gt;</font><br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;GF2X {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+<br>
+&nbsp;&nbsp; GF2X(); <font color="#0000ed"><i>// initial value 0</i></font><br>
+<br>
+&nbsp;&nbsp; GF2X(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a); <font color="#0000ed"><i>// copy</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>explicit</b></font>&nbsp;GF2X(<font color="#008b00"><b>long</b></font>&nbsp;a); <font color="#0000ed"><i>// promotion</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>explicit</b></font>&nbsp;GF2X(GF2 a); <font color="#0000ed"><i>// promotion</i></font><br>
+<br>
+&nbsp;&nbsp; GF2X&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a); <font color="#0000ed"><i>// assignment</i></font><br>
+&nbsp;&nbsp; GF2X&amp; <font color="#b02f60"><b>operator</b></font>=(GF2 a); <br>
+&nbsp;&nbsp; GF2X&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>long</b></font>&nbsp;a); <br>
+<br>
+&nbsp;&nbsp; ~GF2X(); <font color="#0000ed"><i>// destructor</i></font><br>
+<br>
+&nbsp;&nbsp; GF2X(INIT_MONO_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;i, GF2 c); <br>
+&nbsp;&nbsp; GF2X(INIT_MONO_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;i, <font color="#008b00"><b>long</b></font>&nbsp;c); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// initialize to c*X^i, invoke as GF2X(INIT_MONO, i, c)</i></font><br>
+<br>
+&nbsp;&nbsp; GF2X(INIT_MONO_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;i); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// initialize to c*X^i, invoke as GF2X(INIT_MONO, i)</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// typedefs to aid in generic programming</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;GF2 coeff_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;GF2E residue_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;GF2XModulus modulus_type;<br>
+<br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// ...</i></font><br>
+<br>
+};<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Accessing coefficients</i></font><br>
+<br>
+<font color="#0000ed"><i>The degree of a polynomial f is obtained as deg(f),</i></font><br>
+<font color="#0000ed"><i>where the zero polynomial, by definition, has degree -1.</i></font><br>
+<br>
+<font color="#0000ed"><i>A polynomial f is represented as a coefficient vector.</i></font><br>
+<font color="#0000ed"><i>Coefficients may be accesses in one of two ways.</i></font><br>
+<br>
+<font color="#0000ed"><i>The safe, high-level method is to call the function</i></font><br>
+<font color="#0000ed"><i>coeff(f, i) to get the coefficient of X^i in the polynomial f,</i></font><br>
+<font color="#0000ed"><i>and to call the function SetCoeff(f, i, a) to set the coefficient</i></font><br>
+<font color="#0000ed"><i>of X^i in f to the scalar a.</i></font><br>
+<br>
+<font color="#0000ed"><i>One can also access the coefficients more directly via a lower level </i></font><br>
+<font color="#0000ed"><i>interface.&nbsp;&nbsp;The coefficient of X^i in f may be accessed using </i></font><br>
+<font color="#0000ed"><i>subscript notation f[i].&nbsp;&nbsp;In addition, one may write f.SetLength(n)</i></font><br>
+<font color="#0000ed"><i>to set the length of the underlying coefficient vector to n,</i></font><br>
+<font color="#0000ed"><i>and f.SetMaxLength(n) to allocate space for n coefficients,</i></font><br>
+<font color="#0000ed"><i>without changing the coefficient vector itself.</i></font><br>
+<br>
+<font color="#0000ed"><i>After setting coefficients using this low-level interface,</i></font><br>
+<font color="#0000ed"><i>one must ensure that leading zeros in the coefficient vector</i></font><br>
+<font color="#0000ed"><i>are stripped afterwards by calling the function f.normalize().</i></font><br>
+<br>
+<font color="#0000ed"><i>NOTE: unlike other polynomial classes, the coefficient vector</i></font><br>
+<font color="#0000ed"><i>for GF2X has a special representation, packing coefficients into </i></font><br>
+<font color="#0000ed"><i>words.&nbsp;&nbsp;This has two consequences.&nbsp;&nbsp;First, when using the indexing</i></font><br>
+<font color="#0000ed"><i>notation on a non-const polynomial f, the return type is ref_GF2,</i></font><br>
+<font color="#0000ed"><i>rather than GF2&amp;.&nbsp;&nbsp;For the most part, a ref_GF2 may be used like</i></font><br>
+<font color="#0000ed"><i>a GF2&amp; --- see GF2.txt for more details.&nbsp;&nbsp;Second, when applying </i></font><br>
+<font color="#0000ed"><i>f.SetLength(n) to a polynomial f, this essentially has the effect</i></font><br>
+<font color="#0000ed"><i>of zeroing out the coefficients of X^i for i &gt;= n.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;deg(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// return deg(a); deg(0) == -1.</i></font><br>
+<br>
+<font color="#008b00"><b>const</b></font>&nbsp;GF2 coeff(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;i);<br>
+<font color="#0000ed"><i>// returns the coefficient of X^i, or zero if i not in range</i></font><br>
+<br>
+<font color="#008b00"><b>const</b></font>&nbsp;GF2 LeadCoeff(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+<font color="#0000ed"><i>// returns leading term of a, or zero if a == 0</i></font><br>
+<br>
+<font color="#008b00"><b>const</b></font>&nbsp;GF2 ConstTerm(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+<font color="#0000ed"><i>// returns constant term of a, or zero if a == 0</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SetCoeff(GF2X&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;i, GF2 a);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SetCoeff(GF2X&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;i, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<font color="#0000ed"><i>// makes coefficient of X^i equal to a; error is raised if i &lt; 0</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SetCoeff(GF2X&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;i);<br>
+<font color="#0000ed"><i>// makes coefficient of X^i equal to 1;&nbsp;&nbsp;error is raised if i &lt; 0</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SetX(GF2X&amp; x); <font color="#0000ed"><i>// x is set to the monomial X</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsX(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a); <font color="#0000ed"><i>// test if x = X</i></font><br>
+<br>
+<br>
+<br>
+<br>
+ref_GF2 GF2X::<font color="#b02f60"><b>operator</b></font>[](<font color="#008b00"><b>long</b></font>&nbsp;i); <br>
+<font color="#008b00"><b>const</b></font>&nbsp;GF2 GF2X::<font color="#b02f60"><b>operator</b></font>[](<font color="#008b00"><b>long</b></font>&nbsp;i) <font color="#008b00"><b>const</b></font>;<br>
+<font color="#0000ed"><i>// indexing operators: f[i] is the coefficient of X^i ---</i></font><br>
+<font color="#0000ed"><i>// i should satsify i &gt;= 0 and i &lt;= deg(f)</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;GF2X::SetLength(<font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// f.SetLength(n) sets the length of the inderlying coefficient</i></font><br>
+<font color="#0000ed"><i>// vector to n --- after this call, indexing f[i] for i = 0..n-1</i></font><br>
+<font color="#0000ed"><i>// is valid.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;GF2X::normalize();&nbsp;&nbsp;<br>
+<font color="#0000ed"><i>// f.normalize() strips leading zeros from coefficient vector of f</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;GF2X::SetMaxLength(<font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// f.SetMaxLength(n) pre-allocate spaces for n coefficients.&nbsp;&nbsp;The</i></font><br>
+<font color="#0000ed"><i>// polynomial that f represents is unchanged.</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Comparison</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsZero(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a); <font color="#0000ed"><i>// test for 0</i></font><br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsOne(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a); <font color="#0000ed"><i>// test for 1</i></font><br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: operators ==, != promote {long, GF2} to GF2X on (a, b)</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Addition</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+GF2X <font color="#b02f60"><b>operator</b></font>+(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+GF2X <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+<br>
+GF2X <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a); <font color="#0000ed"><i>// unary -</i></font><br>
+<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>+=(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>+=(GF2X&amp; x, GF2 a);<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>+=(GF2X&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>-=(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>-=(GF2X&amp; x, GF2 a);<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>-=(GF2X&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>++(GF2X&amp; x);&nbsp;&nbsp;<font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>++(GF2X&amp; x, <font color="#008b00"><b>int</b></font>);&nbsp;&nbsp;<font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>--(GF2X&amp; x);&nbsp;&nbsp;<font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>--(GF2X&amp; x, <font color="#008b00"><b>int</b></font>);&nbsp;&nbsp;<font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;add(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b); <font color="#0000ed"><i>// x = a + b</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;sub(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b); <font color="#0000ed"><i>// x = a - b</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;negate(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a); <font color="#0000ed"><i>// x = -a</i></font><br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: binary +, - and procedures add, sub promote {long, GF2}</i></font><br>
+<font color="#0000ed"><i>// to GF2X on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Multiplication</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+GF2X <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>*=(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>*=(GF2X&amp; x, GF2 a);<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>*=(GF2X&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b); <font color="#0000ed"><i>// x = a * b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;sqr(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a); <font color="#0000ed"><i>// x = a^2</i></font><br>
+GF2X sqr(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: operator * and procedure mul promote {long, GF2} to GF2X</i></font><br>
+<font color="#0000ed"><i>// on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Shift Operations</i></font><br>
+<br>
+<font color="#0000ed"><i>LeftShift by n means multiplication by X^n</i></font><br>
+<font color="#0000ed"><i>RightShift by n means division by X^n</i></font><br>
+<br>
+<font color="#0000ed"><i>A negative shift amount reverses the direction of the shift.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+GF2X <font color="#b02f60"><b>operator</b></font>&lt;&lt;(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+GF2X <font color="#b02f60"><b>operator</b></font>&gt;&gt;(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>&lt;&lt;=(GF2X&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>&gt;&gt;=(GF2X&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;LeftShift(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n); <br>
+GF2X LeftShift(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;RightShift(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n); <br>
+GF2X RightShift(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n); <br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MulByX(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a); <br>
+GF2X MulByX(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a); <br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Division</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+GF2X <font color="#b02f60"><b>operator</b></font>/(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+GF2X <font color="#b02f60"><b>operator</b></font>%(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>/=(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>/=(GF2X&amp; x, GF2 a);<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>/=(GF2X&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>%=(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;DivRem(GF2X&amp; q, GF2X&amp; r, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+<font color="#0000ed"><i>// q = a/b, r = a%b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;div(GF2X&amp; q, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+<font color="#0000ed"><i>// q = a/b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;rem(GF2X&amp; r, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+<font color="#0000ed"><i>// r = a%b</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;divide(GF2X&amp; q, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+<font color="#0000ed"><i>// if b | a, sets q = a/b and returns 1; otherwise returns 0</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;divide(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+<font color="#0000ed"><i>// if b | a, sets q = a/b and returns 1; otherwise returns 0</i></font><br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: operator / and procedure div promote {long, GF2} to GF2X</i></font><br>
+<font color="#0000ed"><i>// on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GCD's</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;GCD(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+GF2X GCD(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b); <br>
+<font color="#0000ed"><i>// x = GCD(a, b) (zero if a==b==0).</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;XGCD(GF2X&amp; d, GF2X&amp; s, GF2X&amp; t, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+<font color="#0000ed"><i>// d = gcd(a,b), a s + b t = d </i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Input/Output</i></font><br>
+<br>
+<font color="#0000ed"><i>I/O format:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; [a_0 a_1 ... a_n],</i></font><br>
+<br>
+<font color="#0000ed"><i>represents the polynomial a_0 + a_1*X + ... + a_n*X^n.</i></font><br>
+<br>
+<font color="#0000ed"><i>On output, all coefficients will be 0 or 1, and</i></font><br>
+<font color="#0000ed"><i>a_n not zero (the zero polynomial is [ ]).&nbsp;&nbsp;On input, the coefficients</i></font><br>
+<font color="#0000ed"><i>may be arbitrary integers which are reduced modulo 2, and leading zeros</i></font><br>
+<font color="#0000ed"><i>stripped.</i></font><br>
+<br>
+<font color="#0000ed"><i>There is also a more compact hex I/O format.&nbsp;&nbsp;To output in this</i></font><br>
+<font color="#0000ed"><i>format, set GF2X::HexOutput to a nonzero value.&nbsp;&nbsp;On input, if the first</i></font><br>
+<font color="#0000ed"><i>non-blank character read is 'x' or 'X', then a hex format is assumed.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+istream&amp; <font color="#b02f60"><b>operator</b></font>&gt;&gt;(istream&amp; s, GF2X&amp; x);<br>
+ostream&amp; <font color="#b02f60"><b>operator</b></font>&lt;&lt;(ostream&amp; s, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Some utility routines</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;diff(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+GF2X diff(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a); <br>
+<font color="#0000ed"><i>// x = derivative of a</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;reverse(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;hi);<br>
+GF2X reverse(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;hi);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;reverse(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+GF2X reverse(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+<br>
+<font color="#0000ed"><i>// x = reverse of a[0]..a[hi] (hi &gt;= -1);</i></font><br>
+<font color="#0000ed"><i>// hi defaults to deg(a) in second version</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;VectorCopy(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+vec_GF2 VectorCopy(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// x = copy of coefficient vector of a of length exactly n.</i></font><br>
+<font color="#0000ed"><i>// input is truncated or padded with zeroes as appropriate.</i></font><br>
+<br>
+<font color="#0000ed"><i>// Note that there is also a conversion routine from GF2X to vec_GF2</i></font><br>
+<font color="#0000ed"><i>// that makes the length of the vector match the number of coefficients</i></font><br>
+<font color="#0000ed"><i>// of the polynomial.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;weight(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+<font color="#0000ed"><i>// returns the # of nonzero coefficients in a</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;GF2XFromBytes(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*p, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+GF2X GF2XFromBytes(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*p, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// conversion from byte vector to polynomial.</i></font><br>
+<font color="#0000ed"><i>// x = sum(p[i]*X^(8*i), i = 0..n-1), where the bits of p[i] are interpretted</i></font><br>
+<font color="#0000ed"><i>// as a polynomial in the natural way (i.e., p[i] = 1 is interpretted as 1,</i></font><br>
+<font color="#0000ed"><i>// p[i] = 2 is interpretted as X, p[i] = 3 is interpretted as X+1, etc.).</i></font><br>
+<font color="#0000ed"><i>// In the unusual event that characters are wider than 8 bits,</i></font><br>
+<font color="#0000ed"><i>// only the low-order 8 bits of p[i] are used.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;BytesFromGF2X(<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*p, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// conversion from polynomial to byte vector.</i></font><br>
+<font color="#0000ed"><i>// p[0..n-1] are computed so that </i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp; a = sum(p[i]*X^(8*i), i = 0..n-1) mod X^(8*n),</i></font><br>
+<font color="#0000ed"><i>// where the values p[i] are interpretted as polynomials as in GF2XFromBytes</i></font><br>
+<font color="#0000ed"><i>// above.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;NumBits(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+<font color="#0000ed"><i>// returns number of bits of a, i.e., deg(a) + 1.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;NumBytes(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a);<br>
+<font color="#0000ed"><i>// returns number of bytes of a, i.e., floor((NumBits(a)+7)/8)</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Random Polynomials</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;random(GF2X&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+GF2X random_GF2X(<font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// x = random polynomial of degree &lt; n </i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Arithmetic mod X^n</i></font><br>
+<br>
+<font color="#0000ed"><i>Required: n &gt;= 0; otherwise, an error is raised.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;trunc(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n); <font color="#0000ed"><i>// x = a % X^n</i></font><br>
+GF2X trunc(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n); <br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MulTrunc(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+GF2X MulTrunc(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// x = a * b % X^n</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SqrTrunc(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+GF2X SqrTrunc(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// x = a^2 % X^n</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;InvTrunc(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+GF2X InvTrunc(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// computes x = a^{-1} % X^n.&nbsp;&nbsp;Must have ConstTerm(a) invertible.</i></font><br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Modular Arithmetic (without pre-conditioning)</i></font><br>
+<br>
+<font color="#0000ed"><i>Arithmetic mod f.</i></font><br>
+<br>
+<font color="#0000ed"><i>All inputs and outputs are polynomials of degree less than deg(f), and</i></font><br>
+<font color="#0000ed"><i>deg(f) &gt; 0.</i></font><br>
+<br>
+<font color="#0000ed"><i>NOTE: if you want to do many computations with a fixed f, use the</i></font><br>
+<font color="#0000ed"><i>GF2XModulus data structure and associated routines below for better</i></font><br>
+<font color="#0000ed"><i>performance.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MulMod(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+GF2X MulMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+<font color="#0000ed"><i>// x = (a * b) % f</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SqrMod(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+GF2X SqrMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+<font color="#0000ed"><i>// x = a^2 % f</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MulByXMod(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+GF2X MulByXMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+<font color="#0000ed"><i>// x = (a * X) mod f</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;InvMod(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+GF2X InvMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+<font color="#0000ed"><i>// x = a^{-1} % f, error is a is not invertible</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;InvModStatus(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+<font color="#0000ed"><i>// if (a, f) = 1, returns 0 and sets x = a^{-1} % f; otherwise,</i></font><br>
+<font color="#0000ed"><i>// returns 1 and sets x = (a, f)</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// for modular exponentiation, see below</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Modular Arithmetic with Pre-Conditioning</i></font><br>
+<br>
+<font color="#0000ed"><i>If you need to do a lot of arithmetic modulo a fixed f, build</i></font><br>
+<font color="#0000ed"><i>GF2XModulus F for f.&nbsp;&nbsp;This pre-computes information about f that</i></font><br>
+<font color="#0000ed"><i>speeds up subsequent computations.</i></font><br>
+<br>
+<font color="#0000ed"><i>As an example, the following routine computes the product modulo f of a vector</i></font><br>
+<font color="#0000ed"><i>of polynomials.</i></font><br>
+<br>
+<font color="#0000ed"><i>#include &lt;NTL/GF2X.h&gt;</i></font><br>
+<br>
+<font color="#0000ed"><i>void product(GF2X&amp; x, const vec_GF2X&amp; v, const GF2X&amp; f)</i></font><br>
+<font color="#0000ed"><i>{</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; GF2XModulus F(f);</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; GF2X res;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; res = 1;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; long i;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; for (i = 0; i &lt; v.length(); i++)</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MulMod(res, res, v[i], F); </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; x = res;</i></font><br>
+<font color="#0000ed"><i>}</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>Note that automatic conversions are provided so that a GF2X can</i></font><br>
+<font color="#0000ed"><i>be used wherever a GF2XModulus is required, and a GF2XModulus</i></font><br>
+<font color="#0000ed"><i>can be used wherever a GF2X is required.</i></font><br>
+<br>
+<font color="#0000ed"><i>The GF2XModulus routines optimize several important special cases:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;- f = X^n + X^k + 1, where k &lt;= min((n+1)/2, n-NTL_BITS_PER_LONG)</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;- f = X^n + X^{k_3} + X^{k_2} + X^{k_1} + 1,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;where k_3 &lt;= min((n+1)/2, n-NTL_BITS_PER_LONG)</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;- f = X^n + g, where deg(g) is small</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;GF2XModulus {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+&nbsp;&nbsp; GF2XModulus(); <font color="#0000ed"><i>// initially in an unusable state</i></font><br>
+&nbsp;&nbsp; ~GF2XModulus();<br>
+<br>
+&nbsp;&nbsp; GF2XModulus(<font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp;);&nbsp;&nbsp;<font color="#0000ed"><i>// copy</i></font><br>
+<br>
+&nbsp;&nbsp; GF2XModulus&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp;);&nbsp;&nbsp; <font color="#0000ed"><i>// assignment</i></font><br>
+<br>
+&nbsp;&nbsp; GF2XModulus(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f); <font color="#0000ed"><i>// initialize with f, deg(f) &gt; 0</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#b02f60"><b>operator</b></font>&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; () <font color="#008b00"><b>const</b></font>; <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// read-only access to f, implicit conversion operator</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; val() <font color="#008b00"><b>const</b></font>; <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// read-only access to f, explicit notation</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;WordLength() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// returns word-length of resisues</i></font><br>
+};<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;build(GF2XModulus&amp; F, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+<font color="#0000ed"><i>// pre-computes information about f and stores it in F; deg(f) &gt; 0.</i></font><br>
+<font color="#0000ed"><i>// Note that the declaration GF2XModulus F(f) is equivalent to</i></font><br>
+<font color="#0000ed"><i>// GF2XModulus F; build(F, f).</i></font><br>
+<br>
+<font color="#0000ed"><i>// In the following, f refers to the polynomial f supplied to the</i></font><br>
+<font color="#0000ed"><i>// build routine, and n = deg(f).</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;deg(<font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);&nbsp;&nbsp;<font color="#0000ed"><i>// return deg(f)</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MulMod(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2X MulMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<font color="#0000ed"><i>// x = (a * b) % f; deg(a), deg(b) &lt; n</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SqrMod(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2X SqrMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<font color="#0000ed"><i>// x = a^2 % f; deg(a) &lt; n</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MulByXMod(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2X MulByXMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<font color="#0000ed"><i>// x = (a * X) mod F</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;PowerMod(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; e, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2X PowerMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; e, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;PowerMod(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;e, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2X PowerMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;e, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// x = a^e % f; deg(a) &lt; n (e may be negative)</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;PowerXMod(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; e, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2X PowerXMod(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; e, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;PowerXMod(GF2X&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;e, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2X PowerXMod(<font color="#008b00"><b>long</b></font>&nbsp;e, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// x = X^e % f (e may be negative)</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;rem(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<font color="#0000ed"><i>// x = a % f</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;DivRem(GF2X&amp; q, GF2X&amp; r, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<font color="#0000ed"><i>// q = a/f, r = a%f</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;div(GF2X&amp; q, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<font color="#0000ed"><i>// q = a/f</i></font><br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+GF2X <font color="#b02f60"><b>operator</b></font>/(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2X <font color="#b02f60"><b>operator</b></font>%(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>/=(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2X&amp; <font color="#b02f60"><b>operator</b></font>%=(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; vectors of GF2X's</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>typedef</b></font>&nbsp;Vec&lt;GF2X&gt; vec_GF2X; <font color="#0000ed"><i>// backward compatibility</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Modular Composition</i></font><br>
+<br>
+<font color="#0000ed"><i>Modular composition is the problem of computing g(h) mod f for</i></font><br>
+<font color="#0000ed"><i>polynomials f, g, and h.</i></font><br>
+<br>
+<font color="#0000ed"><i>The algorithm employed is that of Brent &amp; Kung (Fast algorithms for</i></font><br>
+<font color="#0000ed"><i>manipulating formal power series, JACM 25:581-595, 1978), which uses</i></font><br>
+<font color="#0000ed"><i>O(n^{1/2}) modular polynomial multiplications, and O(n^2) scalar</i></font><br>
+<font color="#0000ed"><i>operations.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;CompMod(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2X CompMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<font color="#0000ed"><i>// x = g(h) mod f; deg(h) &lt; n</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;Comp2Mod(GF2X&amp; x1, GF2X&amp; x2, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g1, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g2,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<font color="#0000ed"><i>// xi = gi(h) mod f (i=1,2), deg(h) &lt; n.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;CompMod3(GF2X&amp; x1, GF2X&amp; x2, GF2X&amp; x3, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g1, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g2, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g3,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<font color="#0000ed"><i>// xi = gi(h) mod f (i=1..3), deg(h) &lt; n</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Composition with Pre-Conditioning</i></font><br>
+<br>
+<font color="#0000ed"><i>If a single h is going to be used with many g's then you should build</i></font><br>
+<font color="#0000ed"><i>a GF2XArgument for h, and then use the compose routine below.&nbsp;&nbsp;The</i></font><br>
+<font color="#0000ed"><i>routine build computes and stores h, h^2, ..., h^m mod f.&nbsp;&nbsp;After this</i></font><br>
+<font color="#0000ed"><i>pre-computation, composing a polynomial of degree roughly n with h</i></font><br>
+<font color="#0000ed"><i>takes n/m multiplies mod f, plus n^2 scalar multiplies.&nbsp;&nbsp;Thus,</i></font><br>
+<font color="#0000ed"><i>increasing m increases the space requirement and the pre-computation</i></font><br>
+<font color="#0000ed"><i>time, but reduces the composition time.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>struct</b></font>&nbsp;GF2XArgument {<br>
+&nbsp;&nbsp; vec_GF2X H;<br>
+};<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;build(GF2XArgument&amp; H, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F, <font color="#008b00"><b>long</b></font>&nbsp;m);<br>
+<font color="#0000ed"><i>// Pre-Computes information about h.&nbsp;&nbsp;m &gt; 0, deg(h) &lt; n</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;CompMod(GF2X&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XArgument&amp; H, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+GF2X CompMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XArgument&amp; H, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<br>
+<font color="#008b00"><b>extern</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;GF2XArgBound;<br>
+<br>
+<font color="#0000ed"><i>// Initially 0.&nbsp;&nbsp;If this is set to a value greater than zero, then</i></font><br>
+<font color="#0000ed"><i>// composition routines will allocate a table of no than about</i></font><br>
+<font color="#0000ed"><i>// GF2XArgBound KB.&nbsp;&nbsp;Setting this value affects all compose routines</i></font><br>
+<font color="#0000ed"><i>// and the power projection and minimal polynomial routines below, </i></font><br>
+<font color="#0000ed"><i>// and indirectly affects many routines in GF2XFactoring.</i></font><br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Power Projection routines</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;project(GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+GF2 project(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b);<br>
+<font color="#0000ed"><i>// x = inner product of a with coefficient vector of b</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;ProjectPowers(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;k,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+vec_GF2 ProjectPowers(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;k,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// Computes the vector </i></font><br>
+<br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; (project(a, 1), project(a, h), ..., project(a, h^{k-1} % f).&nbsp;&nbsp;</i></font><br>
+<br>
+<font color="#0000ed"><i>// Restriction: must have a.length &lt;= deg(F) and deg(h) &lt; deg(F).</i></font><br>
+<font color="#0000ed"><i>// This operation is really the &quot;transpose&quot; of the modular composition </i></font><br>
+<font color="#0000ed"><i>// operation.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;ProjectPowers(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;k,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2XArgument&amp; H, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+vec_GF2 ProjectPowers(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;k,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2XArgument&amp; H, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// same as above, but uses a pre-computed GF2XArgument</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// lower-level routines for transposed modular multiplication:</i></font><br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;GF2XTransMultiplier { <font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>&nbsp;... </i></font><font color="#0000ed"><i>*/</i></font>&nbsp;};<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;build(GF2XTransMultiplier&amp; B, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// build a GF2XTransMultiplier to use in the following routine:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;UpdateMap(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2XTransMultiplier&amp; B,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+vec_GF2 UpdateMap(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2XTransMultiplier&amp; B,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// Computes the vector</i></font><br>
+<br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; project(a, b), project(a, (b*X)%f), ..., project(a, (b*X^{n-1})%f)</i></font><br>
+<br>
+<font color="#0000ed"><i>// Restriction: must have a.length() &lt;= deg(F) and deg(b) &lt; deg(F).</i></font><br>
+<font color="#0000ed"><i>// This is really the transpose of modular multiplication.</i></font><br>
+<font color="#0000ed"><i>// Input may have &quot;high order&quot; zeroes stripped.</i></font><br>
+<font color="#0000ed"><i>// Output always has high order zeroes stripped.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Minimum Polynomials</i></font><br>
+<br>
+<font color="#0000ed"><i>All of these routines implement the algorithm from [Shoup, J. Symbolic</i></font><br>
+<font color="#0000ed"><i>Comp. 17:371-391, 1994] and [Shoup, J. Symbolic Comp. 20:363-397,</i></font><br>
+<font color="#0000ed"><i>1995], based on transposed modular composition and the</i></font><br>
+<font color="#0000ed"><i>Berlekamp/Massey algorithm.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MinPolySeq(GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;m);<br>
+<font color="#0000ed"><i>// computes the minimum polynomial of a linealy generated sequence; m</i></font><br>
+<font color="#0000ed"><i>// is a bound on the degree of the polynomial; required: a.length() &gt;=</i></font><br>
+<font color="#0000ed"><i>// 2*m</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;ProbMinPolyMod(GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F, <font color="#008b00"><b>long</b></font>&nbsp;m);<br>
+GF2X ProbMinPolyMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F, <font color="#008b00"><b>long</b></font>&nbsp;m);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;ProbMinPolyMod(GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2X ProbMinPolyMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// computes the monic minimal polynomial if (g mod f).&nbsp;&nbsp;m = a bound on</i></font><br>
+<font color="#0000ed"><i>// the degree of the minimal polynomial; in the second version, this</i></font><br>
+<font color="#0000ed"><i>// argument defaults to n.&nbsp;&nbsp;The algorithm is probabilistic; it always</i></font><br>
+<font color="#0000ed"><i>// returns a divisor of the minimal polynomial, possibly a proper divisor.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MinPolyMod(GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F, <font color="#008b00"><b>long</b></font>&nbsp;m);<br>
+GF2X MinPolyMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F, <font color="#008b00"><b>long</b></font>&nbsp;m);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MinPolyMod(GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2X MinPolyMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// same as above, but guarantees that result is correct</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;IrredPolyMod(GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F, <font color="#008b00"><b>long</b></font>&nbsp;m);<br>
+GF2X IrredPolyMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F, <font color="#008b00"><b>long</b></font>&nbsp;m);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;IrredPolyMod(GF2X&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2X IrredPolyMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; g, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// same as above, but assumes that F is irreducible, or at least that</i></font><br>
+<font color="#0000ed"><i>// the minimal poly of g is itself irreducible.&nbsp;&nbsp;The algorithm is</i></font><br>
+<font color="#0000ed"><i>// deterministic (and is always correct).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Traces</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;TraceMod(GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+GF2 TraceMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; F);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;TraceMod(GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+GF2 TraceMod(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+<font color="#0000ed"><i>// x = Trace(a mod f); deg(a) &lt; deg(f)</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;TraceVec(vec_GF2&amp; S, <font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+vec_GF2 TraceVec(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; f);<br>
+<font color="#0000ed"><i>// S[i] = Trace(X^i mod f), i = 0..deg(f)-1; 0 &lt; deg(f)</i></font><br>
+<br>
+<font color="#0000ed"><i>// The above routines implement the asymptotically fast trace</i></font><br>
+<font color="#0000ed"><i>// algorithm from [von zur Gathen and Shoup, Computational Complexity,</i></font><br>
+<font color="#0000ed"><i>// 1992].</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Miscellany</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;clear(GF2X&amp; x) <font color="#0000ed"><i>// x = 0</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;set(GF2X&amp; x); <font color="#0000ed"><i>// x = 1</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;GF2X::kill();<br>
+<font color="#0000ed"><i>// f.kill() sets f to 0 and frees all memory held by f.&nbsp;&nbsp;</i></font><br>
+<br>
+GF2X::GF2X(INIT_SIZE_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// GF2X(INIT_SIZE, n) initializes to zero, but space is pre-allocated</i></font><br>
+<font color="#0000ed"><i>// for n coefficients</i></font><br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; zero();<br>
+<font color="#0000ed"><i>// GF2X::zero() is a read-only reference to 0</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;GF2X::swap(GF2X&amp; x);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;swap(GF2X&amp; x, GF2X&amp; y); <br>
+<font color="#0000ed"><i>// swap (via &quot;pointer swapping&quot; -- if possible)</i></font><br>
+<br>
+GF2X::GF2X(<font color="#008b00"><b>long</b></font>&nbsp;i, GF2 c); <br>
+GF2X::GF2X(<font color="#008b00"><b>long</b></font>&nbsp;i, <font color="#008b00"><b>long</b></font>&nbsp;c); <br>
+<font color="#0000ed"><i>// initialize to c*X^i, provided for backward compatibility</i></font><br>
+<br>
+<font color="#0000ed"><i>// SIZE INVARIANT: for any f in GF2X, deg(f)+1 &lt; 2^(NTL_BITS_PER_LONG-4).</i></font><br>
+</font></body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/xdouble.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: xdouble </i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>The class xdouble is used to represent floating point numbers with the</i></font><br>
+<font color="#0000ed"><i>same precision as a 'double', but with extended exponent range</i></font><br>
+<font color="#0000ed"><i>(offering a few more bits than that of a 'long' for the exponent).</i></font><br>
+<br>
+<font color="#0000ed"><i>The programming interface for xdoubles is almost identical to that of</i></font><br>
+<font color="#0000ed"><i>ordinary doubles.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/ZZ.h&gt;</font><br>
+<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;xdouble {<br>
+<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+<br>
+xdouble(); <font color="#0000ed"><i>// = 0</i></font><br>
+<br>
+xdouble(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// copy constructor</i></font><br>
+<br>
+<font color="#008b00"><b>explicit</b></font>&nbsp;xdouble(<font color="#008b00"><b>double</b></font>&nbsp;a);&nbsp;&nbsp;<font color="#0000ed"><i>// promotion constructor</i></font><br>
+<br>
+xdouble&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// assignment operator</i></font><br>
+xdouble&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>double</b></font>&nbsp;a);<br>
+<br>
+~xdouble();<br>
+<br>
+<br>
+<font color="#008b00"><b>double</b></font>&nbsp;mantissa() <font color="#008b00"><b>const</b></font>;&nbsp;&nbsp;<font color="#0000ed"><i>// read-only access to mantissa</i></font><br>
+<font color="#008b00"><b>long</b></font>&nbsp;exponent() <font color="#008b00"><b>const</b></font>;&nbsp;&nbsp;<font color="#0000ed"><i>// read-only access to exponenent</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>void</b></font>&nbsp;SetOutputPrecision(<font color="#008b00"><b>long</b></font>&nbsp;p);<br>
+<font color="#0000ed"><i>// This sets the number of decimal digits to be output.&nbsp;&nbsp;Default is</i></font><br>
+<font color="#0000ed"><i>// 10.</i></font><br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;OutputPrecision();<br>
+<font color="#0000ed"><i>// returns current output precision.</i></font><br>
+<br>
+};<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Arithmetic Operations</i></font><br>
+<br>
+<font color="#0000ed"><i>The following are the standard arithmetic operators, whose meaning should </i></font><br>
+<font color="#0000ed"><i>be clear.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+xdouble <font color="#b02f60"><b>operator</b></font>+(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+xdouble <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+xdouble <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+xdouble <font color="#b02f60"><b>operator</b></font>/(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: +, -, *, / promote double to xdouble on (a, b).</i></font><br>
+<br>
+xdouble <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a);<br>
+<br>
+xdouble&amp; <font color="#b02f60"><b>operator</b></font>+=(xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+xdouble&amp; <font color="#b02f60"><b>operator</b></font>+=(xdouble&amp; a, <font color="#008b00"><b>double</b></font>&nbsp;b);<br>
+<br>
+xdouble&amp; <font color="#b02f60"><b>operator</b></font>-=(xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+xdouble&amp; <font color="#b02f60"><b>operator</b></font>-=(xdouble&amp; a, <font color="#008b00"><b>double</b></font>&nbsp;b);<br>
+<br>
+xdouble&amp; <font color="#b02f60"><b>operator</b></font>*=(xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+xdouble&amp; <font color="#b02f60"><b>operator</b></font>*=(xdouble&amp; a, <font color="#008b00"><b>double</b></font>&nbsp;b);<br>
+<br>
+xdouble&amp; <font color="#b02f60"><b>operator</b></font>/=(xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+xdouble&amp; <font color="#b02f60"><b>operator</b></font>/=(xdouble&amp; a, xdouble b);<br>
+<br>
+xdouble&amp; <font color="#b02f60"><b>operator</b></font>++(xdouble&amp; a); <font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>++(xdouble&amp; a, <font color="#008b00"><b>int</b></font>); <font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+xdouble&amp; <font color="#b02f60"><b>operator</b></font>--(xdouble&amp; a); <font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>--(xdouble&amp; a, <font color="#008b00"><b>int</b></font>); <font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Comparison</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;sign(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a);<br>
+<font color="#0000ed"><i>// returns sign (+1, -1, 0) of a</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;compare(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b); <br>
+<font color="#0000ed"><i>// returns sign of a - b</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>&lt;=(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>&gt;=(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>&nbsp;&lt;(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>&nbsp;&gt;(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b);<br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: compare and operators ==, ..., &gt; promote double to xdouble</i></font><br>
+<font color="#0000ed"><i>// on (a, b).</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Input/Output</i></font><br>
+<font color="#0000ed"><i>Input Syntax:</i></font><br>
+<br>
+<font color="#0000ed"><i>&lt;number&gt;: [ &quot;-&quot; ] &lt;unsigned-number&gt;</i></font><br>
+<font color="#0000ed"><i>&lt;unsigned-number&gt;: &lt;dotted-number&gt; [ &lt;e-part&gt; ] | &lt;e-part&gt;</i></font><br>
+<font color="#0000ed"><i>&lt;dotted-number&gt;: &lt;digits&gt; | &lt;digits&gt; &quot;.&quot; &lt;digits&gt; | &quot;.&quot; &lt;digits&gt; | &lt;digits&gt; &quot;.&quot;</i></font><br>
+<font color="#0000ed"><i>&lt;digits&gt;: &lt;digit&gt; &lt;digits&gt; | &lt;digit&gt;</i></font><br>
+<font color="#0000ed"><i>&lt;digit&gt;: &quot;0&quot; | ... | &quot;9&quot;</i></font><br>
+<font color="#0000ed"><i>&lt;e-part&gt;: ( &quot;E&quot; | &quot;e&quot; ) [ &quot;+&quot; | &quot;-&quot; ] &lt;digits&gt;</i></font><br>
+<br>
+<font color="#0000ed"><i>Examples of valid input:</i></font><br>
+<br>
+<font color="#0000ed"><i>17 1.5 0.5 .5&nbsp;&nbsp;5.&nbsp;&nbsp;-.5 e10 e-10 e+10 1.5e10 .5e10 .5E10</i></font><br>
+<br>
+<font color="#0000ed"><i>Note that the number of decimal digits of precision that are used</i></font><br>
+<font color="#0000ed"><i>for output can be set to any number p &gt;= 1 by calling</i></font><br>
+<font color="#0000ed"><i>the routine xdouble::SetOutputPrecision(p).&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>The default value of p is 10.</i></font><br>
+<font color="#0000ed"><i>The current value of p is returned by a call to xdouble::OutputPrecision().</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+ostream&amp; <font color="#b02f60"><b>operator</b></font>&lt;&lt;(ostream&amp; s, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a);<br>
+<br>
+istream&amp; <font color="#b02f60"><b>operator</b></font>&gt;&gt;(istream&amp; s, xdouble&amp; x);<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Miscellaneous</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+xdouble trunc(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// returns integer obtained by truncating</i></font><br>
+xdouble floor(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// returns greatest integer &lt;= a</i></font><br>
+xdouble ceil(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a);&nbsp;&nbsp; <font color="#0000ed"><i>// returns smallest integer &gt;= a</i></font><br>
+xdouble fabs(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a);&nbsp;&nbsp; <font color="#0000ed"><i>// returns |a|</i></font><br>
+xdouble sqrt(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a);&nbsp;&nbsp; <font color="#0000ed"><i>// returns a^{1/2}; error is raised if a &lt; 0</i></font><br>
+<br>
+<font color="#008b00"><b>double</b></font>&nbsp;log(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// returns log(a) (note return val is double!)</i></font><br>
+xdouble xexp(<font color="#008b00"><b>double</b></font>&nbsp;a);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// returns exp(a) (note argument is double!)</i></font><br>
+xdouble exp(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>double</b></font>&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// equivalent to xexp(to_double(a))</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power(xdouble&amp; z, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; e);<br>
+xdouble power(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; e);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power(xdouble&amp; z, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;e);<br>
+xdouble power(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;e);<br>
+<font color="#0000ed"><i>// z = a^e, e may be negative</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power2(xdouble&amp; z, <font color="#008b00"><b>long</b></font>&nbsp;e);<br>
+xdouble power2_xdouble(<font color="#008b00"><b>long</b></font>&nbsp;e);<br>
+<font color="#0000ed"><i>// z = 2^e, e may be negative</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MulAdd(xdouble&amp; z, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; c);<br>
+xdouble MulAdd(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; c);<br>
+<font color="#0000ed"><i>// z = a + b*c, but faster</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MulSub(xdouble&amp; z, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; c);<br>
+xdouble MulSub(<font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;xdouble&amp; c);<br>
+<font color="#0000ed"><i>// z = a - b*c, but faster</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>Implementation details:</i></font><br>
+<br>
+<font color="#0000ed"><i>An xdouble is represented as a mantissa/exponent pair (x, e), where x</i></font><br>
+<font color="#0000ed"><i>is a double and e is a long.&nbsp;&nbsp;The real number represented by (x, e) is</i></font><br>
+<font color="#0000ed"><i>x * NTL_XD_BOUND^e, where</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;NTL_XD_BOUND = NTL_XD_HBOUND^2, and</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;NTL_XD_HBOUND = 2^{(max(NTL_DOUBLE_PRECISION,NTL_BITS_PER_LONG)+4)}.</i></font><br>
+<br>
+<font color="#0000ed"><i>Also, the mantissa x satisfies 1/NTL_XD_HBOUND &lt;= |x| &lt;= NTL_XD_HBOUND, except</i></font><br>
+<font color="#0000ed"><i>that the number 0 is always represented as (0, 0).&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>Both NTL_XD_BOUND and NTL_XD_HBOUND are macros defined in &lt;NTL/xdouble.h&gt;.</i></font><br>
+<br>
+<font color="#0000ed"><i>SIZE INVARIANT: |e| &lt; 2^(NTL_BITS_PER_LONG-4).</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+</font></body>
+</html>

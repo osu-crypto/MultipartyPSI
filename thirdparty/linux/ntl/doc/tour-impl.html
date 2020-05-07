@@ -1,0 +1,476 @@
+<html>
+<head>
+<title>
+A Tour of NTL: NTL Implementation and Portability  </title>
+</head>
+
+<center>
+<a href="tour-tips.html"><img src="arrow1.gif" alt="[Previous]" align=bottom></a>
+ <a href="tour.html"><img src="arrow2.gif" alt="[Up]" align=bottom></a> 
+<a href="tour-gmp.html"> <img src="arrow3.gif" alt="[Next]" align=bottom></a>
+</center>
+
+<h1> 
+<p align=center>
+A Tour of NTL: NTL Implementation and Portability 
+</p>
+</h1>
+
+<p> <hr> <p>
+
+NTL is designed to be portable, fast,
+and relatively easy to use and extend.
+
+<p>
+To make NTL portable, no assembly code is used (well, almost none, see below).
+This is highly desirable, as architectures are constantly
+changing and evolving, and maintaining assembly
+code is quite costly.
+By avoiding assembly code, NTL should remain usable,
+with virtually no maintenance, for many years.
+
+<p>
+
+<h3>Minimal platform requirements</h3>
+
+When the configuration flags <tt>NTL_CLEAN_INT</tt>
+and <tt>NTL_CLEAN_PTR</tt> are both <i>on</i> (this is not the default,
+see below),
+NTL makes two requirements
+of its platform,
+neither of which are guaranteed by the <tt>C++</tt> language
+definition, but are essentially universal:
+
+<ol>
+<li>
+<tt>int</tt> and <tt>long</tt> quantities, respectively, 
+are represented using a 2's complement
+representation whose width is equal to the width of <tt>unsigned int</tt>
+and <tt>unsigned long</tt>, respectively.
+<li>
+Double precision floating point
+conforms to the IEEE floating point standard.
+</ol>
+
+<p>
+NTL makes very conservative requirements of the <tt>C++</tt> compiler:
+<ul>
+<li>
+it is assumed that the <tt>C++</tt> compiler conforms to the 1998 standard,
+including the basic of templates;
+<li>
+it does not assume any features not in the 1998 standard,
+unless compiled with the <tt>NTL_THREADS</tt>  or <tt>NTL_EXCEPTIONS</tt> flags.
+</ul>
+
+
+<p>
+
+<h3>The <tt>NTL_CLEAN_INT</tt> flag</h3>
+
+<p>
+
+The configuration flag <tt>NTL_CLEAN_INT</tt> 
+is currently <i>off</i> by default.
+
+<p>
+When this flag is off, NTL makes another requirement of its platform;
+namely, that conversions from <tt>unsigned long</tt> to <tt>long</tt> 
+convert the bit pattern without change to the corresponding 2's complement 
+signed integer.
+Note that the <tt>C++</tt> standard defines the behavior of 
+converting unsigned
+to signed values as <i>implementation defined</i> when the value
+cannot be represented in the range of nonnegative signed values.
+Nevertheless, this behavior is essentially universal, and more importantly,
+is is not <i>undefined behavior</i>: implementation-defined behavior must be
+documented and respected by the compiler, while undefined behavior can
+be exploited by the compiler in some surprising ways.
+
+
+<p>
+Actually, with <tt>NTL_CLEAN_INT</tt> off, it is also assumed
+that right shifts of signed integers are consistent,
+in the sense that if it is sometimes an arithmetic shift,
+then it is always an arithmetic shift (the installation
+scripts check if right shift appears to be arithmetic, and if so,
+this assumption is made elsewhere). 
+Arithmetic right shift is also <i>implementation defined</i> behavior
+that is essentially universal.
+
+
+<p>
+It seems fairly unlikely that one would ever have to turn the
+<tt>NTL_CLEAN_INT</tt> flag <i>on</i>, but it seems a good idea
+to make this possible, and at the very least 
+to identify and isolate the code that
+relies on this assumption.
+The only code affected by this flag
+is the traditional LIP long integer package (which, if you use
+GMP as the long integer package, is not involved),
+and the single-precision modular multiplication routines.
+
+<p>
+Note that prior to NTL 9.0, the default compilation mode required
+that in a few critical places, <i>signed</i> integer arithmetic quietly wraps around
+on overflow; however, signed integer overflow is <i>undefined behavior</i>,
+and it seems that in recent years compilers have been getting
+more aggressive in exploiting such undefined behavior in their optimizations.
+Moreover, recent versions of GCC now come with a "sanitizer" that checks
+for undefined behavior.
+So, both to avoid potentially dangerous optimizations and to allow
+NTL to pass such sanitzer checks, it seemed safer to move to this
+more conservative approach.
+There should, in fact, be zero performance penalty in doing so.
+Also note that I was never aware of any compiler that generated incorrect
+code in the pre-9.0 code: this new approach is just to be on the safe side
+in the future.
+
+
+
+<h3>The <tt>NTL_CLEAN_PTR</tt> flag</h3>
+
+<p>
+
+The configuration flag <tt>NTL_CLEAN_PTR</tt> 
+is currently <i>off</i> by default.
+
+<p>
+When this flag is off, NTL makes another requirement of its platform;
+namely, that the address space is "flat", and in particular,
+that one can test if an object pointed to by a pointer <tt>p</tt>
+is located in a array of objects <tt>v[0..n-1]</tt> by testing
+if <tt>p &gt;= v</tt> and <tt>p &lt; v + n</tt>.
+The <tt>C++</tt> standard does not guarantee that such a test will
+work;   the only way to perform this test in a standard-conforming way
+is to iteratively test if <tt>p == v</tt>, <tt>p == v+1</tt>, etc.
+
+<p>
+This assumption of a "flat" address space is essentially universally 
+valid, and making this assumption leads to more efficicient code.
+For this reason, the <tt>NTL_CLEAN_PTR</tt> is <i>off</i> by default,
+but one can always turn it on, and in fact, the overall performance
+penalty should be negligible for most applications.
+
+
+<h3>Some floating point issues</h3>
+
+
+<p>
+NTL uses floating point arithmetic in a number of places,
+including a number of exact computations, where one might
+not expect to see floating point.
+Relying on floating point may seem prone to errors,
+but with the guarantees provided by the IEEE standard,
+one can prove the correctness of the NTL code that uses floating point.
+
+<p>
+Briefly, the IEEE floating point standard says that basic arithmetic operations
+on doubles should work <i>as if</i> the operation were performed with infinite
+precision, and then rounded to <tt>p</tt> bits,
+where <tt>p</tt> is the precision (typically, <tt>p = 53</tt>).
+
+
+<p>
+Throughout most of NTL, correctness follows from weaker assumptions,
+namely
+<p>
+<ul>
+<li>
+basic arithmetic operations and conversion from integral types 
+produce results with a <i>relative error</i> of 
+<tt>2^{-p + 1}</tt> (assuming no overflow),
+<li>
+multiplication by powers of 2 produce <i>exact</i> results (assuming no overflow),
+<li>
+basic arithmetic operations on integers represented as doubles and conversions from integral types
+to doubles produce <i>exact</i> results, provided the inputs and outputs
+are less than <tt>2^p</tt> in absolute value,
+<li>
+assuming no overflow, <tt>x - long(x)</tt> produces an exact result for nonnegative <tt>x</tt>.
+</ul>
+
+<p>
+It is also generally assumed that the compiler does not
+do too much "regrouping" of arithmetic expressions involving
+floating point.
+Most compilers respect the implied grouping of floating point
+computations, and NTL goes out of its way to make its
+intentions clear: instead of <tt>x = (a + b) + c</tt>,
+if the grouping is truly important, this is written 
+as <tt>t = a + b; x = t + c</tt>.
+Current standards do not allow, and most implementations will not 
+perform, any regrouping of this, e.g., <tt>x = a + (b + c)</tt>,
+since in floating point, addition and subtraction are not 
+associative.
+
+<p>
+Unfortunately, some compilers do not do this correctly,
+unless you tell them.
+With Intel's C compiler <tt>icc</tt>, for example,
+you should compile NTL with the flag <tt>-fp-model strict</tt>
+to enforce strict adherence to floating point standards.
+That said, some effort has been made to ensure that NTL
+works correctly even if the compiler does perform such
+regrouping, including replacement of <tt>x/y</tt> 
+by <tt>x*(1/y)</tt>.
+
+<p>
+Also, you should be wary of compiling using an optimization
+level higher than the default <tt>-O2</tt> --
+this may break some floating point assumptions (and maybe
+some other assumptions as well).
+
+<p>
+In any case, programs that compile against NTL header files
+should compile correctly, even under very aggressive optimizations.
+
+<p>
+One big problem with the IEEE standard is that it allows intermediate
+quantities to be computed in a higher precision than the standard
+double precision.
+Most platforms today implement the "strict" IEEE standard, with no
+excess precision.
+Up until recently, the Intel x86 machine with the GCC compiler
+was a notable exception to this: on older x86 machines, floating point
+was performed using the x87 FPU instructions, which operate on 80-bit,
+extended precision numbers; nowadays, most compilers use the SSE instructions,
+which operate on the standard, 64-bit numbers.
+
+<p>
+Historically,
+NTL went out of its way to ensure that its code is correct with
+both "strict" and "loose" IEEE floating point.
+This is achieved in a portable fashion throughout NTL, except
+for the <tt>quad_float</tt> module, where some desperate hacks,
+including assembly code, may be used
+to try to work around problems created by "loose" IEEE floating point
+<a href="quad_float.cpp.html">[more details]</a>.
+But note that even if the <tt>quad_float</tt> package does not work correctly
+because of these problems, the only other routines that are affected
+are the <tt>LLL_QP</tt> routines in the <tt>LLL</tt> module -- the
+rest of NTL should work fine.
+Hopefully, because of the newer SSE instructions, this whole strict/loose
+issue is a thing of the past.
+
+<p>
+Another problem is that some hardware (especially newer Intel chips)
+support fused multiply-add (FMA) instructions.
+Again, this is only a problem for <tt>quad_float</tt>, and some
+care is taken to detect the problem and to work around it.
+The rest of NTL will work fine regardles.
+
+
+
+<p>
+Mostly, NTL does not 
+require that the IEEE floating point 
+special quantities "infinity"
+and "not a number" are implemented correctly.
+This is certainly the case for core code where
+floating point arithmetic is used for exact (but fast)
+computations, as the numbers involved never get too big (or small).
+However, the behavior of
+certain explicit floating point computations
+(e.g., the <tt>xdouble</tt> and <tt>quad_float</tt> classes,
+and the floating point versions of LLL) will be
+much more predictable and reliable if "infinity"
+and "not a number" are implemented correctly.
+
+
+
+
+<p>
+<h3>Algorithms</h3>
+<p>
+NTL makes fairly consistent use of asymptotically fast algorithms.
+
+<p>
+Long integer multiplication is implemented using the classical
+algorithm, crossing over to Karatsuba for very big numbers.
+Long integer division is currently only implemented using
+the classical algorithm -- unless you use NTL with GMP (version 3 or later),
+which
+employs an algorithm that is about twice as slow as multiplication
+for very large numbers.
+<p>
+Polynomial multiplication and division is carried out
+using a combination of the classical algorithm, Karatsuba,
+the FFT using small primes, and the FFT using the Schoenhagge-Strassen
+approach.
+The choice of algorithm depends on the coefficient domain.
+<p>
+Many algorithms employed throughout NTL are inventions
+of the author (<a href="http://www.shoup.net">Victor Shoup</a>) 
+and his colleagues 
+<a href="http://math-www.uni-paderborn.de/~aggathen/joachim.html">Joachim von zur Gathen</a>
+and
+<a href="http://www4.ncsu.edu/~kaltofen">Erich Kaltofen</a>,
+as well as <a href="mailto:abbott@dima.unige.it">John Abbott</a>
+and
+<a href="http://www.loria.fr/~zimmerma">Paul Zimmermann</a>.
+
+<p>
+<h3>
+Thread safety
+</h3>
+<p>
+As of v7.0, NTL is thread safe.
+That said, there are several things to be aware of:
+<ul>
+
+<li>
+To use this feature, you have to enable <tt>NTL_THREADS</tt>
+in the configuration script.
+Also, you will need a compiler and runtime library that 
+implements several key <tt>C++11</tt> features,
+including <tt>thread_local</tt> storage.
+<ul>
+<li>
+NOTE: as of v9.8, the requirements have been relaxed, so that
+for gcc and gcc-compatible compilers
+(such as clang and icc) only support of the gcc <tt>__thread</tt>
+storage specifier is required.
+<li>
+With these relaxed requirements, it is possible to build
+a thread safe version of NTL on Linux using gcc 4.8 and above,
+or on Mac OSX 10.10  and above.
+
+</ul>
+
+<p> <li>
+You must build NTL using GMP (i.e., configure with <tt>NTL_GMP_LIP=on</tt>).
+The classic LIP integer arithmetic is not thread safe: it could
+be made so, but it is not a priority at this time.
+
+<p>
+<li>
+The current version (v1.1) of the external gf2x
+library is not thread safe.
+Therefore, <b>you should NOT build NTL using gf2x if you need a thread-safe
+build</b>.
+</ul>
+
+To obtain thread safety, I used the following strategies:
+<ul>
+<p>
+<li>
+In places where NTL's interface demands global variables,
+such as the "current modulus" for the <tt>ZZ_p</tt>
+class, these global variables have been made thread local.
+So, you can pass around various <tt>ZZ_pContext</tt> objects
+among threads, and individual threads can install these locally.
+Thus, different threads can concurrently use the same or different
+moduli, and it all just works, with no changes to NTL's interface.
+
+<p>
+<li>
+In places where NTL used static variables to hold on to space
+for scratch variables, I make these variables <i>thread local</i>,
+and I also make sure the storage used by these variables
+get released when the thread terminates.
+In all NTL builds (thread safe or not), 
+I try to make sure that fairly large chunks of memory get released immediately.
+
+<p>
+<li>
+In places where NTL uses a lazy strategy to build various tables
+(such as FFT primes), I uses a "double checked locking" strategy
+to grow these tables in a way that (a) the tables can be
+shared among different threads, and (b) taking a lock
+on a <tt>mutex</tt> is very rare.
+The new <tt>C++11</tt> concurrent memory model is essential here.
+
+<p>
+<li>
+Smart pointers (for things like <tt>ZZ_pContext</tt>'s) are 
+designed to do the necesary reference counting in a thread-safe
+manner.
+
+<p>
+<li>
+For psuedo-random number generation, 
+the internal state of the PRG 
+is thread local,
+and the default initial seed is guaranteed to be unique
+among all threads in a given process (and an attempt is made to
+make the seed globally unique among all processes and threads,
+but this is hard to do in a completely portable way).
+
+
+</ul>
+
+The overall structure of the code has been modified so that
+the code base is nearly identical for regular and thread-safe builds:
+there are just a few <tt>ifdef</tt>'s on the <tt>NTL_THREADS</tt>
+flag.
+
+
+<p>
+<h3>
+Thread Boosting
+</h3>
+<p>
+
+As of v9.5.0, NTL provides a <i>thread boosting</i> feature.
+With this feature, certain code within NTL will use available
+threads to speed up computations on a multicore
+machine.
+This feature is enabled by setting <tt>NTL_THREAD_BOOST=on</tt>
+during configuration.
+See <a href="BasicThreadPool.cpp.html">BasicThreadPool.txt</a>
+for more information.
+
+<p>
+This feature is a work in progress.
+Currently, basic <tt>ZZ_pX</tt> arithmetic has been thread boosted.
+More code will be boosted later.
+
+
+<p>
+<h3>
+Error Handling and Exceptions
+</h3>
+<p>
+
+As of v8.0, NTL provides error handling through exceptions.
+To enable exptions, you have to configure
+NTL with <tt>NTL_EXCEPTIONS</tt> flag turned on.
+By default, exceptions are not enabled, and NTL
+reverts to its old error handling method:
+abort with an error message. 
+
+<p>
+If exceptions are enabled, then instead of aborting your
+program, and appropriate exception is thrown.
+More details ion the programming interface
+of this feature are available <a href="tour-struct.html#except">here</a>.
+
+<p>
+If you enable exceptions, you must use a <tt>C++11</tt> compiler.
+Specifically, your compiler will need support for lambdas
+(which are used to conveniently implement the "scope guard" idiom),
+and your compiler should implement the new default exception
+specification semantics (namely, that destructors are "noexcept" by 
+default).
+
+<p>
+Implementation of this required a top-to-bottom scrub of NTL's code,
+replacing a lot of old-fashioned code with more modern, RAII-oriented
+code (RAII = "resource acquisition is initialization").
+
+
+
+
+
+<p>
+
+<center>
+<a href="tour-tips.html"><img src="arrow1.gif" alt="[Previous]" align=bottom></a>
+ <a href="tour.html"><img src="arrow2.gif" alt="[Up]" align=bottom></a> 
+<a href="tour-gmp.html"> <img src="arrow3.gif" alt="[Next]" align=bottom></a>
+</center>
+
+
+</body>
+</html>

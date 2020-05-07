@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/Lazy.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>**************************************************************************</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>Lazy&lt;T&gt;: template class for lazy initialization of objects whose</i></font><br>
+<font color="#0000ed"><i>values do not change after initialization.</i></font><br>
+<font color="#0000ed"><i>In a multi-threaded environment, this makes use of &quot;double checked locking&quot;</i></font><br>
+<font color="#0000ed"><i>for an efficient, thread-safe solution.</i></font><br>
+<br>
+<font color="#0000ed"><i>Usage:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; Lazy&lt;T&gt; obj; // declaration of the lazy object</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; do {</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Lazy&lt;T&gt;::Builder builder(obj);</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!builder()) break; // if we are not building, the break out</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;UniquePtr&lt;T&gt; p;&nbsp;&nbsp;// create a pointer </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;builder.move(p); // move p into the object to complete the initialization</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // We can then complete the initialization process.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; } while(0);&nbsp;&nbsp;// When this scope closes, the object is fully initialized.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// subsequent attempts to build the object will yield</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// !builder.built()</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; T objCopy = *obj;&nbsp;&nbsp; // *obj returns a read-only reference</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // one can also use -&gt; operator</i></font><br>
+<br>
+<font color="#0000ed"><i>It is important to follow this recipe carefully.&nbsp;&nbsp;In particular,</i></font><br>
+<font color="#0000ed"><i>the builder must be enclosed in a scope, as it's destructor</i></font><br>
+<font color="#0000ed"><i>plays a crucial role in finalizing the initialization.</i></font><br>
+<br>
+<font color="#0000ed"><i>NOTE: if p is null in builder.move(p), the object is still considered</i></font><br>
+<font color="#0000ed"><i>built.</i></font><br>
+<br>
+<font color="#0000ed"><i>***************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+<font color="#008b00"><b>class</b></font>&nbsp;Lazy {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+&nbsp;&nbsp; Lazy();<br>
+<br>
+&nbsp;&nbsp; Lazy(<font color="#008b00"><b>const</b></font>&nbsp;Lazy&amp;); <br>
+&nbsp;&nbsp; Lazy&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;Lazy&amp;);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// deep copies using T's copy constructor</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw (but provides strong ES guarantee)</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;T&amp; <font color="#b02f60"><b>operator</b></font>*()&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#0000ed"><i>// pointer access</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;T* <font color="#b02f60"><b>operator</b></font>-&gt;() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;T* get() <font color="#008b00"><b>const</b></font>;<br>
+<br>
+&nbsp;&nbsp; <font color="#b02f60"><b>operator</b></font>&nbsp;fake_null_type() <font color="#008b00"><b>const</b></font>; <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allows test against 0</i></font><br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; ~Lazy();<br>
+<br>
+&nbsp;&nbsp; kill();&nbsp;&nbsp;<font color="#0000ed"><i>// destroy and reset</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>bool</b></font>&nbsp;built() <font color="#008b00"><b>const</b></font>; <font color="#0000ed"><i>// test if already built</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>class</b></font>&nbsp;Builder {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Builder(<font color="#008b00"><b>const</b></font>&nbsp;Lazy&amp;); <br>
+&nbsp;&nbsp;&nbsp;&nbsp; ~Builder()<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>bool</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>()() <font color="#008b00"><b>const</b></font>; <font color="#0000ed"><i>// test if we are building</i></font><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>void</b></font>&nbsp;move(UniquePtr&lt;T&gt;&amp;);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// EXCEPTIONS: may throw an exception if the move is not allowed</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// (i.e., not building or already moved).</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// Provides strong ES guarantee. </i></font><br>
+&nbsp;&nbsp; };<br>
+};<br>
+&nbsp;&nbsp; <br>
+<br>
+<font color="#0000ed"><i>// EXCEPTIONS: except where noted, no exceptions are thrown</i></font><br>
+<br>
+<font color="#0000ed"><i>// NOTE: For more on double-checked locking, see</i></font><br>
+<font color="#0000ed"><i>// <a href="http://preshing.com/20130930/double-checked-locking-is-fixed-in-cpp11/">http://preshing.com/20130930/double-checked-locking-is-fixed-in-cpp11/</a></i></font><br>
+<br>
+<font color="#0000ed"><i>// NOTE: when compiled with the NTL_THREADS option, the Lazy</i></font><br>
+<font color="#0000ed"><i>// class may contain data members from the standard library</i></font><br>
+<font color="#0000ed"><i>// that may not satisfy the requirements of the Vec class</i></font><br>
+<font color="#0000ed"><i>// (i.e., relocatability).&nbsp;&nbsp;One can wrap it in a pointer </i></font><br>
+<font color="#0000ed"><i>// class (e.g., CopiedPtr) to deal with this.</i></font><br>
+<br>
+<br>
+</font></body>
+</html>

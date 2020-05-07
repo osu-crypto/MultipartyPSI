@@ -1,0 +1,26 @@
+
+if test -f GetPID.c
+then
+   rm GetPID.c
+fi
+
+echo "who am I?"
+
+
+sh RemoveProg TestGetPID
+echo $1 -o TestGetPID TestGetPID.c GetPID1.c $2  >> "CheckFeature.log" 2>&1
+$1 -o TestGetPID TestGetPID.c GetPID1.c $2  >> "CheckFeature.log" 2>&1
+
+if test -f TestGetPID
+then
+cp GetPID1.c GetPID.c
+echo "using GetPID1.c"
+exit 0
+fi
+
+
+cp GetPID2.c GetPID.c
+echo "using GetPID2.c"
+echo "warning: this GetPID function always returns 0"
+exit 0
+

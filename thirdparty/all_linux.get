@@ -3,6 +3,7 @@ sudo yum install unzip -Y
 sudo yum install gcc-c++ -Y
 sudo yum install m4 -Y
 sudo yum -y install  libboost-all-dev
+sudo yum install nasm
 
 sudo apt-get install bzip2 -Y
 sudo apt-get install unzip -Y
@@ -10,13 +11,13 @@ sudo apt-get install gcc-c++ -Y
 sudo apt-get install gcc-c++ -Y
 sudo apt-get install m4
 sudo apt-get -y install  libboost-all-dev
+sudo apt-get install nasm
 
 cd linux
 
 bash boost.get &
 bash miracl.get &
 bash ntl.get &
-bash nasm.get &
 
 wait
 echo "all done!"

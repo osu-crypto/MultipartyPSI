@@ -1,0 +1,5 @@
+
+cp  "$1/include/NTL/HAVE_LL_TYPE.h"       "$2/include/NTL/HAVE_LL_TYPE.h"
+cp  "$1/include/NTL/HAVE_BUILTIN_CLZL.h"  "$2/include/NTL/HAVE_BUILTIN_CLZL.h"
+cp  "$1/include/NTL/HAVE_AVX.h"           "$2/include/NTL/HAVE_AVX.h"
+cp  "$1/include/NTL/HAVE_FMA.h"           "$2/include/NTL/HAVE_FMA.h"

@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/vec_RR.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: vec_RR</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>Defines the class vec_RR.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>typedef</b></font>&nbsp;Vec&lt;RR&gt; vec_RR; <font color="#0000ed"><i>// backward compatibility</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_RR&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;RR&amp; b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_RR&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a, <font color="#008b00"><b>double</b></font>&nbsp;b);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_RR&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;RR&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_RR&amp; x, <font color="#008b00"><b>double</b></font>&nbsp;a, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; b);<br>
+<font color="#0000ed"><i>// x = a * b</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;add(vec_RR&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; b);<br>
+<font color="#0000ed"><i>// x = a + b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;sub(vec_RR&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; b);<br>
+<font color="#0000ed"><i>// x = a - b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;clear(vec_RR&amp; x);<br>
+<font color="#0000ed"><i>// x = 0 (length unchanged)</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;negate(vec_RR&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a);<br>
+<font color="#0000ed"><i>// x = -a</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsZero(<font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a);<br>
+<font color="#0000ed"><i>// test if a is the zero vector</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;InnerProduct(RR&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; b);<br>
+<font color="#0000ed"><i>// x = inner product of a and b, padded with zeros to make the lengths</i></font><br>
+<font color="#0000ed"><i>// even.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;VectorCopy(vec_RR&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+vec_RR VectorCopy(<font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// x = a copy of a of length exactly n.</i></font><br>
+<font color="#0000ed"><i>// The input is truncated or padded with zeroes, as necessary.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+vec_RR <font color="#b02f60"><b>operator</b></font>+(<font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; b);<br>
+vec_RR <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; b);<br>
+<br>
+vec_RR <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// vector/scalar multiplication:</i></font><br>
+<br>
+vec_RR <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;RR&amp; b);<br>
+vec_RR <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a, <font color="#008b00"><b>double</b></font>&nbsp;b);<br>
+<br>
+vec_RR <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;RR&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; b);<br>
+vec_RR <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>double</b></font>&nbsp;a, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; b);<br>
+<br>
+<font color="#0000ed"><i>// inner product:</i></font><br>
+<br>
+RR <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; b);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// assignment operator notation:</i></font><br>
+<br>
+vec_RR&amp; <font color="#b02f60"><b>operator</b></font>+=(vec_RR&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a);<br>
+vec_RR&amp; <font color="#b02f60"><b>operator</b></font>-=(vec_RR&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_RR&amp; a);<br>
+<br>
+vec_RR&amp; <font color="#b02f60"><b>operator</b></font>*=(vec_RR&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;RR&amp; a);<br>
+vec_RR&amp; <font color="#b02f60"><b>operator</b></font>*=(vec_RR&amp; x, <font color="#008b00"><b>double</b></font>&nbsp;a);<br>
+<br>
+<br>
+</font></body>
+</html>

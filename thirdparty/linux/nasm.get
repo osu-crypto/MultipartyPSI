@@ -1,7 +1,0 @@
-wget http://www.nasm.us/pub/nasm/releasebuilds/2.13.01/nasm-2.13.01.tar.bz2
-tar xjvf nasm-2.13.01.tar.bz2
-cd nasm-2.13.01
-./autogen.sh
-./configure
-make
-make install

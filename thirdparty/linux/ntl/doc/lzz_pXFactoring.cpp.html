@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/lzz_pXFactoring.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: zz_pXFactoring</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>Routines are provided for factorization of polynomials over zz_p, as</i></font><br>
+<font color="#0000ed"><i>well as routines for related problems such as testing irreducibility</i></font><br>
+<font color="#0000ed"><i>and constructing irreducible polynomials of given degree.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&quot;zz_pX.h&quot;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&quot;pair_zz_pX_long.h&quot;</font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SquareFreeDecomp(vec_pair_zz_pX_long&amp; u, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f);<br>
+vec_pair_zz_pX_long SquareFreeDecomp(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// Performs square-free decomposition.&nbsp;&nbsp;f must be monic.&nbsp;&nbsp;If f =</i></font><br>
+<font color="#0000ed"><i>// prod_i g_i^i, then u is set to a lest of pairs (g_i, i).&nbsp;&nbsp;The list</i></font><br>
+<font color="#0000ed"><i>// is is increasing order of i, with trivial terms (i.e., g_i = 1)</i></font><br>
+<font color="#0000ed"><i>// deleted.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;FindRoots(vec_zz_p&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f);<br>
+vec_zz_p FindRoots(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// f is monic, and has deg(f) distinct roots.&nbsp;&nbsp;returns the list of</i></font><br>
+<font color="#0000ed"><i>// roots</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;FindRoot(zz_p&amp; root, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f);<br>
+zz_p FindRoot(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// finds a single root of f.&nbsp;&nbsp;assumes that f is monic and splits into</i></font><br>
+<font color="#0000ed"><i>// distinct linear factors</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SFBerlekamp(vec_zz_pX&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+vec_zz_pX&nbsp;&nbsp;SFBerlekamp(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// Assumes f is square-free and monic.&nbsp;&nbsp;returns list of factors of f.</i></font><br>
+<font color="#0000ed"><i>// Uses &quot;Berlekamp&quot; approach, as described in detail in [Shoup,</i></font><br>
+<font color="#0000ed"><i>// J. Symbolic Comp. 20:363-397, 1995].</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;berlekamp(vec_pair_zz_pX_long&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+vec_pair_zz_pX_long berlekamp(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// returns a list of factors, with multiplicities.&nbsp;&nbsp;f must be monic.</i></font><br>
+<font color="#0000ed"><i>// Calls SFBerlekamp.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;NewDDF(vec_pair_zz_pX_long&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; h,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+vec_pair_zz_pX_long NewDDF(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; h,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// This computes a distinct-degree factorization.&nbsp;&nbsp;The input must be</i></font><br>
+<font color="#0000ed"><i>// monic and square-free.&nbsp;&nbsp;factors is set to a list of pairs (g, d),</i></font><br>
+<font color="#0000ed"><i>// where g is the product of all irreducible factors of f of degree d.</i></font><br>
+<font color="#0000ed"><i>// Only nontrivial pairs (i.e., g != 1) are included.&nbsp;&nbsp;The polynomial</i></font><br>
+<font color="#0000ed"><i>// h is assumed to be equal to X^p mod f.&nbsp;&nbsp;This routine implements the</i></font><br>
+<font color="#0000ed"><i>// baby step/giant step algorithm of [Kaltofen and Shoup, STOC 1995],</i></font><br>
+<font color="#0000ed"><i>// further described in [Shoup, J. Symbolic Comp. 20:363-397, 1995].</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;EDF(vec_zz_pX&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; h,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+vec_zz_pX EDF(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; h,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// Performs equal-degree factorization.&nbsp;&nbsp;f is monic, square-free, and</i></font><br>
+<font color="#0000ed"><i>// all irreducible factors have same degree.&nbsp;&nbsp;h = X^p mod f.&nbsp;&nbsp;d =</i></font><br>
+<font color="#0000ed"><i>// degree of irreducible factors of f.&nbsp;&nbsp;This routine implements the</i></font><br>
+<font color="#0000ed"><i>// algorithm of [von zur Gathen and Shoup, Computational Complexity</i></font><br>
+<font color="#0000ed"><i>// 2:187-224, 1992]</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;RootEDF(vec_zz_pX&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+vec_zz_pX RootEDF(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// EDF for d==1</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SFCanZass(vec_zz_pX&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+vec_zz_pX SFCanZass(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// Assumes f is monic and square-free.&nbsp;&nbsp;returns list of factors of f.</i></font><br>
+<font color="#0000ed"><i>// Uses &quot;Cantor/Zassenhaus&quot; approach, using the routines NewDDF and</i></font><br>
+<font color="#0000ed"><i>// EDF above.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;CanZass(vec_pair_zz_pX_long&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+vec_pair_zz_pX_long CanZass(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// returns a list of factors, with multiplicities.&nbsp;&nbsp;f must be monic.</i></font><br>
+<font color="#0000ed"><i>// Calls SquareFreeDecomp and SFCanZass.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(zz_pX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;vec_pair_zz_pX_long&amp; v);<br>
+zz_pX mul(<font color="#008b00"><b>const</b></font>&nbsp;vec_pair_zz_pX_long&amp; v);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// multiplies polynomials, with multiplicities</i></font><br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Irreducible Polynomials</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;ProbIrredTest(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;iter=<font color="#ff8b00">1</font>);<br>
+<br>
+<font color="#0000ed"><i>// performs a fast, probabilistic irreduciblity test.&nbsp;&nbsp;The test can</i></font><br>
+<font color="#0000ed"><i>// err only if f is reducible, and the error probability is bounded by</i></font><br>
+<font color="#0000ed"><i>// p^{-iter}.&nbsp;&nbsp;This implements an algorithm from [Shoup, J. Symbolic</i></font><br>
+<font color="#0000ed"><i>// Comp. 17:371-391, 1994].</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;DetIrredTest(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// performs a recursive deterministic irreducibility test.&nbsp;&nbsp;Fast in</i></font><br>
+<font color="#0000ed"><i>// the worst-case (when input is irreducible).&nbsp;&nbsp;This implements an</i></font><br>
+<font color="#0000ed"><i>// algorithm from [Shoup, J. Symbolic Comp. 17:371-391, 1994].</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IterIrredTest(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// performs an iterative deterministic irreducibility test, based on</i></font><br>
+<font color="#0000ed"><i>// DDF.&nbsp;&nbsp;Fast on average (when f has a small factor).</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;BuildIrred(zz_pX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+zz_pX BuildIrred_zz_pX(<font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<br>
+<font color="#0000ed"><i>// Build a monic irreducible poly of degree n.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;BuildRandomIrred(zz_pX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; g);<br>
+zz_pX BuildRandomIrred(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; g);<br>
+<br>
+<font color="#0000ed"><i>// g is a monic irreducible polynomial.&nbsp;&nbsp;Constructs a random monic</i></font><br>
+<font color="#0000ed"><i>// irreducible polynomial f of the same degree.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;ComputeDegree(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;zz_pXModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// f is assumed to be an &quot;equal degree&quot; polynomial.&nbsp;&nbsp;h = X^p mod f.</i></font><br>
+<font color="#0000ed"><i>// The common degree of the irreducible factors of f is computed This</i></font><br>
+<font color="#0000ed"><i>// routine is useful in counting points on elliptic curves</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;ProbComputeDegree(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;zz_pXModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// same as above, but uses a slightly faster probabilistic algorithm.</i></font><br>
+<font color="#0000ed"><i>// The return value may be 0 or may be too big, but for large p</i></font><br>
+<font color="#0000ed"><i>// (relative to n), this happens with very low probability.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;TraceMap(zz_pX&amp; w, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>const</b></font>&nbsp;zz_pXModulus&amp; F,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; h);<br>
+<br>
+zz_pX TraceMap(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>const</b></font>&nbsp;zz_pXModulus&amp; F,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; h);<br>
+<br>
+<font color="#0000ed"><i>// w = a+a^q+...+^{q^{d-1}} mod f; it is assumed that d &gt;= 0, and h =</i></font><br>
+<font color="#0000ed"><i>// X^q mod f, q a power of p.&nbsp;&nbsp;This routine implements an algorithm</i></font><br>
+<font color="#0000ed"><i>// from [von zur Gathen and Shoup, Computational Complexity 2:187-224,</i></font><br>
+<font color="#0000ed"><i>// 1992]</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;PowerCompose(zz_pX&amp; w, <font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; h, <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>const</b></font>&nbsp;zz_pXModulus&amp; F);<br>
+zz_pX PowerCompose(<font color="#008b00"><b>const</b></font>&nbsp;zz_pX&amp; h, <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>const</b></font>&nbsp;zz_pXModulus&amp; F);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// w = X^{q^d} mod f; it is assumed that d &gt;= 0, and h = X^q mod f, q</i></font><br>
+<font color="#0000ed"><i>// a power of p.&nbsp;&nbsp;This routine implements an algorithm from [von zur</i></font><br>
+<font color="#0000ed"><i>// Gathen and Shoup, Computational Complexity 2:187-224, 1992]</i></font><br>
+<br>
+</font></body>
+</html>

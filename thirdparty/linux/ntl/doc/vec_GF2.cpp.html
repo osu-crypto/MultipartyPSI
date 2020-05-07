@@ -1,0 +1,242 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/vec_GF2.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: vec_GF2</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>The class Vec&lt;GF2&gt; is explicitly specialized.</i></font><br>
+<font color="#0000ed"><i>It behaves much like a generic Vec&lt;T&gt; (see vector.txt), </i></font><br>
+<font color="#0000ed"><i>but there are some differences.</i></font><br>
+<br>
+<font color="#0000ed"><i>For efficiency, elements of a Vec&lt;GF2&gt; are &quot;packed&quot; into a word.</i></font><br>
+<font color="#0000ed"><i>You can still use subscript notation v[i] or v(i).</i></font><br>
+<font color="#0000ed"><i>For const vectors, these evaluate to values of type const GF2.</i></font><br>
+<font color="#0000ed"><i>For non-const vectors, these evaluate to values of the</i></font><br>
+<font color="#0000ed"><i>special type ref_GF2, which is defined in the GF2 header file.</i></font><br>
+<br>
+<font color="#0000ed"><i>There are implicit conversions from ref_GF2 to const GF2</i></font><br>
+<font color="#0000ed"><i>and from GF2&amp; to ref_GF2.&nbsp;&nbsp;Therefore, if you want to declare</i></font><br>
+<font color="#0000ed"><i>a function that takes a non-const reference to a GF2, you</i></font><br>
+<font color="#0000ed"><i>should declare the parameter of type ref_GF2: this will</i></font><br>
+<font color="#0000ed"><i>allow you to pass variables of type GF2 as well as </i></font><br>
+<font color="#0000ed"><i>elements of vec_GF2's obtained through indexing.</i></font><br>
+<br>
+<font color="#0000ed"><i>As an alternative, one can use the get and put methods below to access</i></font><br>
+<font color="#0000ed"><i>vector elements.</i></font><br>
+<br>
+<font color="#0000ed"><i>There is one subtle but important difference in the semantics</i></font><br>
+<font color="#0000ed"><i>of Vec&lt;GF2&gt; and that of generic NTL vectors.&nbsp;&nbsp;With a Vec&lt;GF2&gt;, whenever its</i></font><br>
+<font color="#0000ed"><i>length is increased (via SetLength), the &quot;new&quot; bits are always 0.</i></font><br>
+<font color="#0000ed"><i>For example, if v.length() == 20, then </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; v.SetLength(10); v.setLength(20);</i></font><br>
+<br>
+<font color="#0000ed"><i>will effectively clear bits 10..19 of v.</i></font><br>
+<font color="#0000ed"><i>This is quite different from the semantics of generic NTL vectors, where</i></font><br>
+<font color="#0000ed"><i>the above sequence would not change the value of v at all.</i></font><br>
+<font color="#0000ed"><i>One has to be aware of this difference, but it will not matter</i></font><br>
+<font color="#0000ed"><i>in most ordinary circumstances.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;&gt; <br>
+<font color="#008b00"><b>class</b></font>&nbsp;Vec&lt;GF2&gt; {<br>
+<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+<br>
+&nbsp;&nbsp; Vec(); <font color="#0000ed"><i>// 0 length vector</i></font><br>
+&nbsp;&nbsp; Vec(INIT_SIZE_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;n); <font color="#0000ed"><i>// initialize to length n</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// usage: Vec(INIT_SIZE, n)</i></font><br>
+<br>
+&nbsp;&nbsp; Vec(<font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;GF2&gt;&amp; a); <font color="#0000ed"><i>// copy constructor</i></font><br>
+&nbsp;&nbsp; Vec&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;GF2&gt;&amp; a); <font color="#0000ed"><i>// assignment</i></font><br>
+&nbsp;&nbsp; ~Vec(); <font color="#0000ed"><i>// destructor</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;SetLength(<font color="#008b00"><b>long</b></font>&nbsp;n); <font color="#0000ed"><i>// set length to n bits</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;SetLength(<font color="#008b00"><b>long</b></font>&nbsp;n, GF2 a); <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// set length to n, if length increases, initialize new bits to a</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;SetMaxLength(<font color="#008b00"><b>long</b></font>&nbsp;n); <font color="#0000ed"><i>// allocate space for n bits</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;length() <font color="#008b00"><b>const</b></font>; <font color="#0000ed"><i>// current length, in bits</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;MaxLength() <font color="#008b00"><b>const</b></font>; <font color="#0000ed"><i>// maximum length, i.e., the maximum</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#0000ed"><i>// value passed to either SetLength or SetMaxLength</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#0000ed"><i>// since creation or last kill</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;allocated() <font color="#008b00"><b>const</b></font>; <font color="#0000ed"><i>// number of bits for which space is allocated;</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#0000ed"><i>// if n &lt;= v.allocated(), then v.SetLength(n)</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#0000ed"><i>// will not result in any memory re-allocation.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// INVARIANT: </i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;length() &lt;= MaxLength() &lt;= allocated() &lt; 2^(NTL_BITS_PER_LONG-4)</i></font><br>
+<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;FixLength(<font color="#008b00"><b>long</b></font>&nbsp;n); <font color="#0000ed"><i>// fix length to n bits</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// can only be applied after default initialization or kill</i></font><br>
+<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;FixAtCurrentLength();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// fixes the length at the cuurent length and prohibits</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// all future length changes.&nbsp;&nbsp;</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// It is required that length() == MaxLength() when called.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: if length() != MaxLength() and error is raised;</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// Strong ES.</i></font><br>
+<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;fixed() <font color="#008b00"><b>const</b></font>; <font color="#0000ed"><i>// test if length has been fixed</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;kill(); <font color="#0000ed"><i>// free space and make length 0</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2 get(<font color="#008b00"><b>long</b></font>&nbsp;i) <font color="#008b00"><b>const</b></font>; <font color="#0000ed"><i>// fetch value at index i (indexing from 0)</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;put(<font color="#008b00"><b>long</b></font>&nbsp;i, GF2 a); <font color="#0000ed"><i>// write value a to index i (indexing from 0)</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;put(<font color="#008b00"><b>long</b></font>&nbsp;i, <font color="#008b00"><b>long</b></font>&nbsp;a); <br>
+<br>
+<font color="#0000ed"><i>// Here are the subscripting operators, defined using the</i></font><br>
+<font color="#0000ed"><i>// &quot;helper&quot; class ref_GF2</i></font><br>
+<br>
+&nbsp;&nbsp; ref_GF2 <font color="#b02f60"><b>operator</b></font>[](<font color="#008b00"><b>long</b></font>&nbsp;i);<br>
+&nbsp;&nbsp; ref_GF2 <font color="#b02f60"><b>operator</b></font>()(<font color="#008b00"><b>long</b></font>&nbsp;i);<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2 <font color="#b02f60"><b>operator</b></font>[](<font color="#008b00"><b>long</b></font>&nbsp;i) <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;GF2 <font color="#b02f60"><b>operator</b></font>()(<font color="#008b00"><b>long</b></font>&nbsp;i) <font color="#008b00"><b>const</b></font>;<br>
+<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;swap(Vec&lt;GF2&gt;&amp; y);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// swap with y (fast: just swaps pointers)</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;append(GF2 a);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// append a to end of vector</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;append(<font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;GF2&gt;&amp; w);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// append w to end of vector</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// Some partial STL compatibility...also used</i></font><br>
+<font color="#0000ed"><i>// to interface with the Matrix template class</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;GF2 value_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;ref_GF2 reference;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;GF2 const_reference;<br>
+<br>
+<br>
+<br>
+};<br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;swap(Vec&lt;GF2&gt;&amp; x, Vec&lt;GF2&gt;&amp; y);<br>
+<font color="#0000ed"><i>// swap x and y (fast pointer swap)</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;append(Vec&lt;GF2&gt;&amp; v, GF2 a);<br>
+<font color="#0000ed"><i>// append a to v</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;append(Vec&lt;GF2&gt;&amp; v, <font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;GF2&gt;&amp; a);<br>
+<font color="#0000ed"><i>// append a to v</i></font><br>
+<br>
+<font color="#0000ed"><i>// equality operators:</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(<font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;GF2&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;GF2&gt;&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(<font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;GF2&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;GF2&gt;&amp; b);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// I/O operators:</i></font><br>
+<br>
+ostream&amp; <font color="#b02f60"><b>operator</b></font>&lt;&lt;(ostream&amp; s, <font color="#008b00"><b>const</b></font>&nbsp;Vec&lt;GF2&gt;&amp; a);<br>
+istream&amp; <font color="#b02f60"><b>operator</b></font>&gt;&gt;(istream&amp; s, Vec&lt;GF2&gt;&amp; a);<br>
+<br>
+<font color="#0000ed"><i>// The I/O format is [a_0 a_1 ... a_{n-1}], where each a_i is &quot;0&quot; or &quot;1&quot;.</i></font><br>
+<font color="#0000ed"><i>// On input, the a_i may be arbitrary integers, which are reduced mod 2.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>typedef</b></font>&nbsp;Vec&lt;GF2&gt; vec_GF2;&nbsp;&nbsp;<font color="#0000ed"><i>// backward compatibility</i></font><br>
+<br>
+<font color="#0000ed"><i>// utility routines:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;clear(vec_GF2&amp; x); <font color="#0000ed"><i>// clear all bits--length unchanged</i></font><br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsZero(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a); <font color="#0000ed"><i>// test if all bits are zero</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;shift(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+vec_GF2 shift(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// x = a shifted n places, where n may be positive or negative.</i></font><br>
+<font color="#0000ed"><i>// Generally, x[i] = a[i-n], so positive n shifts to a higher index.</i></font><br>
+<font color="#0000ed"><i>// The length of x is set to the length of a, and bits </i></font><br>
+<font color="#0000ed"><i>// are zero-filled or discarded as necessary.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;reverse(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a); <font color="#0000ed"><i>// c = a reversed</i></font><br>
+vec_GF2 reverse(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a);<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;weight(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a); <font color="#0000ed"><i>// return number of 1 bits in a</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;random(vec_GF2&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;n);&nbsp;&nbsp;<font color="#0000ed"><i>// x = random vector of length n</i></font><br>
+vec_GF2 random_vec_GF2(<font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// arithmetic operations over GF(2):</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;add(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;sub(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;negate(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, GF2 b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_GF2&amp; x, GF2 a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_GF2&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; b);<br>
+<font color="#0000ed"><i>// x = a * b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;InnerProduct(ref_GF2 x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; b);<br>
+<font color="#0000ed"><i>// vectors may differ in length</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;VectorCopy(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+vec_GF2 VectorCopy(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// x = a copy of a of length exactly n.</i></font><br>
+<font color="#0000ed"><i>// The input is truncated or padded with zeroes, as necessary.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// arithmetic operator notation:</i></font><br>
+<br>
+vec_GF2 <font color="#b02f60"><b>operator</b></font>+(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; b);<br>
+vec_GF2 <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; b);<br>
+vec_GF2 <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a);<br>
+<br>
+<font color="#0000ed"><i>// scalar mul:</i></font><br>
+<br>
+vec_GF2 <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, GF2 b);<br>
+vec_GF2 <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+vec_GF2 <font color="#b02f60"><b>operator</b></font>*(GF2 a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; b); <br>
+vec_GF2 <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; b); <br>
+<br>
+<font color="#0000ed"><i>// inner product: </i></font><br>
+<br>
+<font color="#008b00"><b>inline</b></font>&nbsp;GF2 <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; b); <br>
+<br>
+<font color="#0000ed"><i>// assignment operator notation:</i></font><br>
+<br>
+vec_GF2&amp; <font color="#b02f60"><b>operator</b></font>+=(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a);<br>
+vec_GF2&amp; <font color="#b02f60"><b>operator</b></font>-=(vec_GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2&amp; a);<br>
+<br>
+vec_GF2&amp; <font color="#b02f60"><b>operator</b></font>*=(vec_GF2&amp; x, GF2 a);<br>
+vec_GF2&amp; <font color="#b02f60"><b>operator</b></font>*=(vec_GF2&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+</font></body>
+</html>

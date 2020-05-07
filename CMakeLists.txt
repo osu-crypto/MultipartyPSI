@@ -36,7 +36,7 @@ SET(CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
 #############################################
 
 # default location for libOTe
-set(libOTe_Dirs "${CMAKE_SOURCE_DIR}/../libOTe/")
+set(libOTe_Dirs "${CMAKE_SOURCE_DIR}/libOTe/")
 include_directories("${libOTe_Dirs}/libOTe/") 
 link_directories("${libOTe_Dirs}/lib/")
 

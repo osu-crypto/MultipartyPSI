@@ -1,0 +1,251 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/GF2.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: GF2</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>The class GF2 represents the field GF(2).</i></font><br>
+<font color="#0000ed"><i>Computationally speaking, it is not a particularly useful class.</i></font><br>
+<font color="#0000ed"><i>Its main use is to make the interfaces to the various finite </i></font><br>
+<font color="#0000ed"><i>field classes as uniform as possible.</i></font><br>
+<br>
+<font color="#0000ed"><i>The header file for GF2 also declares the class ref_GF2, which</i></font><br>
+<font color="#0000ed"><i>use used to represent non-const references to GF2's, such as</i></font><br>
+<font color="#0000ed"><i>those obtained from indexing a vec_GF2, which &quot;packs&quot; GF2's</i></font><br>
+<font color="#0000ed"><i>into words.</i></font><br>
+<br>
+<font color="#0000ed"><i>There are implicit conversions from ref_GF2 to const GF2</i></font><br>
+<font color="#0000ed"><i>and from GF2&amp; to ref_GF2.&nbsp;&nbsp;Therefore, if you want to declare</i></font><br>
+<font color="#0000ed"><i>a function that takes a non-const reference to a GF2, you</i></font><br>
+<font color="#0000ed"><i>should declare the parameter of type ref_GF2: this will</i></font><br>
+<font color="#0000ed"><i>allow you to pass variables of type GF2 as well as </i></font><br>
+<font color="#0000ed"><i>elements of vec_GF2's obtained through indexing.</i></font><br>
+<br>
+<font color="#0000ed"><i>For all functions defined below which take a parameter of type</i></font><br>
+<font color="#0000ed"><i>GF2&amp;, there is also a function that takes a parameter of type ref_GF2.</i></font><br>
+<font color="#0000ed"><i>Theoretically, we could have just defined the functions that take</i></font><br>
+<font color="#0000ed"><i>the ref_GF2 parameter type, because of the implicit conversion</i></font><br>
+<font color="#0000ed"><i>from GF2&amp; to ref_GF2; however, for efficiency reasons, both</i></font><br>
+<font color="#0000ed"><i>flavors are actually provided.&nbsp;&nbsp; It is recommended that higher-level</i></font><br>
+<font color="#0000ed"><i>functions use the ref_GF2 type exclusively.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/ZZ.h&gt;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/vector.h&gt;</font><br>
+<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;GF2 {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; GF2(); <font color="#0000ed"><i>// initial value 0</i></font><br>
+<br>
+&nbsp;&nbsp; GF2(<font color="#008b00"><b>const</b></font>&nbsp;GF2&amp; a); <font color="#0000ed"><i>// copy constructor</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>explicit</b></font>&nbsp;GF2(<font color="#008b00"><b>long</b></font>&nbsp;a); <font color="#0000ed"><i>// promotion constructor</i></font><br>
+<br>
+&nbsp;&nbsp; GF2&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;GF2&amp; a); <font color="#0000ed"><i>// assignment</i></font><br>
+&nbsp;&nbsp; GF2&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>long</b></font>&nbsp;a); <font color="#0000ed"><i>// assignment</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// typedefs to aid in generic programming</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;rep_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;GF2Context context_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;GF2Bak bak_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;GF2Push push_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;GF2X poly_type;<br>
+<br>
+};<br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;rep(GF2 a); <font color="#0000ed"><i>// read-only access to representation of a</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Comparison</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(GF2 a, GF2 b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(GF2 a, GF2 b);<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsZero(GF2 a);&nbsp;&nbsp;<font color="#0000ed"><i>// test for 0</i></font><br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsOne(GF2 a);&nbsp;&nbsp;<font color="#0000ed"><i>// test for 1</i></font><br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: operators ==, != promote long to GF2 on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Addition </i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+GF2 <font color="#b02f60"><b>operator</b></font>+(GF2 a, GF2 b);<br>
+GF2 <font color="#b02f60"><b>operator</b></font>-(GF2 a, GF2 b);<br>
+<br>
+GF2 <font color="#b02f60"><b>operator</b></font>-(GF2 a); <font color="#0000ed"><i>// unary -</i></font><br>
+<br>
+GF2&amp; <font color="#b02f60"><b>operator</b></font>+=(GF2&amp; x, GF2 a);<br>
+GF2&amp; <font color="#b02f60"><b>operator</b></font>+=(GF2&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+GF2&amp; <font color="#b02f60"><b>operator</b></font>-=(GF2&amp; x, GF2 a);<br>
+GF2&amp; <font color="#b02f60"><b>operator</b></font>-=(GF2&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+GF2&amp; <font color="#b02f60"><b>operator</b></font>++(GF2&amp; x);&nbsp;&nbsp;<font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>++(GF2&amp; x, <font color="#008b00"><b>int</b></font>);&nbsp;&nbsp;<font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+GF2&amp; <font color="#b02f60"><b>operator</b></font>--(GF2&amp; x);&nbsp;&nbsp;<font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>--(GF2&amp; x, <font color="#008b00"><b>int</b></font>);&nbsp;&nbsp;<font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;add(GF2&amp; x, GF2 a, GF2 b); <font color="#0000ed"><i>// x = a + b</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;sub(GF2&amp; x, GF2 a, GF2 b); <font color="#0000ed"><i>// x = a - b </i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;negate(GF2&amp; x, GF2 a); <font color="#0000ed"><i>// x = -a</i></font><br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: binary +, -, and procedures add, sub promote</i></font><br>
+<font color="#0000ed"><i>// from long to GF2 on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Multiplication </i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+GF2 <font color="#b02f60"><b>operator</b></font>*(GF2 a, GF2 b);<br>
+<br>
+GF2&amp; <font color="#b02f60"><b>operator</b></font>*=(GF2&amp; x, GF2 a);<br>
+GF2&amp; <font color="#b02f60"><b>operator</b></font>*=(GF2&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(GF2&amp; x, GF2 a, GF2 b); <font color="#0000ed"><i>// x = a * b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;sqr(GF2&amp; x, GF2 a); <font color="#0000ed"><i>// x = a^2</i></font><br>
+GF2 sqr(GF2 a); <br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: operator * and procedure mul promote from long to GF2</i></font><br>
+<font color="#0000ed"><i>// on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Division</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#b02f60"><b>operator</b></font>&nbsp;notation:<br>
+<br>
+GF2 <font color="#b02f60"><b>operator</b></font>/(z_p a, GF2 b);<br>
+<br>
+GF2&amp; <font color="#b02f60"><b>operator</b></font>/=(GF2&amp; x, GF2 a);<br>
+GF2&amp; <font color="#b02f60"><b>operator</b></font>/=(GF2&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+procedural versions:<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;div(GF2&amp; x, GF2 a, GF2 b);<br>
+<font color="#0000ed"><i>// x = a/b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;inv(GF2&amp; x, GF2 a);<br>
+GF2 inv(GF2 a);<br>
+<font color="#0000ed"><i>// x = 1/a</i></font><br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: operator / and procedure div promote from long to GF2</i></font><br>
+<font color="#0000ed"><i>// on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exponentiation</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power(GF2&amp; x, GF2 a, <font color="#008b00"><b>long</b></font>&nbsp;e); <font color="#0000ed"><i>// x = a^e (e may be negative)</i></font><br>
+GF2 power(GF2 a, <font color="#008b00"><b>long</b></font>&nbsp;e); <br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Random Elements</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;random(GF2&amp; x);<br>
+GF2 random_GF2();<br>
+<font color="#0000ed"><i>// x = random element in GF2.&nbsp;&nbsp;Uses RandomBnd from ZZ.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Input/Output</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+ostream&amp; <font color="#b02f60"><b>operator</b></font>&lt;&lt;(ostream&amp; s, GF2 a);<br>
+<br>
+istream&amp; <font color="#b02f60"><b>operator</b></font>&gt;&gt;(istream&amp; s, GF2&amp; x);<br>
+<font color="#0000ed"><i>// a ZZ is read and reduced mod 2</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Miscellany</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;clear(GF2&amp; x); <font color="#0000ed"><i>// x = 0</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;set(GF2&amp; x); <font color="#0000ed"><i>// x = 1</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;GF2::swap(GF2&amp; x);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;swap(GF2&amp; x, GF2&amp; y);<br>
+<font color="#0000ed"><i>// swap </i></font><br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;GF2 GF2::zero();<br>
+<font color="#0000ed"><i>// GF2::zero() yields a read-only reference to zero</i></font><br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;GF2::modulus();<br>
+<font color="#0000ed"><i>// GF2::modulus() returns the value 2</i></font><br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;&gt; <font color="#008b00"><b>class</b></font>&nbsp;Vec&lt;GF2&gt;;<br>
+<font color="#0000ed"><i>// Forward declaration of the explicit specialization</i></font><br>
+<font color="#0000ed"><i>// of Vec&lt;GF2&gt;.&nbsp;&nbsp;This specialization is defined in &lt;NTL/vec_GF2.h&gt;,</i></font><br>
+<font color="#0000ed"><i>// which must be included in source files that need to use Vec&lt;GF2&gt;.</i></font><br>
+<br>
+GF2::GF2(INIT_NO_ALLOC_TYPE);<br>
+<font color="#0000ed"><i>// provided for consistency with other classes, initialize to zero</i></font><br>
+<br>
+GF2::GF2(INIT_ALLOC_TYPE);<br>
+<font color="#0000ed"><i>// provided for consistency with other classes, initialize to zero</i></font><br>
+<br>
+GF2::allocate();<br>
+<font color="#0000ed"><i>// provided for consistency with other classes, no action</i></font><br>
+<br>
+<br>
+<br>
+</font></body>
+</html>

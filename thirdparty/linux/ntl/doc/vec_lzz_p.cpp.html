@@ -1,0 +1,103 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/vec_lzz_p.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: vec_zz_p</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>Provides vectors over zz_p, along with some related operations.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&quot;zz_p.h&quot;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&quot;vec_zz.h&quot;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/vector.h&gt;</font><br>
+<br>
+<font color="#008b00"><b>typedef</b></font>&nbsp;Vec&lt;zz_p&gt; vec_zz_p; <font color="#0000ed"><i>// backward compatibility</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_zz_p&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a, zz_p b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_zz_p&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_zz_p&amp; x, zz_p a, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_zz_p&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; b);<br>
+<font color="#0000ed"><i>// x = a * b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;add(vec_zz_p&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; b);<br>
+<font color="#0000ed"><i>// x = a + b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;sub(vec_zz_p&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; b);<br>
+<font color="#0000ed"><i>// x = a - b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;clear(vec_zz_p&amp; x);<br>
+<font color="#0000ed"><i>// x = 0 (length unchanged)</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;negate(vec_zz_p&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a);<br>
+<font color="#0000ed"><i>// x = -a</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsZero(<font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a);<br>
+<font color="#0000ed"><i>// test if a is the zero vector</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;VectorCopy(vec_zz_p&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+vec_zz_p VectorCopy(<font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// x = a copy of a of length exactly n.</i></font><br>
+<font color="#0000ed"><i>// The input is truncated or padded with zeroes, as necessary.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;InnerProduct(zz_p&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; b);<br>
+<font color="#0000ed"><i>// x = sum_{i=0}^{n-1} a[i]*b[i], where n = min(a.length(),</i></font><br>
+<font color="#0000ed"><i>// b.length())</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;InnerProduct(zz_p&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; b,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;offset);<br>
+<font color="#0000ed"><i>// x = sum_{i=offset}^{n-1} a[i]*b[i-offset], where n = min(a.length(),</i></font><br>
+<font color="#0000ed"><i>// b.length()+offset)</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;CRT(vec_ZZ&amp; a, ZZ&amp; prod, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; A);<br>
+<font color="#0000ed"><i>// Incremental Chinese Remaindering: If p is the current zz_p modulus with</i></font><br>
+<font color="#0000ed"><i>// (p, prod) = 1; Computes a' such that a' = a mod prod and a' = A mod p,</i></font><br>
+<font color="#0000ed"><i>// with coefficients in the interval (-p*prod/2, p*prod/2]; </i></font><br>
+<font color="#0000ed"><i>// Sets a := a', prod := p*prod, and returns 1 if a's value changed.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+vec_zz_p <font color="#b02f60"><b>operator</b></font>+(<font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; b);<br>
+vec_zz_p <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; b);<br>
+<br>
+vec_zz_p <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// vector/scalar multiplication:</i></font><br>
+<br>
+vec_zz_p <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a, zz_p b);<br>
+vec_zz_p <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+vec_zz_p <font color="#b02f60"><b>operator</b></font>*(zz_p a, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; b);<br>
+vec_zz_p <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; b);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// inner product:</i></font><br>
+<br>
+zz_p <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; b);<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// assignment operator notation:</i></font><br>
+<br>
+vec_zz_p&amp; <font color="#b02f60"><b>operator</b></font>+=(vec_zz_p&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a);<br>
+vec_zz_p&amp; <font color="#b02f60"><b>operator</b></font>-=(vec_zz_p&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_p&amp; a);<br>
+<br>
+vec_zz_p&amp; <font color="#b02f60"><b>operator</b></font>*=(vec_zz_p&amp; x, zz_p a);<br>
+vec_zz_p&amp; <font color="#b02f60"><b>operator</b></font>*=(vec_zz_p&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+</font></body>
+</html>

@@ -1,0 +1,26 @@
+
+printf '*** Checking for feature: %s ' "$1"
+
+echo "" > "../include/NTL/HAVE_$1.h"
+
+sh RemoveProg CheckFeature
+echo $3 -o CheckFeature $2 $4 >> "CheckFeature.log" 2>&1
+$3 -o CheckFeature $2 $4 >> "CheckFeature.log" 2>&1
+
+if test -f CheckFeature
+then
+   if ./CheckFeature
+   then
+      echo "[yes]"
+      echo "#ifndef NTL_HAVE_$1" >  "../include/NTL/HAVE_$1.h"
+      echo "#define NTL_HAVE_$1" >> "../include/NTL/HAVE_$1.h"
+      echo "#endif"              >> "../include/NTL/HAVE_$1.h"
+      sh RemoveProg CheckFeature
+      exit 0
+   fi
+fi
+
+echo "[no]"
+sh RemoveProg CheckFeature
+exit 0
+

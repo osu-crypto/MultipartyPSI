@@ -1,0 +1,238 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/GF2EXFactoring.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: GF2EXFactoring</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>Routines are provided for factorization of polynomials over GF2E, as</i></font><br>
+<font color="#0000ed"><i>well as routines for related problems such as testing irreducibility</i></font><br>
+<font color="#0000ed"><i>and constructing irreducible polynomials of given degree.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/GF2EX.h&gt;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/pair_GF2EX_long.h&gt;</font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SquareFreeDecomp(vec_pair_GF2EX_long&amp; u, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f);<br>
+vec_pair_GF2EX_long SquareFreeDecomp(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// Performs square-free decomposition.&nbsp;&nbsp;f must be monic.&nbsp;&nbsp;If f =</i></font><br>
+<font color="#0000ed"><i>// prod_i g_i^i, then u is set to a list of pairs (g_i, i).&nbsp;&nbsp;The list</i></font><br>
+<font color="#0000ed"><i>// is is increasing order of i, with trivial terms (i.e., g_i = 1)</i></font><br>
+<font color="#0000ed"><i>// deleted.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;FindRoots(vec_GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f);<br>
+vec_GF2E FindRoots(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// f is monic, and has deg(f) distinct roots.&nbsp;&nbsp;returns the list of</i></font><br>
+<font color="#0000ed"><i>// roots</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;FindRoot(GF2E&amp; root, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f);<br>
+GF2E FindRoot(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// finds a single root of f.&nbsp;&nbsp;assumes that f is monic and splits into</i></font><br>
+<font color="#0000ed"><i>// distinct linear factors</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SFBerlekamp(vec_GF2EX&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+vec_GF2EX&nbsp;&nbsp;SFBerlekamp(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// Assumes f is square-free and monic.&nbsp;&nbsp;returns list of factors of f.</i></font><br>
+<font color="#0000ed"><i>// Uses &quot;Berlekamp&quot; approach, as described in detail in [Shoup,</i></font><br>
+<font color="#0000ed"><i>// J. Symbolic Comp. 20:363-397, 1995].</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;berlekamp(vec_pair_GF2EX_long&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+vec_pair_GF2EX_long berlekamp(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// returns a list of factors, with multiplicities.&nbsp;&nbsp;f must be monic.</i></font><br>
+<font color="#0000ed"><i>// Calls SFBerlekamp.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;NewDDF(vec_pair_GF2EX_long&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; h,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+vec_pair_GF2EX_long NewDDF(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; h,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// This computes a distinct-degree factorization.&nbsp;&nbsp;The input must be</i></font><br>
+<font color="#0000ed"><i>// monic and square-free.&nbsp;&nbsp;factors is set to a list of pairs (g, d),</i></font><br>
+<font color="#0000ed"><i>// where g is the product of all irreducible factors of f of degree d.</i></font><br>
+<font color="#0000ed"><i>// Only nontrivial pairs (i.e., g != 1) are included.&nbsp;&nbsp;The polynomial</i></font><br>
+<font color="#0000ed"><i>// h is assumed to be equal to X^{2^{GF2E::degree()}} mod f,</i></font><br>
+<font color="#0000ed"><i>// which can be computed efficiently using the function FrobeniusMap </i></font><br>
+<font color="#0000ed"><i>// (see below).</i></font><br>
+<font color="#0000ed"><i>// This routine&nbsp;&nbsp;implements the baby step/giant step algorithm </i></font><br>
+<font color="#0000ed"><i>// of [Kaltofen and Shoup, STOC 1995], </i></font><br>
+<font color="#0000ed"><i>// further described in [Shoup, J. Symbolic Comp. 20:363-397, 1995].</i></font><br>
+<br>
+<font color="#0000ed"><i>// NOTE: When factoring &quot;large&quot; polynomials,</i></font><br>
+<font color="#0000ed"><i>// this routine uses external files to store some intermediate</i></font><br>
+<font color="#0000ed"><i>// results, which are removed if the routine terminates normally.</i></font><br>
+<font color="#0000ed"><i>// These files are stored in the current directory under names of the</i></font><br>
+<font color="#0000ed"><i>// form tmp-*.</i></font><br>
+<font color="#0000ed"><i>// The definition of &quot;large&quot; is controlled by the variable</i></font><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>extern</b></font>&nbsp;<font color="#008b00"><b>double</b></font>&nbsp;GF2EXFileThresh<br>
+<br>
+<font color="#0000ed"><i>// which can be set by the user.&nbsp;&nbsp;If the sizes of the tables</i></font><br>
+<font color="#0000ed"><i>// exceeds GF2EXFileThresh KB, external files are used.</i></font><br>
+<font color="#0000ed"><i>// Initial value is NTL_FILE_THRESH (defined in tools.h).</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;EDF(vec_GF2EX&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; h,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+vec_GF2EX EDF(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; h,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// Performs equal-degree factorization.&nbsp;&nbsp;f is monic, square-free, and</i></font><br>
+<font color="#0000ed"><i>// all irreducible factors have same degree.&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>// h = X^{2^{GF2E::degree()}} mod f,</i></font><br>
+<font color="#0000ed"><i>// which can be computed efficiently using the function FrobeniusMap </i></font><br>
+<font color="#0000ed"><i>// (see below).</i></font><br>
+<font color="#0000ed"><i>// d = degree of irreducible factors of f.&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>// This routine implements the algorithm of [von zur Gathen and Shoup,</i></font><br>
+<font color="#0000ed"><i>// Computational Complexity 2:187-224, 1992]</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;RootEDF(vec_GF2EX&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+vec_GF2EX RootEDF(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// EDF for d==1</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SFCanZass(vec_GF2EX&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+vec_GF2EX SFCanZass(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// Assumes f is monic and square-free.&nbsp;&nbsp;returns list of factors of f.</i></font><br>
+<font color="#0000ed"><i>// Uses &quot;Cantor/Zassenhaus&quot; approach, using the routines NewDDF and</i></font><br>
+<font color="#0000ed"><i>// EDF above.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;CanZass(vec_pair_GF2EX_long&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+vec_pair_GF2EX_long CanZass(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// returns a list of factors, with multiplicities.&nbsp;&nbsp;f must be monic.</i></font><br>
+<font color="#0000ed"><i>// Calls SquareFreeDecomp and SFCanZass.</i></font><br>
+<br>
+<font color="#0000ed"><i>// NOTE: these routines use modular composition.&nbsp;&nbsp;The space</i></font><br>
+<font color="#0000ed"><i>// used for the required tables can be controlled by the variable</i></font><br>
+<font color="#0000ed"><i>// GF2EXArgBound (see GF2EX.txt).</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(GF2EX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;vec_pair_GF2EX_long&amp; v);<br>
+GF2EX mul(<font color="#008b00"><b>const</b></font>&nbsp;vec_pair_GF2EX_long&amp; v);<br>
+<br>
+<font color="#0000ed"><i>// multiplies polynomials, with multiplicities</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Irreducible Polynomials</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;ProbIrredTest(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;iter=<font color="#ff8b00">1</font>);<br>
+<br>
+<font color="#0000ed"><i>// performs a fast, probabilistic irreduciblity test.&nbsp;&nbsp;The test can</i></font><br>
+<font color="#0000ed"><i>// err only if f is reducible, and the error probability is bounded by</i></font><br>
+<font color="#0000ed"><i>// 2^{-iter*GF2E::degree()}.&nbsp;&nbsp;This implements an algorithm from [Shoup,</i></font><br>
+<font color="#0000ed"><i>// J. Symbolic Comp. 17:371-391, 1994].</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;DetIrredTest(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// performs a recursive deterministic irreducibility test.&nbsp;&nbsp;Fast in</i></font><br>
+<font color="#0000ed"><i>// the worst-case (when input is irreducible).&nbsp;&nbsp;This implements an</i></font><br>
+<font color="#0000ed"><i>// algorithm from [Shoup, J. Symbolic Comp. 17:371-391, 1994].</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IterIrredTest(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// performs an iterative deterministic irreducibility test, based on</i></font><br>
+<font color="#0000ed"><i>// DDF.&nbsp;&nbsp;Fast on average (when f has a small factor).</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;BuildIrred(GF2EX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+GF2EX BuildIrred_GF2EX(<font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<br>
+<font color="#0000ed"><i>// Build a monic irreducible poly of degree n. </i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;BuildRandomIrred(GF2EX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; g);<br>
+GF2EX BuildRandomIrred(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; g);<br>
+<br>
+<font color="#0000ed"><i>// g is a monic irreducible polynomial.&nbsp;&nbsp;Constructs a random monic</i></font><br>
+<font color="#0000ed"><i>// irreducible polynomial f of the same degree.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;FrobeniusMap(GF2EX&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2EXModulus&amp; F);<br>
+GF2EX FrobeniusMap(<font color="#008b00"><b>const</b></font>&nbsp;GF2EXModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// Computes h = X^{2^{GF2E::degree()}} mod F, </i></font><br>
+<font color="#0000ed"><i>// by either iterated squaring or modular</i></font><br>
+<font color="#0000ed"><i>// composition.&nbsp;&nbsp;The latter method is based on a technique developed</i></font><br>
+<font color="#0000ed"><i>// in Kaltofen &amp; Shoup (Faster polynomial factorization over high</i></font><br>
+<font color="#0000ed"><i>// algebraic extensions of finite fields, ISSAC 1997).&nbsp;&nbsp;This method is</i></font><br>
+<font color="#0000ed"><i>// faster than iterated squaring when deg(F) is large relative to</i></font><br>
+<font color="#0000ed"><i>// GF2E::degree().</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IterComputeDegree(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2EXModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// f is assumed to be an &quot;equal degree&quot; polynomial, and h =</i></font><br>
+<font color="#0000ed"><i>// X^{2^{GF2E::degree()}} mod f (see function FrobeniusMap above) </i></font><br>
+<font color="#0000ed"><i>// The common degree of the irreducible factors</i></font><br>
+<font color="#0000ed"><i>// of f is computed.&nbsp;&nbsp;Uses a &quot;baby step/giant step&quot; algorithm, similar</i></font><br>
+<font color="#0000ed"><i>// to NewDDF.&nbsp;&nbsp;Although asymptotocally slower than RecComputeDegree</i></font><br>
+<font color="#0000ed"><i>// (below), it is faster for reasonably sized inputs.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;RecComputeDegree(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;GF2EXModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// f is assumed to be an &quot;equal degree&quot; polynomial, h = X^{2^{GF2E::degree()}}</i></font><br>
+<font color="#0000ed"><i>// mod f (see function FrobeniusMap above).&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>// The common degree of the irreducible factors of f is</i></font><br>
+<font color="#0000ed"><i>// computed. Uses a recursive algorithm similar to DetIrredTest.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;TraceMap(GF2EX&amp; w, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>const</b></font>&nbsp;GF2EXModulus&amp; F,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; h);<br>
+<br>
+GF2EX TraceMap(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>const</b></font>&nbsp;GF2EXModulus&amp; F,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; h);<br>
+<br>
+<font color="#0000ed"><i>// Computes w = a+a^q+...+^{q^{d-1}} mod f; it is assumed that d &gt;= 0,</i></font><br>
+<font color="#0000ed"><i>// and h = X^q mod f, q a power of 2^{GF2E::degree()}.&nbsp;&nbsp;This routine</i></font><br>
+<font color="#0000ed"><i>// implements an algorithm from [von zur Gathen and Shoup,</i></font><br>
+<font color="#0000ed"><i>// Computational Complexity 2:187-224, 1992].</i></font><br>
+<font color="#0000ed"><i>// If q = 2^{GF2E::degree()}, then h can be computed most efficiently</i></font><br>
+<font color="#0000ed"><i>// by using the function FrobeniusMap above.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;PowerCompose(GF2EX&amp; w, <font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; h, <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>const</b></font>&nbsp;GF2EXModulus&amp; F);<br>
+<br>
+GF2EX PowerCompose(<font color="#008b00"><b>const</b></font>&nbsp;GF2EX&amp; h, <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>const</b></font>&nbsp;GF2EXModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// Computes w = X^{q^d} mod f; it is assumed that d &gt;= 0, and h = X^q</i></font><br>
+<font color="#0000ed"><i>// mod f, q a power of 2^{GF2E::degree()}.&nbsp;&nbsp;This routine implements an</i></font><br>
+<font color="#0000ed"><i>// algorithm from [von zur Gathen and Shoup, Computational Complexity</i></font><br>
+<font color="#0000ed"><i>// 2:187-224, 1992].</i></font><br>
+<font color="#0000ed"><i>// If q = 2^{GF2E::degree()}, then h can be computed most efficiently</i></font><br>
+<font color="#0000ed"><i>// by using the function FrobeniusMap above.</i></font><br>
+<br>
+</font></body>
+</html>

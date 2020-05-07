@@ -1,0 +1,957 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/SmartPtr.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>***************************************************************************</i></font><br>
+<br>
+<font color="#0000ed"><i>SmartPtr: a smart pointer class.</i></font><br>
+<br>
+<font color="#0000ed"><i>Synopsis: provides a reference counted smart pointer, similar to shared_ptr</i></font><br>
+<font color="#0000ed"><i>in the standard library.&nbsp;&nbsp;It is provided here to minimize reliance</i></font><br>
+<font color="#0000ed"><i>on the standard library, especially for older C++ compilers, which may</i></font><br>
+<font color="#0000ed"><i>not provide shared_ptr, or it may be in TR1, which gets messy.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>Examples:</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;SmartPtr&lt;T&gt; p1;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // initialize to null</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;SmartPtr&lt;T&gt; p1(0); </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;SmartPtr&lt;T&gt; p2 = 0;&nbsp;&nbsp;&nbsp;&nbsp; // 0/nullptr implicitly converts to SmartPtr&lt;T&gt;</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;SmartPtr&lt;T&gt; p3(p1);&nbsp;&nbsp;&nbsp;&nbsp; // copy constructor</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;T *rp;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;SmartPtr&lt;T&gt; p4(rp);&nbsp;&nbsp;&nbsp;&nbsp; // construct using raw pointer (explicit): better </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// to use MakeSmart below</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;p1 = MakeSmart&lt;T&gt;(...); // build new T object by invoking constructor</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// T(...) with pseudo-variadic templates.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// This is safer and more efficient that</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// using the raw-pointer constructor</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;p1 = p2;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// assignment</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;p1 = 0;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // assign null</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;if (!p1) ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;test for null</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;if (p1 == 0) ... </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;if (p1) ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // test for not null ... </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;if (p1 != 0) ... </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;if (p1 == p2) ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // test for equality </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;if (p1 != p2) </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;*p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // dereferencing</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;p1-&gt;...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;p1.get();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // return the underlying raw pointer...dangerous!</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;p1.swap(p2);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// fast swap</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;swap(p1, p2);</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>Automatic Conversions:</i></font><br>
+<br>
+<font color="#0000ed"><i>If S is another class, SmartPtr&lt;S&gt; converts to SmartPtr&lt;T&gt; if S* converts to T*</i></font><br>
+<font color="#0000ed"><i>(for example, if S is a subclass of T).&nbsp;&nbsp;Similarly, SmartPtr&lt;S&gt; and SmartPtr&lt;T&gt;</i></font><br>
+<font color="#0000ed"><i>may be compared if S* and T* may be compared.</i></font><br>
+<br>
+<font color="#0000ed"><i>0/nullptr automatically converts to SmartPtr&lt;T&gt;.</i></font><br>
+<br>
+<font color="#0000ed"><i>MakeSmart:</i></font><br>
+<br>
+<font color="#0000ed"><i>One can write SmartPtr&lt;T&gt; p = MakeSmart&lt;T&gt;(x1, ..., xn), and this will create a</i></font><br>
+<font color="#0000ed"><i>smart pointer to an object constructed as T(x1, ..., xn).&nbsp;&nbsp;Besides notational</i></font><br>
+<font color="#0000ed"><i>convenience, it also reduces the number of memory allocations from 2 to 1, as</i></font><br>
+<font color="#0000ed"><i>the data and control block can be allocated in one chunck of memory.</i></font><br>
+<br>
+<font color="#0000ed"><i>This is implemented without reliance on C++11 features, which means that there</i></font><br>
+<font color="#0000ed"><i>are limitations.&nbsp;&nbsp;First, the number n of arguments is limited to 9.&nbsp;&nbsp;And</i></font><br>
+<font color="#0000ed"><i>second, all arguments are pass by const reference. However, you can work around</i></font><br>
+<font color="#0000ed"><i>this by using the helper function Fwd.&nbsp;&nbsp;For example, if T has a 2-argument</i></font><br>
+<font color="#0000ed"><i>constructor where the second must be a non-const reference of some type, and x2</i></font><br>
+<font color="#0000ed"><i>is a variable of that type, you can write MakeSmart&lt;T&gt;(x1, Fwd(x2)), to forward</i></font><br>
+<font color="#0000ed"><i>that reference through all the template nonsense in a typesafe manner.</i></font><br>
+<br>
+<font color="#0000ed"><i>MakeRaw:</i></font><br>
+<br>
+<font color="#0000ed"><i>One can also write T *p = MakeRaw&lt;T&gt;(x1, ..., xn) to create a </i></font><br>
+<font color="#0000ed"><i>raw pointer.&nbsp;&nbsp;This is the same as writing T *p = new T(x1, ..., xn),</i></font><br>
+<font color="#0000ed"><i>except that error handling is determined by the NTL_EXCEPTION</i></font><br>
+<font color="#0000ed"><i>flag (on =&gt; bad_alloc exception is thrown, off =&gt; error message</i></font><br>
+<font color="#0000ed"><i>and abort).</i></font><br>
+<br>
+<font color="#0000ed"><i>MakeRawArray:</i></font><br>
+<br>
+<font color="#0000ed"><i>Another utility routine: one can write T *p = MakeRawArray&lt;T&gt;(n)</i></font><br>
+<font color="#0000ed"><i>to make a plain array of n T objects.&nbsp;&nbsp;Error handling is the same</i></font><br>
+<font color="#0000ed"><i>as for MakeRaw.</i></font><br>
+<br>
+<font color="#0000ed"><i>Dynamic casting:</i></font><br>
+<br>
+<font color="#0000ed"><i>I've also supplied a dynamic cast operation for smart pointers.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; SmartPtr&lt;Derived&gt; d = MakeSmart&lt;Derived&gt;(); // d points to Derived</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; SmartPtr&lt;Base&gt; b = d; // implicit upcast: OK</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; SmartPtr&lt;Derived&gt; d1 = DynamicCast&lt;Derived&gt;(b);</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// downcast to a Derived object -- returns null for a bad cast</i></font><br>
+<br>
+<font color="#0000ed"><i>DeleterPolicy:</i></font><br>
+<br>
+<font color="#0000ed"><i>Normally, when the object pointed to a SmartPtr needs to be destroyed, this is</i></font><br>
+<font color="#0000ed"><i>done by invoking delete on the raw pointer.&nbsp;&nbsp;The user can override this</i></font><br>
+<font color="#0000ed"><i>behavior by specifying a &quot;deleter policy&quot;, which is a class P that defines a</i></font><br>
+<font color="#0000ed"><i>static member function deleter, which is invoked as P::deleter(p).&nbsp;&nbsp;Such a</i></font><br>
+<font color="#0000ed"><i>policy can be attached to a SmartPtr using a specialized constructor (see</i></font><br>
+<font color="#0000ed"><i>below).</i></font><br>
+<br>
+<font color="#0000ed"><i>A deleter policy can be useful, for example, in realizing the PIPL</i></font><br>
+<font color="#0000ed"><i>pattern, where the class T's definition is not visible.&nbsp;&nbsp;The specified deleter</i></font><br>
+<font color="#0000ed"><i>can invoke a free-standing function that itself invokes delete.&nbsp;&nbsp;A deleter</i></font><br>
+<font color="#0000ed"><i>policy can also be useful is memory is to be managed using some mechanism other</i></font><br>
+<font color="#0000ed"><i>than new/delete.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>Implementation notes:</i></font><br>
+<br>
+<font color="#0000ed"><i>If NTL is compiled with the NTL_THREADS option, then the reference counting</i></font><br>
+<font color="#0000ed"><i>will be thread safe.</i></font><br>
+<br>
+<font color="#0000ed"><i>The SmartPtrControl class heirarchy is used to make sure the right destructor</i></font><br>
+<font color="#0000ed"><i>is called when the ref count goes to zero.&nbsp;&nbsp;This can be an issue for forward</i></font><br>
+<font color="#0000ed"><i>declared classes and for subclasses.&nbsp;&nbsp;For example, if T is forward declared in</i></font><br>
+<font color="#0000ed"><i>a context where the ref count goes to zero, or if the object's actual type is a</i></font><br>
+<font color="#0000ed"><i>subclass of T and T's destructor was not declared virtual.&nbsp;&nbsp;The implementation</i></font><br>
+<font color="#0000ed"><i>of SmartPtr guarantees correct behavior in these situations.</i></font><br>
+<br>
+<font color="#0000ed"><i>The null tests p, !p, p == 0, are all effected via an implicit conversion from</i></font><br>
+<font color="#0000ed"><i>SmartPtr&lt;T&gt; to a funny pointer type (a pointer to a member function, which</i></font><br>
+<font color="#0000ed"><i>avoids other, unwanted implicit conversions: this is the so-called &quot;safe bool</i></font><br>
+<font color="#0000ed"><i>idiom&quot;);</i></font><br>
+<br>
+<font color="#0000ed"><i>Also, there is an implicit conversion from another funny pointer type to</i></font><br>
+<font color="#0000ed"><i>SmartPtr&lt;T&gt;, which is how the implicit conversion from 0/nullptr is achieved.</i></font><br>
+<br>
+<font color="#0000ed"><i>In C++11 both of the above effects could perhaps be achieved more directly.</i></font><br>
+<font color="#0000ed"><i>The new &quot;explict bool&quot; operator can replace the &quot;safe bool idiom&quot;, and </i></font><br>
+<font color="#0000ed"><i>the new nullptr_t type could be used to get the conversion from null to work.</i></font><br>
+<br>
+<font color="#0000ed"><i>NOTES: See <a href="http://www.artima.com/cppsource/safebool.html">http://www.artima.com/cppsource/safebool.html</a> for more on the &quot;safe</i></font><br>
+<font color="#0000ed"><i>bool idiom&quot;.&nbsp;&nbsp;</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>****************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#0000ed"><i>// The default &quot;deleter policy&quot;</i></font><br>
+<font color="#008b00"><b>struct</b></font>&nbsp;DefaultDeleterPolicy {<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>void</b></font>&nbsp;deleter(T *p) { <font color="#b02f60"><b>delete</b></font>&nbsp;p; }<br>
+<br>
+};<br>
+<br>
+<font color="#0000ed"><i>// A tagging class, for better readability in invoking constructor.</i></font><br>
+<font color="#0000ed"><i>// Usage: SmartPtr&lt;T&gt; p(r, ChoosePolicy&lt;MyDeleterPolicy&gt;());</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;P&gt;<br>
+<font color="#008b00"><b>struct</b></font>&nbsp;ChoosePolicy { };<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+<font color="#008b00"><b>class</b></font>&nbsp;SmartPtr {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;Y&gt; <font color="#008b00"><b>explicit</b></font>&nbsp;SmartPtr(Y* p);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// construct smart pointer from raw pointer with deleter policy</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// DefaultDeleterPolicy (so p should be allocated using new).</i></font><br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// NOTE: Y* must convert to T*, but upon the original pointer is preserved</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// so that when ref count drops to 0, the *original* object of type Y is destroyed.</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: a control block is dynamically allocated;</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;if this allocation fails, the object pointed to by p is destroyed</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;and a bad_alloc exception is thrown</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;Y, <font color="#008b00"><b>class</b></font>&nbsp;P&gt; SmartPtr(Y* p, ChoosePolicy&lt;P&gt;); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// construct smart pointer from raw pointer with deleter policy P.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// NOTE: Y* must convert to T*, but upon the original pointer is preserved</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// so that when ref count drops to 0, the *original* object of type Y is destroyed.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: a control block is dynamically allocated;</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;if this allocation fails, the object pointed to by p is destroyed</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;and a bad_alloc exception is thrown</i></font><br>
+<br>
+&nbsp;&nbsp; SmartPtr();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// initial value null</i></font><br>
+<br>
+&nbsp;&nbsp; SmartPtr(fake_null_type1);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// automatic conversion from 0/nullptr</i></font><br>
+<br>
+&nbsp;&nbsp; ~SmartPtr();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// destructor</i></font><br>
+<br>
+&nbsp;&nbsp; SmartPtr(<font color="#008b00"><b>const</b></font>&nbsp;SmartPtr&amp; other);<br>
+&nbsp;&nbsp; SmartPtr&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;SmartPtr&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// copy and asignment</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;Y&gt; SmartPtr(<font color="#008b00"><b>const</b></font>&nbsp;SmartPtr&lt;Y&gt;&amp; other);<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;Y&gt; SmartPtr&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;SmartPtr&lt;Y&gt;&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// copy and asignment</i></font><br>
+<br>
+&nbsp;&nbsp; T&amp; <font color="#b02f60"><b>operator</b></font>*()&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; T* <font color="#b02f60"><b>operator</b></font>-&gt;() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// indirection</i></font><br>
+<br>
+&nbsp;&nbsp; T* get() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// get underlying raw pointer</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;swap(SmartPtr&amp; other);<br>
+<br>
+&nbsp;&nbsp; SmartPtr(fake_null_type);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allows assignment and initialization from 0</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#b02f60"><b>operator</b></font>&nbsp;fake_null_type() <font color="#008b00"><b>const</b></font>; <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allows comparisons to 0</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;Y&gt; SmartPtr&lt;Y&gt; DynamicCast() <font color="#008b00"><b>const</b></font>; <br>
+};<br>
+<br>
+<br>
+<font color="#0000ed"><i>// free swap function</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt; <font color="#008b00"><b>void</b></font>&nbsp;swap(SmartPtr&lt;T&gt;&amp; p, SmartPtr&lt;T&gt;&amp; q);<br>
+<br>
+<font color="#0000ed"><i>// free dynamic cast function</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X, <font color="#008b00"><b>class</b></font>&nbsp;Y&gt; SmartPtr&lt;X&gt; DynamicCast(<font color="#008b00"><b>const</b></font>&nbsp;SmartPtr&lt;Y&gt;&amp; p);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// Equality testing</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X, <font color="#008b00"><b>class</b></font>&nbsp;Y&gt;<br>
+<font color="#008b00"><b>bool</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(<font color="#008b00"><b>const</b></font>&nbsp;SmartPtr&lt;X&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;SmartPtr&lt;Y&gt;&amp; b);<br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X, <font color="#008b00"><b>class</b></font>&nbsp;Y&gt;<br>
+<font color="#008b00"><b>bool</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(<font color="#008b00"><b>const</b></font>&nbsp;SmartPtr&lt;X&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;SmartPtr&lt;Y&gt;&amp; b);<br>
+<br>
+<font color="#0000ed"><i>// MakeSmart psuedo-variadic template</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T, <font color="#008b00"><b>class</b></font>&nbsp;X1, ..., <font color="#008b00"><b>class</b></font>&nbsp;Xn&gt; <br>
+SmartPtr&lt;T&gt; MakeSmart(<font color="#008b00"><b>const</b></font>&nbsp;X1&amp; x1, ..., <font color="#008b00"><b>const</b></font>&nbsp;Xn&amp; xn);<br>
+<font color="#0000ed"><i>// EXCEPTIONS: may throw if dynamic constrction of T(x1, ..., xn) fails</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// EXCEPTIONS: unless otherwise specified, the methods above</i></font><br>
+<font color="#0000ed"><i>// never throw an exception (under C++11 rules, if a destructor</i></font><br>
+<font color="#0000ed"><i>// is invoked that throws an exception, the program will terminate).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>***************************************************************************</i></font><br>
+<br>
+<font color="#0000ed"><i>Experimantal: CloneablePtr&lt;T&gt; ...essentially same interface as SmartPtr, but </i></font><br>
+<font color="#0000ed"><i>allows cloning of complete objects.&nbsp;&nbsp;The differences:</i></font><br>
+<font color="#0000ed"><i>*&nbsp;&nbsp;must construct using MakeCloneable</i></font><br>
+<font color="#0000ed"><i>*&nbsp;&nbsp;a clone method is provided</i></font><br>
+<font color="#0000ed"><i>*&nbsp;&nbsp;implicit conversion from CloneablePtr to SmartPtr is allowed</i></font><br>
+<br>
+<font color="#0000ed"><i>Example:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; CloneablePtr&lt;Derived&gt; d = MakeCloneable&lt;Derived&gt;(); </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // d points to Derived</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; CloneablePtr&lt;Base&gt; b = d; // implicit upcast: OK</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; CloneablePtr&lt;Base&gt; b1 = b.clone(); </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // clone of b, which is really a Derived object</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; CloneablePtr&lt;Derived&gt; d1 = DynamicCast&lt;Derived&gt;(b1);</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; // downcast to a Derived object -- returns null for a bad cast</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; SmartPtr&lt;Base&gt; b2 = d1;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; </i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>Implementation:</i></font><br>
+<br>
+<font color="#0000ed"><i>In the clone method, the object is constructed using the copy constructor for</i></font><br>
+<font color="#0000ed"><i>the type T, where T is the compile-time type with which the first smart pointer</i></font><br>
+<font color="#0000ed"><i>to this object was was created, even if the pointer has been subsequently</i></font><br>
+<font color="#0000ed"><i>upcasted to a base type S.&nbsp;&nbsp;Such objects must have been initially created using</i></font><br>
+<font color="#0000ed"><i>the MakeCloneable function.&nbsp;&nbsp;It turns out, this is hard to do in a completely</i></font><br>
+<font color="#0000ed"><i>standards-compliant way, because of the type erasure going on.&nbsp;&nbsp;So I settled on</i></font><br>
+<font color="#0000ed"><i>the current method, which does some low-level pointer arithmetic.&nbsp;&nbsp;Even with</i></font><br>
+<font color="#0000ed"><i>fancy things like multiple and virtual inheritance, it should work, under the</i></font><br>
+<font color="#0000ed"><i>assumption that if two objects have the same (runtime) type, then their memory</i></font><br>
+<font color="#0000ed"><i>layout is the same.&nbsp;&nbsp;I don't think anything like that is guaranteed by the</i></font><br>
+<font color="#0000ed"><i>standard, but this seems reasonable, and it seems to work.&nbsp;&nbsp;Like I said, it is</i></font><br>
+<font color="#0000ed"><i>experimental, and I would appreciate feedback from C++ gurus.</i></font><br>
+<br>
+<font color="#0000ed"><i>Note that NTL does not use this feature, but I do have applications where this</i></font><br>
+<font color="#0000ed"><i>is convenient.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>*********************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+<font color="#008b00"><b>class</b></font>&nbsp;CloneablePtr {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+&nbsp;&nbsp; CloneablePtr();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// initial value null</i></font><br>
+<br>
+&nbsp;&nbsp; ~CloneablePtr();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// if ref count drops to zero, then delete referent</i></font><br>
+<br>
+&nbsp;&nbsp; CloneablePtr(<font color="#008b00"><b>const</b></font>&nbsp;CloneablePtr&amp; other);<br>
+&nbsp;&nbsp; CloneablePtr&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;CloneablePtr&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// copy and asignment</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;Y&gt; CloneablePtr(<font color="#008b00"><b>const</b></font>&nbsp;CloneablePtr&lt;Y&gt;&amp; other);<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;Y&gt; CloneablePtr&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;CloneablePtr&lt;Y&gt;&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// copy and asignment</i></font><br>
+<br>
+&nbsp;&nbsp; T&amp; <font color="#b02f60"><b>operator</b></font>*()&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; T* <font color="#b02f60"><b>operator</b></font>-&gt;() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// indirection</i></font><br>
+<br>
+&nbsp;&nbsp; T* get() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// get underlying raw pointer</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;swap(CloneablePtr&amp; other);<br>
+<br>
+&nbsp;&nbsp; CloneablePtr(fake_null_type);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allows assignment and initialization from 0</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#b02f60"><b>operator</b></font>&nbsp;fake_null_type() <font color="#008b00"><b>const</b></font>; <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allows comparisons to 0</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;Y&gt; CloneablePtr&lt;Y&gt; DynamicCast() <font color="#008b00"><b>const</b></font>; <br>
+<br>
+&nbsp;&nbsp; CloneablePtr clone() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// construct a clone, using the copy constructor</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw if copy construction fails</i></font><br>
+<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;Y&gt; <font color="#b02f60"><b>operator</b></font>&nbsp;SmartPtr&lt;Y&gt;();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// implicit conversion from CloneablePtr&lt;T&gt; to SmartPtr&lt;Y&gt;,</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allowed if T* converts implicitly to Y*.</i></font><br>
+};<br>
+<br>
+<br>
+<font color="#0000ed"><i>// free swap function</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt; <font color="#008b00"><b>void</b></font>&nbsp;swap(CloneablePtr&lt;T&gt;&amp; p, CloneablePtr&lt;T&gt;&amp; q);<br>
+<br>
+<font color="#0000ed"><i>// free dynamic cast function</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X, <font color="#008b00"><b>class</b></font>&nbsp;Y&gt; CloneablePtr&lt;X&gt; DynamicCast(<font color="#008b00"><b>const</b></font>&nbsp;CloneablePtr&lt;Y&gt;&amp; p);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// Equality testing</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X, <font color="#008b00"><b>class</b></font>&nbsp;Y&gt;<br>
+<font color="#008b00"><b>bool</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(<font color="#008b00"><b>const</b></font>&nbsp;CloneablePtr&lt;X&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;CloneablePtr&lt;Y&gt;&amp; b);<br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X, <font color="#008b00"><b>class</b></font>&nbsp;Y&gt;<br>
+<font color="#008b00"><b>bool</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(<font color="#008b00"><b>const</b></font>&nbsp;CloneablePtr&lt;X&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;CloneablePtr&lt;Y&gt;&amp; b);<br>
+<br>
+<font color="#0000ed"><i>// MakeCloneable psuedo-variadic template</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T, <font color="#008b00"><b>class</b></font>&nbsp;X1, ..., <font color="#008b00"><b>class</b></font>&nbsp;Xn&gt; <br>
+CloneablePtr&lt;T&gt; MakeCloneable(<font color="#008b00"><b>const</b></font>&nbsp;X1&amp; x1, ..., <font color="#008b00"><b>const</b></font>&nbsp;Xn&amp; xn);<br>
+<font color="#0000ed"><i>// EXCEPTIONS: may throw if dynamic constrction of T(x1, ..., xn) fails</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// EXCEPTIONS: unless otherwise specified, the methods above</i></font><br>
+<font color="#0000ed"><i>// never throw an exception (under C++11 rules, if a destructor</i></font><br>
+<font color="#0000ed"><i>// is invoked that throws an exception, the program will terminate).</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*********************************************************************</i></font><br>
+<br>
+<font color="#0000ed"><i>UniquePtr&lt;T&gt; -- unique pointer to object with copying disabled.</i></font><br>
+<font color="#0000ed"><i>Useful for pointers inside classes so that we can</i></font><br>
+<font color="#0000ed"><i>automatically destruct them.&nbsp;&nbsp;</i></font><br>
+<br>
+<font color="#0000ed"><i>Constructors:</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; UniquePtr&lt;T&gt; p1;&nbsp;&nbsp;&nbsp;&nbsp; // initialize with null</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; UniquePtr&lt;T&gt; p1(0); </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; T* rp;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; UniquePtr&lt;T&gt; p1(rp); // construct using raw pointer (explicit)</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1 = 0;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// destroy's p1's referent and assigns null</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.make(...);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// destroy's p1's referent and assigns</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// a fresh objected constructed via T(...),</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// using psuedo-variadic templates</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.reset(rp);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// destroy's p1's referent and assign rp</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (!p1) ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // test for null</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1 == 0) ...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1) ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// test for nonnull</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1 != 0) ...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1 == p2) ...&nbsp;&nbsp;&nbsp;&nbsp;// test for equality</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1 != p2) ...&nbsp;&nbsp; </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; *p1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// dereferencing</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1-&gt;...</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; rp = p1.get();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // fetch raw pointer</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; rp = p1.release();&nbsp;&nbsp; // fetch raw pointer, and set to null</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.move(p2);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // move p2 to p1, destroying p1's referent</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp; if p1 != p2</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.swap(p2);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // swap pointers</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; swap(p1, p2);</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>DeleterPolicy:</i></font><br>
+<br>
+<font color="#0000ed"><i>UniquePtr supports a &quot;deleter policy&quot;, analogous to that used in SmartPtr.</i></font><br>
+<br>
+<font color="#0000ed"><i>Normally, when the object pointed to a UniquePtr needs to be destroyed, this is</i></font><br>
+<font color="#0000ed"><i>done by invoking delete on the raw pointer.&nbsp;&nbsp;The user can override this</i></font><br>
+<font color="#0000ed"><i>behavior by specifying a &quot;deleter policy&quot;, which is a class P that defines a</i></font><br>
+<font color="#0000ed"><i>static member function deleter, which is invoked as P::deleter(p).&nbsp;&nbsp;</i></font><br>
+<br>
+<font color="#0000ed"><i>Unlike with a SmartPtr, the deleter policy must be attached to the type.</i></font><br>
+<font color="#0000ed"><i>The default policy is the same DefaultDeleterPolicy, defined above.</i></font><br>
+<br>
+<font color="#0000ed"><i>A deleter policy can be useful, for example, in realizing the PIPL</i></font><br>
+<font color="#0000ed"><i>pattern, where the class T's definition is not visible.&nbsp;&nbsp;The specified deleter</i></font><br>
+<font color="#0000ed"><i>can invoke a free-standing function that itself invokes delete.&nbsp;&nbsp;A deleter</i></font><br>
+<font color="#0000ed"><i>policy can also be useful is memory is to be managed using some mechanism other</i></font><br>
+<font color="#0000ed"><i>than new/delete.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; </i></font><br>
+<font color="#0000ed"><i>*********************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T, <font color="#008b00"><b>class</b></font>&nbsp;P=DefaultDeleterPolicy&gt;<br>
+<font color="#008b00"><b>class</b></font>&nbsp;UniquePtr {<br>
+<font color="#b02f60"><b>public</b></font>:&nbsp;&nbsp; <br>
+&nbsp;&nbsp; <font color="#008b00"><b>explicit</b></font>&nbsp;UniquePtr(T *p);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// construct UniquePtr from raw pointer (allocated with new)</i></font><br>
+<br>
+&nbsp;&nbsp; UniquePtr();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// initial value is null</i></font><br>
+<br>
+&nbsp;&nbsp; UniquePtr&amp; <font color="#b02f60"><b>operator</b></font>=(fake_null_type1);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allows assignment of 0; equivalent to calling reset()</i></font><br>
+<br>
+&nbsp;&nbsp; ~UniquePtr();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// destroys referent by calling P::deleter</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;reset(T* p = <font color="#ff8b00">0</font>);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// reset underlying pointer to p, destroying original referent</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// by calling P::deleter</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T, <font color="#008b00"><b>class</b></font>&nbsp;X1, ..., <font color="#008b00"><b>class</b></font>&nbsp;Xn&gt; <br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;make(<font color="#008b00"><b>const</b></font>&nbsp;X1&amp; x1, ..., <font color="#008b00"><b>const</b></font>&nbsp;Xn&amp; xn);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// pseudo-variadic template, roughly equivalent to</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// reset(new T(x1, ..., xn))</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: this may throw (but provides strong ES guarantee)</i></font><br>
+<br>
+&nbsp;&nbsp; T&amp; <font color="#b02f60"><b>operator</b></font>*()&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; T* <font color="#b02f60"><b>operator</b></font>-&gt;() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// indirection</i></font><br>
+<br>
+&nbsp;&nbsp; T* get() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// get raw pointer</i></font><br>
+<br>
+&nbsp;&nbsp; T* release();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// returns raw pointer, and sets the raw pointer to null</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;move(UniquePtr&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// move other to *this, destroying original referent</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// by calling P::deleter</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;swap(UniquePtr&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// swap raw pointers</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#b02f60"><b>operator</b></font>&nbsp;fake_null_type() <font color="#008b00"><b>const</b></font>; <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allows comparison with 0</i></font><br>
+<br>
+<font color="#b02f60"><b>private</b></font>:<br>
+&nbsp;&nbsp; UniquePtr(<font color="#008b00"><b>const</b></font>&nbsp;UniquePtr&amp;); <font color="#0000ed"><i>// disabled</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;UniquePtr&amp;); <font color="#0000ed"><i>// disabled</i></font><br>
+};<br>
+<br>
+<br>
+<font color="#0000ed"><i>// free swap function</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt; <font color="#008b00"><b>void</b></font>&nbsp;swap(UniquePtr&lt;T&gt;&amp; p, UniquePtr&lt;T&gt;&amp; q);<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// Equality testing</i></font><br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X, <font color="#008b00"><b>class</b></font>&nbsp;P&gt; <font color="#008b00"><b>bool</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(<font color="#008b00"><b>const</b></font>&nbsp;UniquePtr&lt;X,P&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;UniquePtr&lt;X,P&gt;&amp; b);<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X, <font color="#008b00"><b>class</b></font>&nbsp;P&gt; <font color="#008b00"><b>bool</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(<font color="#008b00"><b>const</b></font>&nbsp;UniquePtr&lt;X,P&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;UniquePtr&lt;X,P&gt;&amp; b);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// EXCEPTIONS: unless otherwise specified, the methods above</i></font><br>
+<font color="#0000ed"><i>// never throw an exception (under C++11 rules, if a destructor</i></font><br>
+<font color="#0000ed"><i>// is invoked that throws an exception, the program will terminate).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*********************************************************************</i></font><br>
+<br>
+<font color="#0000ed"><i>CopiedPtr&lt;T&gt; -- essentially the same interface and implemetation as UniquePtr,</i></font><br>
+<font color="#0000ed"><i>with the following exceptions:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;* copy constructor is defined: by default, it will create a copy</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; of the referrent using T's copy constructor (but this bahavior</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; can be overridden -- see below)</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;* assignment operator is defined (and implemented in terms of the</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; copy constructor)</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;* The policy managing a CopiedPtr specifier deleter and copier functions:</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; the deleter is used to delete objects and the copies is used for making</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; copies (see below).</i></font><br>
+<br>
+<font color="#0000ed"><i>NOTE: this class is meant to replace the OptionalVal class, whose</i></font><br>
+<font color="#0000ed"><i>interface is not so nice.&nbsp;&nbsp;For backwards compatibility, OptionalVal will</i></font><br>
+<font color="#0000ed"><i>be maintained, however.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; </i></font><br>
+<font color="#0000ed"><i>*********************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// This class specifies the default copier</i></font><br>
+<font color="#008b00"><b>struct</b></font>&nbsp;DefaultCopierPolicy {<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>static</b></font>&nbsp;T* copier(T *p) { <font color="#b02f60"><b>return</b></font>&nbsp;(p ?&nbsp;&nbsp;MakeRaw&lt;T&gt;(*p) : <font color="#ff8b00">0</font>); }<br>
+<br>
+};<br>
+<br>
+<font color="#0000ed"><i>// This class specifies an alternative copier, which is meant</i></font><br>
+<font color="#0000ed"><i>// to perform &quot;deep&quot; copies on class heirarchies that support an</i></font><br>
+<font color="#0000ed"><i>// appropriate clone() method.</i></font><br>
+<font color="#008b00"><b>struct</b></font>&nbsp;CloningCopier {<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>static</b></font>&nbsp;T* copier(T *p) { <font color="#b02f60"><b>return</b></font>&nbsp;(p ?&nbsp;&nbsp;p-&gt;clone() : <font color="#ff8b00">0</font>); }<br>
+<br>
+};<br>
+<br>
+<font color="#008b00"><b>struct</b></font>&nbsp;DefaultCopiedPtrPolicy : DefaultDeleterPolicy, DefaultCopierPolicy { };<br>
+<font color="#008b00"><b>struct</b></font>&nbsp;CloningCopiedPtrPolicy : DefaultDeleterPolicy, CloningCopier { };<br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T, <font color="#008b00"><b>class</b></font>&nbsp;P=DefaultCopiedPtrPolicy&gt;<br>
+<font color="#008b00"><b>class</b></font>&nbsp;CopiedPtr {<br>
+<font color="#b02f60"><b>public</b></font>:&nbsp;&nbsp; <br>
+&nbsp;&nbsp; <font color="#008b00"><b>explicit</b></font>&nbsp;CopiedPtr(T *p);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// construct CopiedPtr from raw pointer (allocated with new)</i></font><br>
+<br>
+&nbsp;&nbsp; CopiedPtr();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// initial value is null</i></font><br>
+<br>
+&nbsp;&nbsp; CopiedPtr(<font color="#008b00"><b>const</b></font>&nbsp;CopiedPtr&amp; other); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// creates a copy of other's referent by calling P::copier,</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// and destroys original referent by calling P::deleter</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;CopiedPtr&amp;); <br>
+<br>
+&nbsp;&nbsp; CopiedPtr&amp; <font color="#b02f60"><b>operator</b></font>=(fake_null_type1);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allows assignment of 0; equivalent to calling reset()</i></font><br>
+<br>
+&nbsp;&nbsp; ~CopiedPtr();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// destroys referent by calling P::deleter</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;reset(T* p = <font color="#ff8b00">0</font>);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// reset underlying pointer to p, destroying original referent</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// by calling P::deleter</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T, <font color="#008b00"><b>class</b></font>&nbsp;X1, ..., <font color="#008b00"><b>class</b></font>&nbsp;Xn&gt; <br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;make(<font color="#008b00"><b>const</b></font>&nbsp;X1&amp; x1, ..., <font color="#008b00"><b>const</b></font>&nbsp;Xn&amp; xn);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// pseudo-variadic template, roughly equivalent to</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// reset(new T(x1, ..., xn))</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: this may throw (but provides strong ES guarantee)</i></font><br>
+<br>
+&nbsp;&nbsp; T&amp; <font color="#b02f60"><b>operator</b></font>*()&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; T* <font color="#b02f60"><b>operator</b></font>-&gt;() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// indirection</i></font><br>
+<br>
+&nbsp;&nbsp; T* get() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// get raw pointer</i></font><br>
+<br>
+&nbsp;&nbsp; T* release();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// returns raw pointer, and sets the raw pointer to null</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;move(CopiedPtr&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// move other to *this, destroying original referent</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// by calling P::deleter</i></font><br>
+<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;swap(CopiedPtr&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// swap raw pointers</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#b02f60"><b>operator</b></font>&nbsp;fake_null_type() <font color="#008b00"><b>const</b></font>; <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allows comparison with 0</i></font><br>
+<br>
+};<br>
+<br>
+<br>
+<font color="#0000ed"><i>// free swap function</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt; <font color="#008b00"><b>void</b></font>&nbsp;swap(CopiedPtr&lt;T&gt;&amp; p, CopiedPtr&lt;T&gt;&amp; q);<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// Equality testing</i></font><br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X, <font color="#008b00"><b>class</b></font>&nbsp;P&gt; <font color="#008b00"><b>bool</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(<font color="#008b00"><b>const</b></font>&nbsp;CopiedPtr&lt;X,P&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;CopiedPtr&lt;X,P&gt;&amp; b);<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X, <font color="#008b00"><b>class</b></font>&nbsp;P&gt; <font color="#008b00"><b>bool</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(<font color="#008b00"><b>const</b></font>&nbsp;CopiedPtr&lt;X,P&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;CopiedPtr&lt;X,P&gt;&amp; b);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// EXCEPTIONS: unless otherwise specified, the methods above</i></font><br>
+<font color="#0000ed"><i>// never throw an exception (under C++11 rules, if a destructor</i></font><br>
+<font color="#0000ed"><i>// is invoked that throws an exception, the program will terminate).</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*********************************************************************</i></font><br>
+<br>
+<font color="#0000ed"><i>UniqueArray&lt;T&gt; -- similar to UniquePtr, but for arrays.&nbsp;&nbsp;These arrays cannot be</i></font><br>
+<font color="#0000ed"><i>resized -- for that, you should use the Vec class.</i></font><br>
+<br>
+<font color="#0000ed"><i>Constructors:</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; UniqueArray&lt;T&gt; p1;&nbsp;&nbsp;&nbsp;&nbsp; // initialize with null</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; UniqueArray&lt;T&gt; p1(0); </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; T* rp;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; UniqueArray&lt;T&gt; p1(rp); // construct using raw pointer (explicit)</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1 = 0;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// destroy's p1's referent and assigns null</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.SetLength(n);&nbsp;&nbsp;&nbsp;&nbsp; // destroy's p1's referent and assigns</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// a fresh objected constructed via new T[n]</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.reset(rp);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// destroy's p1's referent and assign rp</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (!p1) ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // test for null</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1 == 0) ...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1) ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// test for nonnull</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1 != 0) ...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1 == p2) ...&nbsp;&nbsp;&nbsp;&nbsp;// test for equality</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1 != p2) ...&nbsp;&nbsp; </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1[i]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// array indexing</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; rp = p1.get();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // fetch raw pointer</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; rp = p1.release();&nbsp;&nbsp; // fetch raw pointer, and set to null</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.move(p2);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // move p2 to p1, destroying p1's referent </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp; if p1 != p2</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.swap(p2);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // fast swap</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; swap(p1, p2);</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; </i></font><br>
+<font color="#0000ed"><i>*********************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+<font color="#008b00"><b>class</b></font>&nbsp;UniqueArray {<br>
+<font color="#b02f60"><b>public</b></font>:&nbsp;&nbsp; <br>
+&nbsp;&nbsp; <font color="#008b00"><b>explicit</b></font>&nbsp;UniqueArray(T *p);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// construct from raw pointer (allocated with new[])</i></font><br>
+<br>
+&nbsp;&nbsp; UniqueArray();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// initially null</i></font><br>
+<br>
+&nbsp;&nbsp; UniqueArray&amp; <font color="#b02f60"><b>operator</b></font>=(fake_null_type1);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allows of 0</i></font><br>
+<br>
+&nbsp;&nbsp; ~UniqueArray();<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;reset(T* p = <font color="#ff8b00">0</font>);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// reset with raw pointer, destroying referent</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;SetLength(<font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// destroys referent and allocates an array of size n</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: this may throw (but provides strong ES guarantee)</i></font><br>
+<br>
+&nbsp;&nbsp; T&amp; <font color="#b02f60"><b>operator</b></font>[](<font color="#008b00"><b>long</b></font>&nbsp;i) <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// accesses ith element in the array (currently no range checking)</i></font><br>
+<br>
+&nbsp;&nbsp; T* get() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// get raw pointer</i></font><br>
+<br>
+&nbsp;&nbsp; T* elts() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// get raw pointer (for compatibility with the Vec class)</i></font><br>
+<br>
+&nbsp;&nbsp; T* release();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// get raw pointer and reset to null</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;move(UniqueArray&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// move raw pointer</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;swap(UniqueArray&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// swap raw pointer</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#b02f60"><b>operator</b></font>&nbsp;fake_null_type() <font color="#008b00"><b>const</b></font>; <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allows comparison to 0</i></font><br>
+<br>
+<font color="#b02f60"><b>private</b></font>:<br>
+&nbsp;&nbsp; UniqueArray(<font color="#008b00"><b>const</b></font>&nbsp;UniqueArray&amp;); <font color="#0000ed"><i>// disabled</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;UniqueArray&amp;); <font color="#0000ed"><i>// disabled</i></font><br>
+<br>
+};<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// free swap function</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt; <font color="#008b00"><b>void</b></font>&nbsp;swap(UniqueArray&lt;T&gt;&amp; p, UniqueArray&lt;T&gt;&amp; q);<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// Equality testing</i></font><br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X&gt; <font color="#008b00"><b>bool</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(<font color="#008b00"><b>const</b></font>&nbsp;UniqueArray&lt;X&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;UniqueArray&lt;X&gt;&amp; b);<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X&gt; <font color="#008b00"><b>bool</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(<font color="#008b00"><b>const</b></font>&nbsp;UniqueArray&lt;X&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;UniqueArray&lt;X&gt;&amp; b);<br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*********************************************************************</i></font><br>
+<br>
+<font color="#0000ed"><i>Unique2DArray&lt;T&gt; -- unique pointer to array of arrays.</i></font><br>
+<br>
+<font color="#0000ed"><i>This is very similar to UniqueArray&lt; UniqueArray&lt;T&gt; &gt;, except that </i></font><br>
+<font color="#0000ed"><i>we can retrofit old code that accepts objects of type T**.</i></font><br>
+<br>
+<font color="#0000ed"><i>Constructors:</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; Unique2DArray&lt;T&gt; p1;&nbsp;&nbsp;&nbsp;&nbsp; // initialize with null</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; Unique2DArray&lt;T&gt; p1(0); </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1 = 0;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// destroy's p1's referent and assigns null</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.reset();</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.SetLength(n);&nbsp;&nbsp;&nbsp;&nbsp; // destroy's p1's referent and assigns</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// a fresh array of null pointers</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.SetDims(n, m)&nbsp;&nbsp;&nbsp;&nbsp; // creates an n x m array</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (!p1) ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // test for null</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1 == 0) ...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1) ...&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// test for nonnull</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1 != 0) ...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1 == p2) ...&nbsp;&nbsp;&nbsp;&nbsp;// test for equality</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1 != p2) ...&nbsp;&nbsp; </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1[i]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// array indexing</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; T **rp;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; rp = p1.get();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // fetch raw pointer</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; rp = p1.release();&nbsp;&nbsp; // fetch raw pointer, and set to null</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.move(p2);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // if p1 != p2 then:</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;&nbsp;makes p1 point to p2's referent,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;&nbsp;setting p2 to null and destroying</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp;&nbsp;&nbsp;p1's referent</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.swap(p2);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // fast swap</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; swap(p1, p2);</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; </i></font><br>
+<font color="#0000ed"><i>*********************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+<font color="#008b00"><b>class</b></font>&nbsp;Unique2DArray {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;T *T_ptr;<br>
+<br>
+&nbsp;&nbsp; Unique2DArray(); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// initially null</i></font><br>
+<br>
+&nbsp;&nbsp; Unique2DArray&amp; <font color="#b02f60"><b>operator</b></font>=(fake_null_type1);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allows initialization and assignment of 0</i></font><br>
+<br>
+&nbsp;&nbsp; ~Unique2DArray();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// destroys the entire array and each row in the array</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;reset();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// reset to null</i></font><br>
+<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;SetLength(<font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// resets the array to a vector of length n,</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// each entry initialized to null.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw (provides strong ES guarantee)</i></font><br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;SetDims(<font color="#008b00"><b>long</b></font>&nbsp;n, <font color="#008b00"><b>long</b></font>&nbsp;m); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// resets the array to a 2D array with n rows and m columns.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw (provides strong ES guarantee)</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;SetDimsFrom1(<font color="#008b00"><b>long</b></font>&nbsp;n, <font color="#008b00"><b>long</b></font>&nbsp;m); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// same as above, but only initializes rows 1..n-1.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// this helps with some legacy code.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw (provides strong ES guarantee)</i></font><br>
+<br>
+&nbsp;&nbsp; T_ptr&amp; <font color="#b02f60"><b>operator</b></font>[](<font color="#008b00"><b>long</b></font>&nbsp;i) <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// array indexing, no range checking</i></font><br>
+<br>
+&nbsp;&nbsp; T_ptr* get() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// return underlying pointer</i></font><br>
+<br>
+&nbsp;&nbsp; T_ptr* release() { len = <font color="#ff8b00">0</font>; <font color="#b02f60"><b>return</b></font>&nbsp;dp.release(); }<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// return underlying pointer and reset to null</i></font><br>
+<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;move(Unique2DArray&amp; other); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// move pointers</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;swap(Unique2DArray&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// swap pointers</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#b02f60"><b>operator</b></font>&nbsp;fake_null_type() <font color="#008b00"><b>const</b></font>; <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// allows comparison to 0</i></font><br>
+<br>
+<br>
+<font color="#b02f60"><b>private</b></font>:<br>
+<br>
+&nbsp;&nbsp; Unique2DArray(<font color="#008b00"><b>const</b></font>&nbsp;Unique2DArray&amp;); <font color="#0000ed"><i>// disabled</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;Unique2DArray&amp;); <font color="#0000ed"><i>// disabled</i></font><br>
+<br>
+};<br>
+<br>
+<br>
+<font color="#0000ed"><i>// free swap function</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt; <font color="#008b00"><b>void</b></font>&nbsp;swap(Unique2DArray&lt;T&gt;&amp; p, Unique2DArray&lt;T&gt;&amp; q);<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// Equality testing</i></font><br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X&gt; <font color="#008b00"><b>bool</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(<font color="#008b00"><b>const</b></font>&nbsp;Unique2DArray&lt;X&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;Unique2DArray&lt;X&gt;&amp; b);<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;X&gt; <font color="#008b00"><b>bool</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(<font color="#008b00"><b>const</b></font>&nbsp;Unique2DArray&lt;X&gt;&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;Unique2DArray&lt;X&gt;&amp; b);<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*********************************************************************</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>OptionalVal&lt;T&gt; -- unique pointer to object with copying enabled.</i></font><br>
+<br>
+<font color="#0000ed"><i>NOTE: this class is deprecated; use CopiedPtr instead.</i></font><br>
+<font color="#0000ed"><i>It will, however, be maintained indefinitely for backward compatibility.</i></font><br>
+<br>
+<font color="#0000ed"><i>Constructors:</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; OptionalVal&lt;T&gt; p1;&nbsp;&nbsp;&nbsp;&nbsp; // initialize with null</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; T* rp;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; OptionalVal&lt;T&gt; p1(rp); // construct using raw pointer (explicit)</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; OptionalVal&lt;T&gt; p2(p1); // construct a copy of p1's referent</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.make(...);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// destroy's p1's referent and assigns</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// a fresh objected constructed via T(...),</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// using psuedo variadic templates</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.reset(rp);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// destroy's p1's referent and assign rp</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; if (p1.exists()) ... // test for null</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.val()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // dereference</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; rp = p1.get();&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // fetch raw pointer</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; rp = p1.release();&nbsp;&nbsp; // fetch raw pointer, and set to NULL</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.move(p2);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // move p2 to p1, destroying p1's referent</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;//&nbsp;&nbsp; if p1 != p2</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1 = p2;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // deep copy, using T's copy constructor</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p1.swap(p2);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // swap pointers</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; swap(p1, p2);</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; </i></font><br>
+<font color="#0000ed"><i>*********************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt;<br>
+<font color="#008b00"><b>class</b></font>&nbsp;OptionalVal {<br>
+<font color="#b02f60"><b>public</b></font>:&nbsp;&nbsp; <br>
+&nbsp;&nbsp; <font color="#008b00"><b>explicit</b></font>&nbsp;OptionalVal(T *p);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// initialize using raw pointer (allocated with new)</i></font><br>
+<br>
+&nbsp;&nbsp; OptionalVal();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// initialize to null</i></font><br>
+<br>
+&nbsp;&nbsp; OptionalVal(<font color="#008b00"><b>const</b></font>&nbsp;OptionalVal&amp; other); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// initialize using a deep copy (via T's copy constructor)</i></font><br>
+<br>
+&nbsp;&nbsp; OptionalVal&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;OptionalVal&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// assignment using a deep copy (via T's copy constructor)</i></font><br>
+<br>
+&nbsp;&nbsp; ~OptionalVal();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// destroys the referent</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;reset(T* p = <font color="#ff8b00">0</font>);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// resets the referent</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T, <font color="#008b00"><b>class</b></font>&nbsp;X1, ..., <font color="#008b00"><b>class</b></font>&nbsp;Xn&gt; <br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;make(<font color="#008b00"><b>const</b></font>&nbsp;X1&amp; x1, ..., <font color="#008b00"><b>const</b></font>&nbsp;Xn&amp; xn);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// pseudo-variadic template.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// resets the referent to a new object T(x1, ..., xn)</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: may throw an exception (but provides strong ES guarantee)</i></font><br>
+<br>
+&nbsp;&nbsp; T&amp; val() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// returns reference to referent </i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// if underlying pointer p is null, the indirection *p</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// is undefined behavior, but most likely leads to program termination</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>bool</b></font>&nbsp;exists() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// checks that underlying pointer is not null</i></font><br>
+<br>
+&nbsp;&nbsp; T* get() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// returns underlying raw pointer</i></font><br>
+<br>
+&nbsp;&nbsp; T* release();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// returns raw pointer, and sets the raw pointer to null</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;move(OptionalVal&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// performs a (shallow) pointer move</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;swap(OptionalVal&amp; other);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// performs a (shallow) pointer swap</i></font><br>
+<br>
+};<br>
+<br>
+<br>
+<font color="#0000ed"><i>// free swap function</i></font><br>
+<font color="#008b00"><b>template</b></font>&lt;<font color="#008b00"><b>class</b></font>&nbsp;T&gt; <font color="#008b00"><b>void</b></font>&nbsp;swap(OptionalVal&lt;T&gt;&amp; p, OptionalVal&lt;T&gt;&amp; q);<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// EXCEPTIONS: unless otherwise specified, the methods above</i></font><br>
+<font color="#0000ed"><i>// never throw an exception (under C++11 rules, if a destructor</i></font><br>
+<font color="#0000ed"><i>// is invoked that throws an exception, the program will terminate).</i></font><br>
+<br>
+</font></body>
+</html>

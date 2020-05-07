@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/HNF.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: HNF</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>A routine for computing Hermite Normal Forms</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/mat_ZZ.h&gt;</font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;HNF(mat_ZZ&amp; W, <font color="#008b00"><b>const</b></font>&nbsp;mat_ZZ&amp; A, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; D);<br>
+<br>
+<font color="#0000ed"><i>// The input matrix A is an n x m matrix of rank m (so n &gt;= m), and D</i></font><br>
+<font color="#0000ed"><i>// is a multiple of the determinant of the lattice L spanned by the</i></font><br>
+<font color="#0000ed"><i>// rows of A.&nbsp;&nbsp;W is computed as the Hermite Normal Form of A; that is,</i></font><br>
+<font color="#0000ed"><i>// W is the unique m x m matrix whose rows span L, such that</i></font><br>
+<br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; - W is lower triangular,</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; - the diagonal entries are positive,</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; - any entry below the diagonal is a non-negative number</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp; strictly less than the diagonal entry in its column.</i></font><br>
+<br>
+<font color="#0000ed"><i>// Currently, this is implemented using the algorithm of [P. Domich,</i></font><br>
+<font color="#0000ed"><i>// R. Kannan and L. Trotter, Math. Oper. Research 12:50-59, 1987].</i></font><br>
+<br>
+</font></body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/GF2E.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: GF2E</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>The class GF2E is used to represent polynomials in F_2[X] modulo a</i></font><br>
+<font color="#0000ed"><i>polynomial P.&nbsp;&nbsp;The modulus P may be any polynomial with deg(P) &gt; 0,</i></font><br>
+<font color="#0000ed"><i>not necessarily irreducible.&nbsp;&nbsp;</i></font><br>
+<br>
+<font color="#0000ed"><i>Objects of the class GF2E are represented as a GF2X of degree &lt; deg(P).</i></font><br>
+<br>
+<font color="#0000ed"><i>An executing program maintains a &quot;current modulus&quot;, which is set to P using</i></font><br>
+<font color="#0000ed"><i>GF2E::init(P).&nbsp;&nbsp;The current modulus *must* be initialized before any operations</i></font><br>
+<font color="#0000ed"><i>on GF2E's are performed.&nbsp;&nbsp;The modulus may be changed, and a mechanism is provided</i></font><br>
+<font color="#0000ed"><i>for saving and restoring a modulus (see classes GF2EPush and GF2EContext below).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>NOTE: if P is a trinomial X^n + X^k + 1, or a pentanomial</i></font><br>
+<font color="#0000ed"><i>X^n + X^k3 + X^k2 + X^k1 + 1, or of the form X^n + g, where</i></font><br>
+<font color="#0000ed"><i>g has low degree, then performance will be somewhat improved.</i></font><br>
+<font color="#0000ed"><i>Such polynomials are constructed by the routines</i></font><br>
+<font color="#0000ed"><i>BuildSparseIrred and BuildIrred in GF2XFactoring.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/GF2X.h&gt;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/SmartPtr.h&gt;</font><br>
+<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;GF2E {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; GF2E(); <font color="#0000ed"><i>// initial value 0</i></font><br>
+<br>
+&nbsp;&nbsp; GF2E(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a); <font color="#0000ed"><i>// copy constructor</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>explicit</b></font>&nbsp;GF2E(GF2 a); <font color="#0000ed"><i>// promotion constructor</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>explicit</b></font>&nbsp;GF2E(<font color="#008b00"><b>long</b></font>&nbsp;a); <font color="#0000ed"><i>// promotion constructor</i></font><br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; GF2E&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a); <font color="#0000ed"><i>// assignment</i></font><br>
+&nbsp;&nbsp; GF2E&amp; <font color="#b02f60"><b>operator</b></font>=(GF2 a); <font color="#0000ed"><i>// assignment</i></font><br>
+&nbsp;&nbsp; GF2E&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>long</b></font>&nbsp;a); <font color="#0000ed"><i>// assignment</i></font><br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; ~GF2E(); <font color="#0000ed"><i>// destructor</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;init(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; P);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// GF2E::init(P) initializes the current modulus to P;</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// required: deg(P) &gt;= 1.</i></font><br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; <font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;GF2XModulus&amp; modulus();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// GF2E::modulus() yields read-only reference to the current modulus </i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;degree();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// GF2E::degree() returns deg(P)</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// typedefs to aid generic programming</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;GF2X rep_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;GF2EContext context_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;GF2EBak bak_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;GF2EPush push_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;GF2EX poly_type;<br>
+<br>
+};<br>
+<br>
+<br>
+<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; rep(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a); <font color="#0000ed"><i>// read-only access to representation of a</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Comparison</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; b);<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsZero(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// test for 0</i></font><br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsOne(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// test for 1</i></font><br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: ==, != promote {long, GF2} to GF2E on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Addition </i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+GF2E <font color="#b02f60"><b>operator</b></font>+(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; b);<br>
+<br>
+GF2E <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; b);<br>
+GF2E <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a);<br>
+<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>+=(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a);<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>+=(GF2E&amp; x, GF2 a);<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>+=(GF2E&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>++(GF2E&amp; x); <font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>++(GF2E&amp; x, <font color="#008b00"><b>int</b></font>); <font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>-=(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a);<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>-=(GF2E&amp; x, GF2 a);<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>-=(GF2E&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>--(GF2E&amp; x); <font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>--(GF2E&amp; x, <font color="#008b00"><b>int</b></font>); <font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;add(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; b); <font color="#0000ed"><i>// x = a + b</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;sub(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; b); <font color="#0000ed"><i>// x = a - b = a + b</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;negate(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a); <font color="#0000ed"><i>// x = - a = a</i></font><br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: +, -, add, sub promote {long, GF2} to GF2E on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Multiplication </i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+GF2E <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; b);<br>
+<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>*=(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a);<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>*=(GF2E&amp; x, GF2 a);<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>*=(GF2E&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; b); <font color="#0000ed"><i>// x = a * b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;sqr(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a); <font color="#0000ed"><i>// x = a^2</i></font><br>
+GF2E sqr(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a); <br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: *, mul promote {long, GF2} to GF2E on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Division</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+GF2E <font color="#b02f60"><b>operator</b></font>/(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; b);<br>
+<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>/=(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a);<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>/=(GF2E&amp; x, GF2 a);<br>
+GF2E&amp; <font color="#b02f60"><b>operator</b></font>/=(GF2E&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;div(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; b);<br>
+<font color="#0000ed"><i>// x = a/b.&nbsp;&nbsp;If b is not invertible, an error is raised.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;inv(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a);<br>
+GF2E inv(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a);<br>
+<font color="#0000ed"><i>// x = 1/a</i></font><br>
+<br>
+<font color="#b02f60"><b>PROMOTIONS</b></font>:&nbsp;/, div promote {<font color="#008b00"><b>long</b></font>, GF2} to GF2E on (a, b).<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exponentiation</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; e); <br>
+GF2E power(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; e);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;e); <br>
+GF2E power(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;e);<br>
+<br>
+<font color="#0000ed"><i>// x = a^e (e may be negative)</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Random Elements</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;random(GF2E&amp; x);<br>
+GF2E random_GF2E();<br>
+<font color="#0000ed"><i>// x = random element in GF2E.</i></font><br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Traces</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;trace(GF2&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// x = trace of a</i></font><br>
+GF2 trace(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a);<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Input/Output</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+ostream&amp; <font color="#b02f60"><b>operator</b></font>&lt;&lt;(ostream&amp; s, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a);<br>
+<br>
+istream&amp; <font color="#b02f60"><b>operator</b></font>&gt;&gt;(istream&amp; s, GF2E&amp; x);<br>
+<font color="#0000ed"><i>// a GF2X is read and reduced mod p</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Modulus Switching </i></font><br>
+<br>
+<font color="#0000ed"><i>A class GF2EPush is provided for &quot;backing up&quot; the current modulus</i></font><br>
+<font color="#0000ed"><i>and installing a new one.</i></font><br>
+<br>
+<font color="#0000ed"><i>Here is what you do to save the current modulus, temporarily</i></font><br>
+<font color="#0000ed"><i>set it to P, and automatically restore it:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; { </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GF2EPush push(P); </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; }</i></font><br>
+<br>
+<font color="#0000ed"><i>The constructor for push will save the current modulus, and install P as the</i></font><br>
+<font color="#0000ed"><i>current modulus.&nbsp;&nbsp;The destructor for push will restore the old modulus when the</i></font><br>
+<font color="#0000ed"><i>scope enclosing it exits.&nbsp;&nbsp;This is the so-called RAII (resource acquisition is</i></font><br>
+<font color="#0000ed"><i>initialization) paradigm.</i></font><br>
+<br>
+<font color="#0000ed"><i>You could also do the following:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; {</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GF2EPush push; // just backup current modulus</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GF2E::init(P1); // install P1 </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GF2E::init(P2); // install P2</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// reinstall original modulus as close of scope</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; }</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>The GF2EPush interface is good for implementing simple stack-like</i></font><br>
+<font color="#0000ed"><i>modulus &quot;context switching&quot;.&nbsp;&nbsp;For more general context switching,</i></font><br>
+<font color="#0000ed"><i>see GF2EContext below.&nbsp;&nbsp;There is also an older GF2EBak class</i></font><br>
+<font color="#0000ed"><i>that may also be useful.</i></font><br>
+<br>
+<font color="#0000ed"><i>..........................................................................</i></font><br>
+<br>
+<font color="#0000ed"><i>It is critical that GF2E objects created under one GF2E modulus are not used in</i></font><br>
+<font color="#0000ed"><i>any non-trivial way &quot;out of context&quot;, i.e., under a different (or undefined)</i></font><br>
+<font color="#0000ed"><i>GF2E modulus.&nbsp;&nbsp;However, for ease-of-use, some operations may be safely</i></font><br>
+<font color="#0000ed"><i>performed out of context.&nbsp;&nbsp;These safe operations include: the default and copy</i></font><br>
+<font color="#0000ed"><i>constructor, the destructor, and the assignment operator.&nbsp;&nbsp;In addition is is</i></font><br>
+<font color="#0000ed"><i>generally safe to read any GF2E object out of context (i.e., printing it out, or</i></font><br>
+<font color="#0000ed"><i>fetching its underlying representive using the rep() function).</i></font><br>
+<br>
+<font color="#0000ed"><i>Any unsafe uses out of context are not in general checked, and may </i></font><br>
+<font color="#0000ed"><i>lead to unpredictable behavior.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>NOTE: the implementation of Vec&lt;GF2E&gt; is specialized to manage memory more</i></font><br>
+<font color="#0000ed"><i>efficiently than in the default implementation of Vec&lt;T&gt;.&nbsp;&nbsp;Specifically,</i></font><br>
+<font color="#0000ed"><i>contiguous elements in a Vec&lt;GF2E&gt; are allocated in a contiguous region of</i></font><br>
+<font color="#0000ed"><i>memory.&nbsp;&nbsp;This reduces the number of calls to the memory allocator, and --- more</i></font><br>
+<font color="#0000ed"><i>significantly --- leads to greater locality of reference.&nbsp;&nbsp;A consequence of</i></font><br>
+<font color="#0000ed"><i>this implementation is that any calls to SetLength on a Vec&lt;GF2E&gt; object will</i></font><br>
+<font color="#0000ed"><i>need to use information about the current modulus, and so such calls should</i></font><br>
+<font color="#0000ed"><i>only be done &quot;in context&quot;.&nbsp;&nbsp;That said, it is still safe to construct a</i></font><br>
+<font color="#0000ed"><i>Vec&lt;GF2E&gt; using the default or copy contructor, and to assign or append one</i></font><br>
+<font color="#0000ed"><i>Vec&lt;GF2E&gt; to another &quot;out of context&quot;.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// A convenient interface for common cases</i></font><br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;GF2EPush {<br>
+<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+GF2EPush();&nbsp;&nbsp;<font color="#0000ed"><i>// backup current modulus</i></font><br>
+<font color="#008b00"><b>explicit</b></font>&nbsp;GF2EPush(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; P); <br>
+<font color="#008b00"><b>explicit</b></font>&nbsp;GF2EPush(<font color="#008b00"><b>const</b></font>&nbsp;GF2EContext&amp; context); <br>
+&nbsp;&nbsp;<font color="#0000ed"><i>// backup current modulus and install the given one</i></font><br>
+<br>
+<font color="#b02f60"><b>private</b></font>:<br>
+GF2EPush(<font color="#008b00"><b>const</b></font>&nbsp;GF2EPush&amp;); <font color="#0000ed"><i>// disabled</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;GF2EPush&amp;); <font color="#0000ed"><i>// disabled</i></font><br>
+<br>
+};<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// more general context switching:</i></font><br>
+<font color="#0000ed"><i>// A GF2EContext object has a modulus Q (possibly &quot;null&quot;),</i></font><br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;GF2EContext {<br>
+<br>
+<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+<br>
+GF2EContext(); <font color="#0000ed"><i>// Q = &quot;null&quot;</i></font><br>
+<font color="#008b00"><b>explicit</b></font>&nbsp;GF2EContext(<font color="#008b00"><b>const</b></font>&nbsp;GF2X&amp; P); <font color="#0000ed"><i>// Q = P</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;save(); <font color="#0000ed"><i>// Q = CurrentModulus</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;restore() <font color="#008b00"><b>const</b></font>; <font color="#0000ed"><i>// CurrentModulus = Q</i></font><br>
+<br>
+GF2EContext(<font color="#008b00"><b>const</b></font>&nbsp;GF2EContext&amp;);&nbsp;&nbsp;<font color="#0000ed"><i>// copy</i></font><br>
+GF2EContext&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;GF2EContext&amp;); <font color="#0000ed"><i>// assignment</i></font><br>
+~GF2EContext(); <font color="#0000ed"><i>// destructor</i></font><br>
+<br>
+<br>
+};<br>
+<br>
+<br>
+<font color="#0000ed"><i>// An older interface:</i></font><br>
+<font color="#0000ed"><i>// To describe this logic, think of a GF2EBak object</i></font><br>
+<font color="#0000ed"><i>// of having two components: a modulus Q (possibly &quot;null&quot;) and </i></font><br>
+<font color="#0000ed"><i>// an &quot;auto-restore bit&quot; b.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;GF2EBak {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+<br>
+<br>
+&nbsp;&nbsp; GF2EBak();&nbsp;&nbsp;<font color="#0000ed"><i>// Q = &quot;null&quot;, b = 0</i></font><br>
+<br>
+&nbsp;&nbsp; ~GF2EBak();&nbsp;&nbsp;<font color="#0000ed"><i>// if (b) CurrentModulus = Q</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;save();&nbsp;&nbsp;<font color="#0000ed"><i>// Q = CurrentModulus, b = 1 </i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;restore();&nbsp;&nbsp;<font color="#0000ed"><i>// CurrentModulus = Q, b = 0</i></font><br>
+<br>
+<br>
+<font color="#b02f60"><b>private</b></font>:<br>
+&nbsp;&nbsp; GF2EBak(<font color="#008b00"><b>const</b></font>&nbsp;GF2EBak&amp;);&nbsp;&nbsp;<font color="#0000ed"><i>// copy disabled</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;GF2EBak&amp;);&nbsp;&nbsp;<font color="#0000ed"><i>// assignment disabled</i></font><br>
+};<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Miscellany</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;clear(GF2E&amp; x); <font color="#0000ed"><i>// x = 0</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;set(GF2E&amp; x); <font color="#0000ed"><i>// x = 1</i></font><br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; GF2E::zero();<br>
+<font color="#0000ed"><i>// GF2E::zero() yields a read-only reference to zero</i></font><br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;GF2X::WordLength();<br>
+<font color="#0000ed"><i>// GF2E::size() returns # of words needed to store a polynomial of</i></font><br>
+<font color="#0000ed"><i>// degree &lt; GF2E::degree()</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;GF2E::swap(GF2E&amp; x);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;swap(GF2E&amp; x, GF2E&amp; y);<br>
+<font color="#0000ed"><i>// swap (done by &quot;pointer swapping&quot;, if possible).</i></font><br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;ZZ&amp; GF2E::cardinality();<br>
+<font color="#0000ed"><i>// yields the cardinality, i.e., 2^{GF2E::degree()}</i></font><br>
+<br>
+<br>
+GF2E::GF2E(INIT_NO_ALLOC_TYPE);<br>
+<font color="#0000ed"><i>// special constructor: invoke as GF2E x(INIT_NO_ALLOC);</i></font><br>
+<font color="#0000ed"><i>// initializes x to 0, but allocates no space (this is now the default)</i></font><br>
+<br>
+GF2E::GF2E(INIT_ALLOC_TYPE);<br>
+<font color="#0000ed"><i>// special constructor: invoke as GF2E x(INIT_ALLOC);</i></font><br>
+<font color="#0000ed"><i>// initializes x to 0, but allocates space </i></font><br>
+<br>
+GF2E::allocate();<br>
+<font color="#0000ed"><i>// useful in conjunction with the INIT_NO_ALLLOC constructor:</i></font><br>
+<font color="#0000ed"><i>// x.allocate() will pre-allocate space for x, using the</i></font><br>
+<font color="#0000ed"><i>// current modulus</i></font><br>
+<br>
+<br>
+</font></body>
+</html>

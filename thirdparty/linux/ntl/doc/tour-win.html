@@ -1,0 +1,287 @@
+<html>
+<head>
+<title>
+A Tour of NTL: Obtaining and Installing NTL for Windows 
+and other Platforms </title>
+</head>
+
+<center>
+<a href="tour-unix.html"><img src="arrow1.gif" alt="[Previous]" align=bottom></a>
+ <a href="tour.html"><img src="arrow2.gif" alt="[Up]" align=bottom></a> 
+<a href="tour-tips.html"> <img src="arrow3.gif" alt="[Next]" align=bottom></a>
+</center>
+
+<h1> 
+<p align=center>
+A Tour of NTL: Obtaining and Installing NTL for Windows 
+and other Platforms
+</p>
+</h1>
+
+<p> <hr> <p>
+
+The WinNTL distribution of 
+NTL can be used on any Windows platform
+(Windows 95 or later).
+Actually, there is nothing Windows-specific about WinNTL.
+The source code is identical to the UNIX NTL distribution;
+only the packaging is slightly different, and no assumptions
+are made about the program development environment.
+Thus, it should be possible to install WinNTL on
+other operating systems 
+with little difficulty.
+
+<p>
+<b>MAC OSX Users:</b>
+since MAC OSX is essentially just a (rather funny) flavor of Unix,
+you will be much better served using the 
+<a href="tour-unix.html">Unix distribution</a>.
+
+<p>
+<b>Windows Users:</b>
+you should consider using a Unix emulation environment like
+<a href="https://www.cygwin.com/">Cygwin</a>
+or
+<a href="http://www.mingw.org/">MinGW</a>, 
+instead of 
+Microsoft development tools.
+<p>
+Why?
+<ul>
+<li>
+These environments use gcc, which generally adheres closer to language
+standards and produces more efficient code that Microsoft's 
+compiler.
+<p><li>
+With these environments, you can use NTL's 
+<a href="tour-unix.html">Unix distribution</a>,
+and the installation is almost entirely automatic:
+no pointing and clicking -- not much more 
+than <tt>./configure</tt> and <tt>make</tt>.
+You can also easily to install GMP 
+and run NTL's performance-tuning Wizard.
+These factors combined can make a hige difference in performance, 
+easily giving you a huge (10x or more) performance improvement.
+<p><li>
+On 64-bit machines, you should definitely consider Cygwin:
+the 64-bit version of Cygwin gives you an 
+<a href="https://en.wikipedia.org/wiki/64-bit_computing">LP64 data model</a>,
+which for many reasons is preferable to the Windows data model.
+In particular, you will get the most performance out of NTL
+in this environment.
+</ul>
+
+
+
+
+<p>
+The remaining instructions on this page only apply 
+if you <i>do not</i> use a Unix emulation environment
+like Cygwin or MinGW.
+
+<p>
+If you really want to get the most out of NTL, please stop, 
+and seriously consider using a Unix emulation environment
+and 
+NTL's 
+<a href="tour-unix.html">Unix distribution</a>.
+Your code will be much snappier, and your quality of life 
+will be much better.
+
+<p>
+You have been warned.
+
+<p>
+<b>
+Obtaining and unpacking NTL.
+</b>
+
+<p>
+
+To obtain the source code and documentation for NTL,
+<a href="http://www.shoup.net/ntl/download.html">
+download <tt>WinNTL-xxx.zip</tt></a>.
+Here, "<tt>xxx</tt>" is the current version number.
+Then <tt>unzip</tt> this file into a directory (folder).
+This will unpack everything into a directory called "<tt>WinNTL-xxx</tt>".
+Inside this directory, you will find several directories.
+
+<p>
+
+<ul>
+<li>
+
+The directory "<tt>doc</tt>" contains all of NTL's documentation,
+including this "tour" ("<tt>tour.html</tt>")
+and the "<tt>.txt</tt>" files explaining each module,
+which can be accessed directly, or through the "tour".
+
+<p>
+<li>
+
+The directory "<tt>src</tt>"
+contains all of the source files for the library,
+all with "<tt>.cpp</tt>" extensions.
+
+<p>
+<li>
+
+The directory "<tt>include</tt>" contains a single directory called 
+"<tt>NTL</tt>",
+and the latter contains all of the "<tt>.h</tt>" files.
+
+</ul>
+
+<p>
+
+<b>
+Platform dependent macros.
+</b>
+<p>
+
+In directory "<tt>include/NTL</tt>" there is a file called 
+"<tt>mach_desc.h</tt>",
+which contains all of the platform-dependent macro definitions.
+The default settings should be correct for any 
+system running Windows; however, the correct definitions
+can depend on the compiler and run-time environment.
+Therefore, to be on the safe side,
+you might consider compiling and running the program <tt>MakeDesc</tt>,
+whose source files are in directory "<tt>MakeDesc</tt>".
+This program will
+dynamically build
+a correct "<tt>mach_desc.h</tt>" for your platform (processor, compiler, 
+run-time environment).
+To get accurate results,
+you must compile this program using the level of optimization 
+(or higher) that you will use for NTL.
+The program will print some diagnostics to the screen, 
+and create the file "<tt>mach_desc.h</tt>" (in the current
+directory, and not in the "<tt>include/NTL</tt>" directory,
+where it needs to go).
+
+<p>
+<b>
+Configuration flags.
+</b>
+<p>
+
+Also in directory "<tt>include/NTL</tt>" is a file called "<tt>config.h</tt>".
+You can edit this file to override some of NTL's default options 
+for basic configuration and performance.
+Note that the file "<tt>def_config.h</tt>"
+contains a backup copy of the original <tt>config.h</tt> file.
+
+
+<p>
+<b>
+Test programs.
+</b>
+<p>
+
+The directory "<tt>tests</tt>" contains several test programs.
+For each program <tt>FooTest</tt>, there is a source file
+"<tt>FooTest.cpp</tt>", and optionally two files 
+"<tt>FooTestIn</tt>" and "<tt>FooTestOut</tt>".
+If the latter  exist, then the program should be run with
+the "<tt>FooTestIn</tt>" as standard input;
+correct output (printed to standard output) should match
+the contents of "<tt>FooTestOut</tt>" exactly;
+note that these programs also print diagnostic output on the screen
+(through standard error output).
+
+<p>
+<b>
+Timing functions.
+</b>
+<p>
+
+The directory "<tt>GetTime</tt>" contains several alternative
+definitions of the <tt>GetTime()</tt> function.
+The file "<tt>GetTime.cpp</tt>" in the "<tt>src</tt>" directory should be OK,
+but your compiler might like one of the definitions in
+the directory "<tt>GetTime</tt>" better.
+
+<p>
+<b>
+Other tools.
+</b>
+<p>
+
+The directory "<tt>misc</tt>" contains a program <tt>newnames.cpp</tt>
+to help make the
+transition to NTL version 3.5 from earlier versions of NTL.
+See the <a href="tour-changes.html">changes</a> section for more details.
+It also contains the programs <tt>gen_lip_gmp_aux.cpp</tt>
+and <tt>gen_gmp_aux.cpp</tt> that automatically generate
+the auxilliary files needed when using NTL with GMP.
+You will have to look at the makefile in the Unix distribution
+to see how to use these.
+
+
+
+<p>
+<b>
+Compiling NTL.
+</b>
+<p>
+
+Since there are a number of incompatible compilers and program development
+environments available for Windows, no attempt has been made to
+provide automatic tools for building and testing,
+as is done for the Unix distribution.
+Nevertheless,
+it should be straightforward to install NTL (even if it involves a bit of
+pointing and clicking).
+First, compile all of the files in "<tt>src</tt>", and create a static library.
+Make sure the compiler knows where to find NTL's include files
+(directory "<tt>include</tt>" and <i>not</i> "<tt>include/NTL</tt>")
+Then, to compile a program using the library, 
+make sure the compiler knows about the library and the directory
+of NTL's include files.
+In any case, if you want to do any serious computations,
+you will certainly  want to compile everything with your
+compiler's code optimizer on.
+
+<p>
+Here a a <a href="https://www.youtube.com/watch?v=2xijP2xATPI&feature=youtu.be">link to a video</a> showing how NTL can be built using a Microsoft compiler.
+To me, it looks very complicated: I recommend MinGW or Cygwin.
+
+<p>
+Further remarks.
+</b>
+<p>
+
+<p>
+<i>TIP:</i>  When writing programs using NTL, 
+you should include files using the syntax
+<pre>
+   #include &lt;NTL/ZZ.h&gt;
+</pre>
+and <i>not</i> using a backslash ("<tt>\</tt>") as a delimiter.
+
+<p>
+<i>TIP:</i> When writing <i>windows applications</i> using NTL
+(as opposed to <i>console applications</i>) you might want to compile 
+your program with the <tt>NTL_NO_MIN_MAX</tt> macro defined.
+This suppresses  the declaration of several <tt>min</tt>
+and <tt>max</tt> functions in file <tt>tools.h</tt> that conflict
+with macro names in the MFC header files.
+Do not attempt to build the library with this macro defined -- only
+programs that use the library.
+Another solution is to define the macro <tt>NOMINMAX</tt>, which will
+tell the Microsoft compiler to not define min/max macros.
+
+
+
+<p>
+
+<center>
+<a href="tour-unix.html"><img src="arrow1.gif" alt="[Previous]" align=bottom></a>
+ <a href="tour.html"><img src="arrow2.gif" alt="[Up]" align=bottom></a> 
+<a href="tour-tips.html"> <img src="arrow3.gif" alt="[Next]" align=bottom></a>
+</center>
+
+
+</body>
+</html>

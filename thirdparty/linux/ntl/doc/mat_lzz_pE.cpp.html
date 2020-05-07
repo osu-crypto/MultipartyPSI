@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/mat_lzz_pE.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: mat_zz_pE</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>Defines the class mat_zz_pE.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/matrix.h&gt;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/vec_vec_lzz_pE.h&gt;</font><br>
+<br>
+<br>
+<font color="#008b00"><b>typedef</b></font>&nbsp;Mat&lt;zz_pE&gt; mat_zz_pE; <font color="#0000ed"><i>// backward compatibility</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;add(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; B); <br>
+<font color="#0000ed"><i>// X = A + B</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;sub(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; B); <br>
+<font color="#0000ed"><i>// X = A - B</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;negate(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A); <br>
+<font color="#0000ed"><i>// X = - A</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; B); <br>
+<font color="#0000ed"><i>// X = A * B</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_zz_pE&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_pE&amp; b); <br>
+<font color="#0000ed"><i>// x = A * b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_zz_pE&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_pE&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; B); <br>
+<font color="#0000ed"><i>// x = a * B</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>const</b></font>&nbsp;zz_pE&amp; b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>const</b></font>&nbsp;zz_p&amp; b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<font color="#0000ed"><i>// X = A * b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;zz_pE&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; B);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;zz_p&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; B);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(mat_zz_pE&amp; X, <font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; B);<br>
+<font color="#0000ed"><i>// X = a * B</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;determinant(zz_pE&amp; d, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A);<br>
+zz_pE determinant(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a); <br>
+<font color="#0000ed"><i>// d = determinant(A)</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;transpose(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A);<br>
+mat_zz_pE transpose(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A);<br>
+<font color="#0000ed"><i>// X = transpose of A</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;solve(zz_pE&amp; d, vec_zz_pE&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_pE&amp; b);<br>
+<font color="#0000ed"><i>// A is an n x n matrix, b is a length n vector.&nbsp;&nbsp;Computes d =</i></font><br>
+<font color="#0000ed"><i>// determinant(A).&nbsp;&nbsp;If d != 0, solves x*A = b.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;solve(zz_pE&amp; d, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, vec_zz_pE&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_pE&amp; b);<br>
+<font color="#0000ed"><i>// A is an n x n matrix, b is a length n vector.&nbsp;&nbsp;Computes d = determinant(A).</i></font><br>
+<font color="#0000ed"><i>// If d != 0, solves A*x = b (so x and b are treated as a column vectors).</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;inv(zz_pE&amp; d, mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A);<br>
+<font color="#0000ed"><i>// A is an n x n matrix.&nbsp;&nbsp;Computes d = determinant(A).&nbsp;&nbsp;If d != 0,</i></font><br>
+<font color="#0000ed"><i>// computes X = A^{-1}.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;sqr(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A);<br>
+mat_zz_pE sqr(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A);<br>
+<font color="#0000ed"><i>// X = A*A&nbsp;&nbsp; </i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;inv(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A);<br>
+mat_zz_pE inv(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A);<br>
+<font color="#0000ed"><i>// X = A^{-1}; error is raised if A is&nbsp;&nbsp;singular</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; e);<br>
+mat_zz_pE power(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; e);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>long</b></font>&nbsp;e);<br>
+mat_zz_pE power(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>long</b></font>&nbsp;e);<br>
+<font color="#0000ed"><i>// X = A^e; e may be negative (in which case A must be nonsingular).</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;ident(mat_zz_pE&amp; X, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+mat_zz_pE ident_mat_zz_pE(<font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// X = n x n identity matrix</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsIdent(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// test if A is the n x n identity matrix</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;diag(mat_zz_pE&amp; X, <font color="#008b00"><b>long</b></font>&nbsp;n, <font color="#008b00"><b>const</b></font>&nbsp;zz_pE&amp; d);<br>
+mat_zz_pE diag(<font color="#008b00"><b>long</b></font>&nbsp;n, <font color="#008b00"><b>const</b></font>&nbsp;zz_pE&amp; d);<br>
+<font color="#0000ed"><i>// X = n x n diagonal matrix with d on diagonal</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsDiag(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A, <font color="#008b00"><b>long</b></font>&nbsp;n, <font color="#008b00"><b>const</b></font>&nbsp;zz_pE&amp; d);<br>
+<font color="#0000ed"><i>// test if X is an&nbsp;&nbsp;n x n diagonal matrix with d on diagonal</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;gauss(mat_zz_pE&amp; M);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;gauss(mat_zz_pE&amp; M, <font color="#008b00"><b>long</b></font>&nbsp;w);<br>
+<font color="#0000ed"><i>// Performs unitary row operations so as to bring M into row echelon</i></font><br>
+<font color="#0000ed"><i>// form.&nbsp;&nbsp;If the optional argument w is supplied, stops when first w</i></font><br>
+<font color="#0000ed"><i>// columns are in echelon form.&nbsp;&nbsp;The return value is the rank (or the</i></font><br>
+<font color="#0000ed"><i>// rank of the first w columns).</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;image(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A);<br>
+<font color="#0000ed"><i>// The rows of X are computed as basis of A's row space.&nbsp;&nbsp;X is is row</i></font><br>
+<font color="#0000ed"><i>// echelon form</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;kernel(mat_zz_pE&amp; X, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; A);<br>
+<font color="#0000ed"><i>// Computes a basis for the kernel of the map x -&gt; x*A. where x is a</i></font><br>
+<font color="#0000ed"><i>// row vector.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// miscellaneous:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;clear(mat_zz_pE&amp; a);<br>
+<font color="#0000ed"><i>// x = 0 (dimension unchanged)</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsZero(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a);<br>
+<font color="#0000ed"><i>// test if a is the zero matrix (any dimension)</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+mat_zz_pE <font color="#b02f60"><b>operator</b></font>+(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; b);<br>
+mat_zz_pE <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; b);<br>
+mat_zz_pE <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; b);<br>
+<br>
+mat_zz_pE <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// matrix/scalar multiplication:</i></font><br>
+<br>
+mat_zz_pE <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;zz_pE&amp; b);<br>
+mat_zz_pE <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;zz_p&amp; b);<br>
+mat_zz_pE <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+mat_zz_pE <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;zz_pE&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; b);<br>
+mat_zz_pE <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;zz_p&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; b);<br>
+mat_zz_pE <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; b);<br>
+<br>
+<font color="#0000ed"><i>// matrix/vector multiplication:</i></font><br>
+<br>
+vec_zz_pE <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_zz_pE&amp; b);<br>
+<br>
+vec_zz_pE <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_zz_pE&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; b);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// assignment operator notation:</i></font><br>
+<br>
+mat_zz_pE&amp; <font color="#b02f60"><b>operator</b></font>+=(mat_zz_pE&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a);<br>
+mat_zz_pE&amp; <font color="#b02f60"><b>operator</b></font>-=(mat_zz_pE&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a);<br>
+mat_zz_pE&amp; <font color="#b02f60"><b>operator</b></font>*=(mat_zz_pE&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a);<br>
+<br>
+mat_zz_pE&amp; <font color="#b02f60"><b>operator</b></font>*=(mat_zz_pE&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;zz_pE&amp; a);<br>
+mat_zz_pE&amp; <font color="#b02f60"><b>operator</b></font>*=(mat_zz_pE&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;zz_p&amp; a);<br>
+mat_zz_pE&amp; <font color="#b02f60"><b>operator</b></font>*=(mat_zz_pE&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+vec_zz_pE&amp; <font color="#b02f60"><b>operator</b></font>*=(vec_zz_pE&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;mat_zz_pE&amp; a);<br>
+<br>
+<br>
+<br>
+</font></body>
+</html>

@@ -1,0 +1,432 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/lzz_p.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: zz_p</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>The class zz_p is used to represent integers mod p, where 1 &lt;= p &lt;</i></font><br>
+<font color="#0000ed"><i>NTL_SP_BOUND.&nbsp;&nbsp;Note that NTL_SP_BOUND is usually 2^30 on 32-bit machines and</i></font><br>
+<font color="#0000ed"><i>2^50 on 64-bit machines.</i></font><br>
+<br>
+<font color="#0000ed"><i>The modulus p may be any positive integer, not necessarily prime.</i></font><br>
+<br>
+<font color="#0000ed"><i>Objects of the class zz_p are represented as a long in the range 0..p-1.</i></font><br>
+<br>
+<font color="#0000ed"><i>An executing program maintains a &quot;current modulus&quot;, which is set to p using</i></font><br>
+<font color="#0000ed"><i>zz_p::init(p).&nbsp;&nbsp;The current modulus *must* be initialized before any operations</i></font><br>
+<font color="#0000ed"><i>on zz_p's are performed.&nbsp;&nbsp;The modulus may be changed, and a mechanism is provided</i></font><br>
+<font color="#0000ed"><i>for saving and restoring a modulus (see classes zz_pPush and zz_pContext below).</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/ZZ.h&gt;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/FFT.h&gt;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/SmartPtr.h&gt;</font><br>
+<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;zz_p {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+&nbsp;&nbsp; <br>
+&nbsp;&nbsp; zz_p(); <font color="#0000ed"><i>// initial value 0</i></font><br>
+<br>
+&nbsp;&nbsp; zz_p(<font color="#008b00"><b>const</b></font>&nbsp;zz_p&amp; a); <font color="#0000ed"><i>// copy constructor</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>explicit</b></font>&nbsp;zz_p(<font color="#008b00"><b>long</b></font>&nbsp;a); <font color="#0000ed"><i>// promotion constructor</i></font><br>
+<br>
+&nbsp;&nbsp; zz_p&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;zz_p&amp; a); <font color="#0000ed"><i>// assignment</i></font><br>
+&nbsp;&nbsp; zz_p&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>long</b></font>&nbsp;a); <font color="#0000ed"><i>// assignment</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>void</b></font>&nbsp;init(<font color="#008b00"><b>long</b></font>&nbsp;p); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// set the modulus to p, where p &gt; 1.&nbsp;&nbsp;This must be called before any</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// zz_p constructors are invoked.</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// The number p must have at most NTL_SP_NBITS bits.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;modulus();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// zz_p::modulus() yields read-only reference to the current</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// modulus</i></font><br>
+<br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// typedefs to aid in generic programming</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;rep_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;zz_pContext context_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;zz_pBak bak_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;zz_pPush push_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;zz_pX poly_type;<br>
+<br>
+};<br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;rep(zz_p a); <font color="#0000ed"><i>// read-only access to representation of a</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Comparison</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(zz_p a, zz_p b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(zz_p a, zz_p b);<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsZero(zz_p a);&nbsp;&nbsp;<font color="#0000ed"><i>// test for 0</i></font><br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsOne(zz_p a);&nbsp;&nbsp;<font color="#0000ed"><i>// test for 1</i></font><br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: operators ==, != promote long to zz_p on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Addition </i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+zz_p <font color="#b02f60"><b>operator</b></font>+(zz_p a, zz_p b);<br>
+zz_p <font color="#b02f60"><b>operator</b></font>-(zz_p a, zz_p b);<br>
+<br>
+zz_p <font color="#b02f60"><b>operator</b></font>-(zz_p a); <font color="#0000ed"><i>// unary -</i></font><br>
+<br>
+zz_p&amp; <font color="#b02f60"><b>operator</b></font>+=(zz_p&amp; x, zz_p a);<br>
+zz_p&amp; <font color="#b02f60"><b>operator</b></font>+=(zz_p&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+zz_p&amp; <font color="#b02f60"><b>operator</b></font>-=(zz_p&amp; x, zz_p a);<br>
+zz_p&amp; <font color="#b02f60"><b>operator</b></font>-=(zz_p&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+zz_p&amp; <font color="#b02f60"><b>operator</b></font>++(zz_p&amp; x);&nbsp;&nbsp;<font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>++(zz_p&amp; x, <font color="#008b00"><b>int</b></font>);&nbsp;&nbsp;<font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+zz_p&amp; <font color="#b02f60"><b>operator</b></font>--(zz_p&amp; x);&nbsp;&nbsp;<font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>--(zz_p&amp; x, <font color="#008b00"><b>int</b></font>);&nbsp;&nbsp;<font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;add(zz_p&amp; x, zz_p a, zz_p b); <font color="#0000ed"><i>// x = a + b</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;sub(zz_p&amp; x, zz_p a, zz_p b); <font color="#0000ed"><i>// x = a - b </i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;negate(zz_p&amp; x, zz_p a); <font color="#0000ed"><i>// x = -a</i></font><br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: binary +, -, and procedures add, sub promote</i></font><br>
+<font color="#0000ed"><i>// from long to zz_p on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Multiplication </i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+zz_p <font color="#b02f60"><b>operator</b></font>*(zz_p a, zz_p b);<br>
+<br>
+zz_p&amp; <font color="#b02f60"><b>operator</b></font>*=(zz_p&amp; x, zz_p a);<br>
+zz_p&amp; <font color="#b02f60"><b>operator</b></font>*=(zz_p&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(zz_p&amp; x, zz_p a, zz_p b); <font color="#0000ed"><i>// x = a * b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;sqr(zz_p&amp; x, zz_p a); <font color="#0000ed"><i>// x = a^2</i></font><br>
+zz_p sqr(zz_p a); <br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: operator * and procedure mul promote from long to zz_p</i></font><br>
+<font color="#0000ed"><i>// on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Division</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#b02f60"><b>operator</b></font>&nbsp;notation:<br>
+<br>
+zz_p <font color="#b02f60"><b>operator</b></font>/(z_p a, zz_p b);<br>
+<br>
+zz_p&amp; <font color="#b02f60"><b>operator</b></font>/=(zz_p&amp; x, zz_p a);<br>
+zz_p&amp; <font color="#b02f60"><b>operator</b></font>/=(zz_p&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+procedural versions:<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;div(zz_p&amp; x, zz_p a, zz_p b);<br>
+<font color="#0000ed"><i>// x = a/b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;inv(zz_p&amp; x, zz_p a);<br>
+zz_p inv(zz_p a);<br>
+<font color="#0000ed"><i>// x = 1/a</i></font><br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: operator / and procedure div promote from long to zz_p</i></font><br>
+<font color="#0000ed"><i>// on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exponentiation</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power(zz_p&amp; x, zz_p a, <font color="#008b00"><b>long</b></font>&nbsp;e); <font color="#0000ed"><i>// x = a^e (e may be negative)</i></font><br>
+zz_p power(zz_p a, <font color="#008b00"><b>long</b></font>&nbsp;e); <br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Random Elements</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;random(zz_p&amp; x);<br>
+zz_p random_zz_p();<br>
+<font color="#0000ed"><i>// x = random element in zz_p.&nbsp;&nbsp;Uses RandomBnd from ZZ.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;VectorRandom(<font color="#008b00"><b>long</b></font>&nbsp;k, zz_p *x);<br>
+<font color="#0000ed"><i>// equivalent to random(x[i]) for i in [0..k), but fatser</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Input/Output</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+ostream&amp; <font color="#b02f60"><b>operator</b></font>&lt;&lt;(ostream&amp; s, zz_p a);<br>
+<br>
+istream&amp; <font color="#b02f60"><b>operator</b></font>&gt;&gt;(istream&amp; s, zz_p&amp; x);<br>
+<font color="#0000ed"><i>// a ZZ is read and reduced mod p</i></font><br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Modulus Switching </i></font><br>
+<br>
+<font color="#0000ed"><i>A class zz_pPush is provided for &quot;backing up&quot; the current modulus</i></font><br>
+<font color="#0000ed"><i>and installing a new one.</i></font><br>
+<br>
+<font color="#0000ed"><i>Here is what you do to save the current modulus, temporarily</i></font><br>
+<font color="#0000ed"><i>set it to p, and automatically restore it:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; { </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zz_pPush push(p); </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; }</i></font><br>
+<br>
+<font color="#0000ed"><i>The constructor for push will save the current modulus, and install p as the</i></font><br>
+<font color="#0000ed"><i>current modulus.&nbsp;&nbsp;The destructor for push will restore the old modulus when the</i></font><br>
+<font color="#0000ed"><i>scope enclosing it exits.&nbsp;&nbsp;This is the so-called RAII (resource acquisition is</i></font><br>
+<font color="#0000ed"><i>initialization) paradigm.</i></font><br>
+<br>
+<font color="#0000ed"><i>You could also do the following:</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; {</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zz_pPush push; // just backup current modulus</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zz_p::init(p1); // install p1 </i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;zz_p::init(p2); // install p2</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// reinstall original modulus as close of scope</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; }</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>The zz_pPush interface is good for implementing simple stack-like</i></font><br>
+<font color="#0000ed"><i>modulus &quot;context switching&quot;.&nbsp;&nbsp;For more general context switching,</i></font><br>
+<font color="#0000ed"><i>see zz_pContext below.&nbsp;&nbsp;There is also an older zz_pBak class</i></font><br>
+<font color="#0000ed"><i>that may also be useful.</i></font><br>
+<br>
+<font color="#0000ed"><i>..........................................................................</i></font><br>
+<br>
+<font color="#0000ed"><i>It is critical that zz_p objects created under one zz_p modulus are not used in</i></font><br>
+<font color="#0000ed"><i>any non-trivial way &quot;out of context&quot;, i.e., under a different (or undefined)</i></font><br>
+<font color="#0000ed"><i>zz_p modulus.&nbsp;&nbsp;However, for ease-of-use, some operations may be safely</i></font><br>
+<font color="#0000ed"><i>performed out of context.&nbsp;&nbsp;These safe operations include: the default and copy</i></font><br>
+<font color="#0000ed"><i>constructor, the destructor, and the assignment operator.&nbsp;&nbsp;In addition is is</i></font><br>
+<font color="#0000ed"><i>generally safe to read any zz_p object out of context (i.e., printing it out, or</i></font><br>
+<font color="#0000ed"><i>fetching its underlying representive using the rep() function).</i></font><br>
+<br>
+<font color="#0000ed"><i>Any unsafe uses out of context are not in general checked, and may </i></font><br>
+<font color="#0000ed"><i>lead to unpredictable behavior.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// A convenient interface for common cases:</i></font><br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;zz_pPush {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+<br>
+zz_pPush();&nbsp;&nbsp;<font color="#0000ed"><i>// just backup current modulus</i></font><br>
+<br>
+<font color="#008b00"><b>explicit</b></font>&nbsp;zz_pPush(<font color="#008b00"><b>long</b></font>&nbsp;p, <font color="#008b00"><b>long</b></font>&nbsp;maxroot=NTL_FFTMaxRoot);<br>
+zz_pPush(INIT_FFT_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;index); <br>
+zz_pPush(INIT_USER_FFT_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;p);<br>
+<font color="#008b00"><b>explicit</b></font>&nbsp;zz_pPush(<font color="#008b00"><b>const</b></font>&nbsp;zz_pContext&amp; context); <br>
+&nbsp;&nbsp;<font color="#0000ed"><i>// backup current modulus and install the given one</i></font><br>
+&nbsp;&nbsp;<font color="#0000ed"><i>// see documentation for zz_p::init for more details</i></font><br>
+<br>
+<font color="#b02f60"><b>private</b></font>:<br>
+zz_pPush(<font color="#008b00"><b>const</b></font>&nbsp;zz_pPush&amp;); <font color="#0000ed"><i>// disabled</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;zz_pPush&amp;); <font color="#0000ed"><i>// disabled</i></font><br>
+<br>
+};<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// more general context switching:</i></font><br>
+<font color="#0000ed"><i>// A zz_pContext object has a modulus q (possibly &quot;null&quot;)</i></font><br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;zz_pContext {<br>
+<br>
+<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+<br>
+zz_pContext();&nbsp;&nbsp;<font color="#0000ed"><i>// q = &quot;null&quot;</i></font><br>
+<br>
+<font color="#008b00"><b>explicit</b></font>&nbsp;zz_pContext(<font color="#008b00"><b>long</b></font>&nbsp;p); <br>
+zz_pContext(INIT_FFT_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;index); <br>
+zz_pContext(INIT_USER_FFT_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;p);<br>
+&nbsp;&nbsp;<font color="#0000ed"><i>// q = the given modulus</i></font><br>
+&nbsp;&nbsp;<font color="#0000ed"><i>// see documentation for zz_p::init for more details</i></font><br>
+&nbsp;&nbsp;<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;save(); <font color="#0000ed"><i>// q = CurrentModulus</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;restore() <font color="#008b00"><b>const</b></font>; <font color="#0000ed"><i>// CurrentModulus = q</i></font><br>
+<br>
+zz_pContext(<font color="#008b00"><b>const</b></font>&nbsp;zz_pContext&amp;);&nbsp;&nbsp;<font color="#0000ed"><i>// copy</i></font><br>
+zz_pContext&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;zz_pContext&amp;); <font color="#0000ed"><i>// assignment</i></font><br>
+~zz_pContext(); <font color="#0000ed"><i>// destructor</i></font><br>
+<br>
+<br>
+};<br>
+<br>
+<br>
+/ An older interface:<br>
+<font color="#0000ed"><i>// To describe this logic, think of a zz_pBak object</i></font><br>
+<font color="#0000ed"><i>// of having two components: a modulus q (possibly &quot;null&quot;) and </i></font><br>
+<font color="#0000ed"><i>// an &quot;auto-restore bit&quot; b.</i></font><br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;zz_pBak {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+<br>
+<br>
+&nbsp;&nbsp; zz_pBak();&nbsp;&nbsp;<font color="#0000ed"><i>// q = &quot;null&quot;, b = 0</i></font><br>
+<br>
+&nbsp;&nbsp; ~zz_pBak();&nbsp;&nbsp;<font color="#0000ed"><i>// if (b) CurrentModulus = q</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;save();&nbsp;&nbsp;<font color="#0000ed"><i>// q = CurrentModulus, b = 1 </i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;restore();&nbsp;&nbsp;<font color="#0000ed"><i>// CurrentModulus = q, b = 0</i></font><br>
+<br>
+<br>
+<font color="#b02f60"><b>private</b></font>:<br>
+&nbsp;&nbsp; zz_pBak(<font color="#008b00"><b>const</b></font>&nbsp;zz_pBak&amp;);&nbsp;&nbsp;<font color="#0000ed"><i>// copy disabled</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;zz_pBak&amp;);&nbsp;&nbsp;<font color="#0000ed"><i>// assignment disabled</i></font><br>
+};<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Miscellany</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;clear(zz_p&amp; x); <font color="#0000ed"><i>// x = 0</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;set(zz_p&amp; x); <font color="#0000ed"><i>// x = 1</i></font><br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;mulmod_t zz_p::ModulusInverse();<br>
+<font color="#0000ed"><i>// zz_p::ModulusInverse() returns PrepMulMod(zz_p::modulus()) </i></font><br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;zz_p zz_p::zero();<br>
+<font color="#0000ed"><i>// zz_p::zero() yields a read-only reference to zero</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;swap(zz_p&amp; x, zz_p&amp; y);<br>
+<font color="#0000ed"><i>// swap x and y </i></font><br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>void</b></font>&nbsp;zz_p::init(<font color="#008b00"><b>long</b></font>&nbsp;p, <font color="#008b00"><b>long</b></font>&nbsp;maxroot);<br>
+<font color="#0000ed"><i>// Same as ordinary zz_p::init(p), but somewhat more efficient.&nbsp;&nbsp;If you are</i></font><br>
+<font color="#0000ed"><i>// going to perform arithmetic modulo a degree n polynomial, in which</i></font><br>
+<font color="#0000ed"><i>// case set maxroot to NextPowerOfTwo(n)+1.&nbsp;&nbsp;This is useful, for</i></font><br>
+<font color="#0000ed"><i>// example, if you are going to factor a polynomial of degree n modulo</i></font><br>
+<font color="#0000ed"><i>// p, and you know n in advance.</i></font><br>
+<font color="#0000ed"><i>// If maxroot is set too low, the program will abort with an</i></font><br>
+<font color="#0000ed"><i>// appropriate error message.</i></font><br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>void</b></font>&nbsp;zz_p::FFTInit(<font color="#008b00"><b>long</b></font>&nbsp;i);<br>
+<font color="#0000ed"><i>// sets modulus to the i-th FFT prime (counting from 0).&nbsp;&nbsp;FFT primes</i></font><br>
+<font color="#0000ed"><i>// are NTL_SP_NBITS-bit primes p, where p-1 is divisible by a high power</i></font><br>
+<font color="#0000ed"><i>// of two.&nbsp;&nbsp;Thus, polynomial arithmetic mod p can be implemented</i></font><br>
+<font color="#0000ed"><i>// particularly efficiently using the FFT.&nbsp;&nbsp;As i increases, the power</i></font><br>
+<font color="#0000ed"><i>// of 2 that divides p-1 gets smaller, thus placing a more severe</i></font><br>
+<font color="#0000ed"><i>// restriction on the degrees of the polynomials to be multiplied.</i></font><br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>void</b></font>&nbsp;zz_p::UserFFTInit(<font color="#008b00"><b>long</b></font>&nbsp;p);<br>
+<font color="#0000ed"><i>// set the modulus to a user-provided FFT prime p. To be useful,</i></font><br>
+<font color="#0000ed"><i>// p-1 should be divisibly by a high power of 2. </i></font><br>
+<font color="#0000ed"><i>// The function is a utility routine that may be used to </i></font><br>
+<font color="#0000ed"><i>// calculate this value (see below). </i></font><br>
+<font color="#0000ed"><i>// If you are going to perform arithmetic modulo a degree n polynomial, </i></font><br>
+<font color="#0000ed"><i>// you will want CalcMaxRoot(p) &gt;= NextPowerOfTwo(n)+1. </i></font><br>
+<br>
+zz_pContext::zz_pContext(<font color="#008b00"><b>long</b></font>&nbsp;p, <font color="#008b00"><b>long</b></font>&nbsp;maxroot);<br>
+<font color="#0000ed"><i>// constructor for a zz_pContext with same semantics</i></font><br>
+<font color="#0000ed"><i>// as zz_p::init(p, maxroot) above.</i></font><br>
+<br>
+zz_pContext::zz_pContext(INIT_FFT_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;i);<br>
+<font color="#0000ed"><i>// constructor for a zz_pContext with same semantics</i></font><br>
+<font color="#0000ed"><i>// as zz_p::FFTInit(i) above; invoke as zz_pContext(INIT_FFT, i).</i></font><br>
+<br>
+zz_pContext::zz_pContext(INIT_USER_FFT_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;p);<br>
+<font color="#0000ed"><i>// constructor for a zz_pContext with same semantics</i></font><br>
+<font color="#0000ed"><i>// as zz_p::UserFFTInit(p) above; invoke as zz_pContext(INIT_USER_FFT, p).</i></font><br>
+<br>
+zz_p::zz_p(INIT_NO_ALLOC_TYPE);<br>
+<font color="#0000ed"><i>// provided for consistency with other classes, initialize to zero</i></font><br>
+<br>
+zz_p::zz_p(INIT_ALLOC_TYPE);<br>
+<font color="#0000ed"><i>// provided for consistency with other classes, initialize to zero</i></font><br>
+<br>
+zz_p::allocate();<br>
+<font color="#0000ed"><i>// provided for consistency with other classes, no action</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;CalcMaxRoot(<font color="#008b00"><b>long</b></font>&nbsp;p);<br>
+<font color="#0000ed"><i>// p is assumed to be an odd prime.</i></font><br>
+<font color="#0000ed"><i>// Returns the largest k such that 2^k divides p-1</i></font><br>
+<font color="#0000ed"><i>// and such that k does not exceed an implementation defined</i></font><br>
+<font color="#0000ed"><i>// constant.&nbsp;&nbsp;This represents the max power of two for which</i></font><br>
+<font color="#0000ed"><i>// an FFT mod p is supported.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;VectorConv(<font color="#008b00"><b>long</b></font>&nbsp;k, zz_p *x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ *a);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;VectorConv(<font color="#008b00"><b>long</b></font>&nbsp;k, zz_p *x, <font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;*a);<br>
+<font color="#0000ed"><i>// equivalent to conv(x[i], a[i]) for i in [0..k), but fatser</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+</font></body>
+</html>

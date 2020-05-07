@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/ZZ_pEXFactoring.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: ZZ_pEXFactoring</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>Routines are provided for factorization of polynomials over ZZ_pE, as</i></font><br>
+<font color="#0000ed"><i>well as routines for related problems such as testing irreducibility</i></font><br>
+<font color="#0000ed"><i>and constructing irreducible polynomials of given degree.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/ZZ_pEX.h&gt;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/pair_ZZ_pEX_long.h&gt;</font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SquareFreeDecomp(vec_pair_ZZ_pEX_long&amp; u, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f);<br>
+vec_pair_ZZ_pEX_long SquareFreeDecomp(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// Performs square-free decomposition.&nbsp;&nbsp;f must be monic.&nbsp;&nbsp;If f =</i></font><br>
+<font color="#0000ed"><i>// prod_i g_i^i, then u is set to a list of pairs (g_i, i).&nbsp;&nbsp;The list</i></font><br>
+<font color="#0000ed"><i>// is is increasing order of i, with trivial terms (i.e., g_i = 1)</i></font><br>
+<font color="#0000ed"><i>// deleted.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;FindRoots(vec_ZZ_pE&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f);<br>
+vec_ZZ_pE FindRoots(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// f is monic, and has deg(f) distinct roots.&nbsp;&nbsp;returns the list of</i></font><br>
+<font color="#0000ed"><i>// roots</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;FindRoot(ZZ_pE&amp; root, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f);<br>
+ZZ_pE FindRoot(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// finds a single root of f.&nbsp;&nbsp;assumes that f is monic and splits into</i></font><br>
+<font color="#0000ed"><i>// distinct linear factors</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;NewDDF(vec_pair_ZZ_pEX_long&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; h, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+vec_pair_ZZ_pEX_long NewDDF(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; h,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// This computes a distinct-degree factorization.&nbsp;&nbsp;The input must be</i></font><br>
+<font color="#0000ed"><i>// monic and square-free.&nbsp;&nbsp;factors is set to a list of pairs (g, d),</i></font><br>
+<font color="#0000ed"><i>// where g is the product of all irreducible factors of f of degree d.</i></font><br>
+<font color="#0000ed"><i>// Only nontrivial pairs (i.e., g != 1) are included.&nbsp;&nbsp;The polynomial</i></font><br>
+<font color="#0000ed"><i>// h is assumed to be equal to X^{ZZ_pE::cardinality()} mod f.&nbsp;&nbsp;</i></font><br>
+<br>
+<font color="#0000ed"><i>// This routine implements the baby step/giant step algorithm</i></font><br>
+<font color="#0000ed"><i>// of [Kaltofen and Shoup, STOC 1995].</i></font><br>
+<font color="#0000ed"><i>// further described in [Shoup, J. Symbolic Comp. 20:363-397, 1995].</i></font><br>
+<br>
+<font color="#0000ed"><i>// NOTE: When factoring &quot;large&quot; polynomials,</i></font><br>
+<font color="#0000ed"><i>// this routine uses external files to store some intermediate</i></font><br>
+<font color="#0000ed"><i>// results, which are removed if the routine terminates normally.</i></font><br>
+<font color="#0000ed"><i>// These files are stored in the current directory under names of the</i></font><br>
+<font color="#0000ed"><i>// form tmp-*.</i></font><br>
+<font color="#0000ed"><i>// The definition of &quot;large&quot; is controlled by the variable</i></font><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>extern</b></font>&nbsp;<font color="#008b00"><b>double</b></font>&nbsp;ZZ_pEXFileThresh<br>
+<br>
+<font color="#0000ed"><i>// which can be set by the user.&nbsp;&nbsp;If the sizes of the tables</i></font><br>
+<font color="#0000ed"><i>// exceeds ZZ_pEXFileThresh KB, external files are used.</i></font><br>
+<font color="#0000ed"><i>// Initial value is NTL_FILE_THRESH (defined in tools.h).</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;EDF(vec_ZZ_pEX&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; h,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+vec_ZZ_pEX EDF(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; h,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// Performs equal-degree factorization.&nbsp;&nbsp;f is monic, square-free, and</i></font><br>
+<font color="#0000ed"><i>// all irreducible factors have same degree.&nbsp;&nbsp;h = X^{ZZ_pE::cardinality()} mod</i></font><br>
+<font color="#0000ed"><i>// f.&nbsp;&nbsp;d = degree of irreducible factors of f.&nbsp;&nbsp;This routine</i></font><br>
+<font color="#0000ed"><i>// implements the algorithm of [von zur Gathen and Shoup,</i></font><br>
+<font color="#0000ed"><i>// Computational Complexity 2:187-224, 1992]</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;RootEDF(vec_ZZ_pEX&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+vec_ZZ_pEX RootEDF(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// EDF for d==1</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SFCanZass(vec_ZZ_pEX&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+vec_ZZ_pEX SFCanZass(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<font color="#0000ed"><i>// Assumes f is monic and square-free.&nbsp;&nbsp;returns list of factors of f.</i></font><br>
+<font color="#0000ed"><i>// Uses &quot;Cantor/Zassenhaus&quot; approach, using the routines NewDDF and</i></font><br>
+<font color="#0000ed"><i>// EDF above.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;CanZass(vec_pair_ZZ_pEX_long&amp; factors, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+vec_pair_ZZ_pEX_long CanZass(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;verbose=<font color="#ff8b00">0</font>);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// returns a list of factors, with multiplicities.&nbsp;&nbsp;f must be monic.</i></font><br>
+<font color="#0000ed"><i>// Calls SquareFreeDecomp and SFCanZass.</i></font><br>
+<br>
+<font color="#0000ed"><i>// NOTE: these routines use modular composition.&nbsp;&nbsp;The space</i></font><br>
+<font color="#0000ed"><i>// used for the required tables can be controlled by the variable</i></font><br>
+<font color="#0000ed"><i>// ZZ_pEXArgBound (see ZZ_pEX.txt).</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(ZZ_pEX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;vec_pair_ZZ_pEX_long&amp; v);<br>
+ZZ_pEX mul(<font color="#008b00"><b>const</b></font>&nbsp;vec_pair_ZZ_pEX_long&amp; v);<br>
+<br>
+<font color="#0000ed"><i>// multiplies polynomials, with multiplicities</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Irreducible Polynomials</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;ProbIrredTest(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;iter=<font color="#ff8b00">1</font>);<br>
+<br>
+<font color="#0000ed"><i>// performs a fast, probabilistic irreduciblity test.&nbsp;&nbsp;The test can</i></font><br>
+<font color="#0000ed"><i>// err only if f is reducible, and the error probability is bounded by</i></font><br>
+<font color="#0000ed"><i>// ZZ_pE::cardinality()^{-iter}.&nbsp;&nbsp;This implements an algorithm from [Shoup,</i></font><br>
+<font color="#0000ed"><i>// J. Symbolic Comp. 17:371-391, 1994].</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;DetIrredTest(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// performs a recursive deterministic irreducibility test.&nbsp;&nbsp;Fast in</i></font><br>
+<font color="#0000ed"><i>// the worst-case (when input is irreducible).&nbsp;&nbsp;This implements an</i></font><br>
+<font color="#0000ed"><i>// algorithm from [Shoup, J. Symbolic Comp. 17:371-391, 1994].</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IterIrredTest(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; f);<br>
+<br>
+<font color="#0000ed"><i>// performs an iterative deterministic irreducibility test, based on</i></font><br>
+<font color="#0000ed"><i>// DDF.&nbsp;&nbsp;Fast on average (when f has a small factor).</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;BuildIrred(ZZ_pEX&amp; f, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+ZZ_pEX BuildIrred_ZZ_pEX(<font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<br>
+<font color="#0000ed"><i>// Build a monic irreducible poly of degree n. </i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;BuildRandomIrred(ZZ_pEX&amp; f, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; g);<br>
+ZZ_pEX BuildRandomIrred(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; g);<br>
+<br>
+<font color="#0000ed"><i>// g is a monic irreducible polynomial.&nbsp;&nbsp;Constructs a random monic</i></font><br>
+<font color="#0000ed"><i>// irreducible polynomial f of the same degree.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IterComputeDegree(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEXModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// f is assumed to be an &quot;equal degree&quot; polynomial, and h =</i></font><br>
+<font color="#0000ed"><i>// X^{ZZ_pE::cardinality()} mod f.&nbsp;&nbsp;The common degree of the irreducible </i></font><br>
+<font color="#0000ed"><i>// factors of f is computed.&nbsp;&nbsp;Uses a &quot;baby step/giant step&quot; algorithm, similar</i></font><br>
+<font color="#0000ed"><i>// to NewDDF.&nbsp;&nbsp;Although asymptotocally slower than RecComputeDegree</i></font><br>
+<font color="#0000ed"><i>// (below), it is faster for reasonably sized inputs.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;RecComputeDegree(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; h, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEXModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// f is assumed to be an &quot;equal degree&quot; polynomial, </i></font><br>
+<font color="#0000ed"><i>// h = X^{ZZ_pE::cardinality()} mod f.&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>// The common degree of the irreducible factors of f is</i></font><br>
+<font color="#0000ed"><i>// computed Uses a recursive algorithm similar to DetIrredTest.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;TraceMap(ZZ_pEX&amp; w, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEXModulus&amp; F,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; h);<br>
+<br>
+ZZ_pEX TraceMap(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEXModulus&amp; F,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; h);<br>
+<br>
+<font color="#0000ed"><i>// Computes w = a+a^q+...+^{q^{d-1}} mod f; it is assumed that d &gt;= 0,</i></font><br>
+<font color="#0000ed"><i>// and h = X^q mod f, q a power of ZZ_pE::cardinality().&nbsp;&nbsp;This routine</i></font><br>
+<font color="#0000ed"><i>// implements an algorithm from [von zur Gathen and Shoup,</i></font><br>
+<font color="#0000ed"><i>// Computational Complexity 2:187-224, 1992]</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;PowerCompose(ZZ_pEX&amp; w, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; h, <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEXModulus&amp; F);<br>
+<br>
+ZZ_pEX PowerCompose(<font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEX&amp; h, <font color="#008b00"><b>long</b></font>&nbsp;d, <font color="#008b00"><b>const</b></font>&nbsp;ZZ_pEXModulus&amp; F);<br>
+<br>
+<font color="#0000ed"><i>// Computes w = X^{q^d} mod f; it is assumed that d &gt;= 0, and h = X^q</i></font><br>
+<font color="#0000ed"><i>// mod f, q a power of ZZ_pE::cardinality().&nbsp;&nbsp;This routine implements an</i></font><br>
+<font color="#0000ed"><i>// algorithm from [von zur Gathen and Shoup, Computational Complexity</i></font><br>
+<font color="#0000ed"><i>// 2:187-224, 1992]</i></font><br>
+<br>
+</font></body>
+</html>

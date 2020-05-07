@@ -1,0 +1,391 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/quad_float.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: quad_float</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>The class quad_float is used to represent quadruple precision numbers.</i></font><br>
+<font color="#0000ed"><i>Thus, with standard IEEE floating point, you should get the equivalent</i></font><br>
+<font color="#0000ed"><i>of about 106 bits of precision (but actually just a bit less).</i></font><br>
+<br>
+<font color="#0000ed"><i>The interface allows you to treat quad_floats more or less as if they were</i></font><br>
+<font color="#0000ed"><i>&quot;ordinary&quot; floating point types.</i></font><br>
+<br>
+<font color="#0000ed"><i>See below for more implementation details.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/ZZ.h&gt;</font><br>
+<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;quad_float {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+<br>
+quad_float(); <font color="#0000ed"><i>// = 0</i></font><br>
+<br>
+quad_float(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// copy constructor</i></font><br>
+<br>
+<font color="#008b00"><b>explicit</b></font>&nbsp;quad_float(<font color="#008b00"><b>double</b></font>&nbsp;a);&nbsp;&nbsp;<font color="#0000ed"><i>// promotion constructor</i></font><br>
+<br>
+<br>
+quad_float&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// assignment operator</i></font><br>
+quad_float&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>double</b></font>&nbsp;a);<br>
+<br>
+~quad_float();<br>
+<br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>void</b></font>&nbsp;SetOutputPrecision(<font color="#008b00"><b>long</b></font>&nbsp;p);<br>
+<font color="#0000ed"><i>// This sets the number of decimal digits to be output.&nbsp;&nbsp;Default is</i></font><br>
+<font color="#0000ed"><i>// 10.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;OutputPrecision();<br>
+<font color="#0000ed"><i>// returns current output precision.</i></font><br>
+<br>
+<br>
+};<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Arithmetic Operations</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+<br>
+quad_float <font color="#b02f60"><b>operator</b></font>&nbsp;+(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+quad_float <font color="#b02f60"><b>operator</b></font>&nbsp;-(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+quad_float <font color="#b02f60"><b>operator</b></font>&nbsp;*(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+quad_float <font color="#b02f60"><b>operator</b></font>&nbsp;/(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: operators +, -, *, / promote double to quad_float</i></font><br>
+<font color="#0000ed"><i>// on (x, y).</i></font><br>
+<br>
+quad_float <font color="#b02f60"><b>operator</b></font>&nbsp;-(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x);<br>
+<br>
+quad_float&amp; <font color="#b02f60"><b>operator</b></font>&nbsp;+= (quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+quad_float&amp; <font color="#b02f60"><b>operator</b></font>&nbsp;+= (quad_float&amp; x, <font color="#008b00"><b>double</b></font>&nbsp;y);<br>
+<br>
+quad_float&amp; <font color="#b02f60"><b>operator</b></font>&nbsp;-= (quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+quad_float&amp; <font color="#b02f60"><b>operator</b></font>&nbsp;-= (quad_float&amp; x, <font color="#008b00"><b>double</b></font>&nbsp;y);<br>
+<br>
+quad_float&amp; <font color="#b02f60"><b>operator</b></font>&nbsp;*= (quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+quad_float&amp; <font color="#b02f60"><b>operator</b></font>&nbsp;*= (quad_float&amp; x, <font color="#008b00"><b>double</b></font>&nbsp;y);<br>
+<br>
+quad_float&amp; <font color="#b02f60"><b>operator</b></font>&nbsp;/= (quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+quad_float&amp; <font color="#b02f60"><b>operator</b></font>&nbsp;/= (quad_float&amp; x, <font color="#008b00"><b>double</b></font>&nbsp;y);<br>
+<br>
+quad_float&amp; <font color="#b02f60"><b>operator</b></font>++(quad_float&amp; a); <font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>++(quad_float&amp; a, <font color="#008b00"><b>int</b></font>); <font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+quad_float&amp; <font color="#b02f60"><b>operator</b></font>--(quad_float&amp; a); <font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>--(quad_float&amp; a, <font color="#008b00"><b>int</b></font>); <font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Comparison</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>&gt; (<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>&gt;=(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>&lt; (<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>&lt;=(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y);<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;sign(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x);&nbsp;&nbsp;<font color="#0000ed"><i>// sign of x, -1, 0, +1</i></font><br>
+<font color="#008b00"><b>long</b></font>&nbsp;compare(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; y); <font color="#0000ed"><i>// sign of x - y</i></font><br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: operators &gt;, ..., != and function compare</i></font><br>
+<font color="#0000ed"><i>// promote double to quad_float on (x, y).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Input/Output</i></font><br>
+<font color="#0000ed"><i>Input Syntax:</i></font><br>
+<br>
+<font color="#0000ed"><i>&lt;number&gt;: [ &quot;-&quot; ] &lt;unsigned-number&gt;</i></font><br>
+<font color="#0000ed"><i>&lt;unsigned-number&gt;: &lt;dotted-number&gt; [ &lt;e-part&gt; ] | &lt;e-part&gt;</i></font><br>
+<font color="#0000ed"><i>&lt;dotted-number&gt;: &lt;digits&gt; | &lt;digits&gt; &quot;.&quot; &lt;digits&gt; | &quot;.&quot; &lt;digits&gt; | &lt;digits&gt; &quot;.&quot;</i></font><br>
+<font color="#0000ed"><i>&lt;digits&gt;: &lt;digit&gt; &lt;digits&gt; | &lt;digit&gt;</i></font><br>
+<font color="#0000ed"><i>&lt;digit&gt;: &quot;0&quot; | ... | &quot;9&quot;</i></font><br>
+<font color="#0000ed"><i>&lt;e-part&gt;: ( &quot;E&quot; | &quot;e&quot; ) [ &quot;+&quot; | &quot;-&quot; ] &lt;digits&gt;</i></font><br>
+<br>
+<font color="#0000ed"><i>Examples of valid input:</i></font><br>
+<br>
+<font color="#0000ed"><i>17 1.5 0.5 .5&nbsp;&nbsp;5.&nbsp;&nbsp;-.5 e10 e-10 e+10 1.5e10 .5e10 .5E10</i></font><br>
+<br>
+<font color="#0000ed"><i>Note that the number of decimal digits of precision that are used</i></font><br>
+<font color="#0000ed"><i>for output can be set to any number p &gt;= 1 by calling</i></font><br>
+<font color="#0000ed"><i>the routine quad_float::SetOutputPrecision(p).&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>The default value of p is 10.</i></font><br>
+<font color="#0000ed"><i>The current value of p is returned by a call to quad_float::OutputPrecision().</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+istream&amp; <font color="#b02f60"><b>operator</b></font>&nbsp;&gt;&gt; (istream&amp; s, quad_float&amp; x);<br>
+ostream&amp; <font color="#b02f60"><b>operator</b></font>&nbsp;&lt;&lt; (ostream&amp; s, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x);<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Miscellaneous</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+quad_float sqrt(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x);<br>
+quad_float floor(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x);<br>
+quad_float ceil(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x);<br>
+quad_float trunc(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x);<br>
+quad_float fabs(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x);<br>
+quad_float exp(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x);<br>
+quad_float log(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x);<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power(quad_float&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;e); <font color="#0000ed"><i>// x = a^e</i></font><br>
+quad_float power(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;e); <br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power2(quad_float&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;e); <font color="#0000ed"><i>// x = 2^e</i></font><br>
+quad_float power2_quad_float(<font color="#008b00"><b>long</b></font>&nbsp;e); <br>
+<br>
+quad_float ldexp(<font color="#008b00"><b>const</b></font>&nbsp;quad_float&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;e);&nbsp;&nbsp;<font color="#0000ed"><i>// return x*2^e</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsFinite(quad_float *x); <font color="#0000ed"><i>// checks if x is &quot;finite&quot;&nbsp;&nbsp; </i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// pointer is used for compatability with</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// IsFinite(double*)</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;random(quad_float&amp; x);<br>
+quad_float random_quad_float();<br>
+<font color="#0000ed"><i>// generate a random quad_float x with 0 &lt;= x &lt;= 1</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>**********************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>IMPLEMENTATION DETAILS</i></font><br>
+<br>
+<font color="#0000ed"><i>A quad_float x is represented as a pair of doubles, x.hi and x.lo,</i></font><br>
+<font color="#0000ed"><i>such that the number represented by x is x.hi + x.lo, where</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; |x.lo| &lt;= 0.5*ulp(x.hi),&nbsp;&nbsp;(*)</i></font><br>
+<br>
+<font color="#0000ed"><i>and ulp(y) means &quot;unit in the last place of y&quot;.&nbsp;&nbsp;</i></font><br>
+<br>
+<font color="#0000ed"><i>For the software to work correctly, IEEE Standard Arithmetic is sufficient.&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>That includes just about every modern computer; the only exception I'm</i></font><br>
+<font color="#0000ed"><i>aware of is Intel x86 platforms running Linux (but you can still</i></font><br>
+<font color="#0000ed"><i>use this platform--see below).</i></font><br>
+<br>
+<font color="#0000ed"><i>Also sufficient is any platform that implements arithmetic with correct </i></font><br>
+<font color="#0000ed"><i>rounding, i.e., given double floating point numbers a and b, a op b </i></font><br>
+<font color="#0000ed"><i>is computed exactly and then rounded to the nearest double.&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>The tie-breaking rule is not important.</i></font><br>
+<br>
+<font color="#0000ed"><i>This is a rather wierd representation;&nbsp;&nbsp;although it gives one</i></font><br>
+<font color="#0000ed"><i>essentially twice the precision of an ordinary double, it is</i></font><br>
+<font color="#0000ed"><i>not really the equivalent of quadratic precision (despite the name).</i></font><br>
+<font color="#0000ed"><i>For example, the number 1 + 2^{-200} can be represented exactly as</i></font><br>
+<font color="#0000ed"><i>a quad_float.&nbsp;&nbsp;Also, there is no real notion of &quot;machine precision&quot;.</i></font><br>
+<br>
+<font color="#0000ed"><i>Note that overflow/underflow for quad_floats does not follow any particularly</i></font><br>
+<font color="#0000ed"><i>useful rules, even if the underlying floating point arithmetic is IEEE</i></font><br>
+<font color="#0000ed"><i>compliant.&nbsp;&nbsp;Generally, when an overflow/underflow occurs, the resulting value</i></font><br>
+<font color="#0000ed"><i>is unpredicatble, although typically when overflow occurs in computing a value</i></font><br>
+<font color="#0000ed"><i>x, the result is non-finite (i.e., IsFinite(&amp;x) == 0).&nbsp;&nbsp;Note, however, that</i></font><br>
+<font color="#0000ed"><i>some care is taken to ensure that the ZZ to quad_float conversion routine</i></font><br>
+<font color="#0000ed"><i>produces a non-finite value upon overflow.</i></font><br>
+<br>
+<font color="#0000ed"><i>THE INTEL x86 PROBLEM</i></font><br>
+<br>
+<font color="#0000ed"><i>Although just about every modern processor implements the IEEE</i></font><br>
+<font color="#0000ed"><i>floating point standard, there still can be problems</i></font><br>
+<font color="#0000ed"><i>on processors that support IEEE extended double precision.</i></font><br>
+<font color="#0000ed"><i>The only processor I know of that supports this is the x86/Pentium.</i></font><br>
+<br>
+<font color="#0000ed"><i>While extended double precision may sound like a nice thing,</i></font><br>
+<font color="#0000ed"><i>it is not.&nbsp;&nbsp;Normal double precision has 53 bits of precision.</i></font><br>
+<font color="#0000ed"><i>Extended has 64.&nbsp;&nbsp;On x86s, the FP registers have 53 or 64 bits</i></font><br>
+<font color="#0000ed"><i>of precision---this can be set at run-time by modifying</i></font><br>
+<font color="#0000ed"><i>the cpu &quot;control word&quot; (something that can be done</i></font><br>
+<font color="#0000ed"><i>only in assembly code).</i></font><br>
+<font color="#0000ed"><i>However, doubles stored in memory always have only 53 bits.</i></font><br>
+<font color="#0000ed"><i>Compilers may move values between memory and registers</i></font><br>
+<font color="#0000ed"><i>whenever they want, which can effectively change the value</i></font><br>
+<font color="#0000ed"><i>of a floating point number even though at the C/C++ level,</i></font><br>
+<font color="#0000ed"><i>nothing has happened that should have changed the value.</i></font><br>
+<font color="#0000ed"><i>Is that sick, or what?</i></font><br>
+<font color="#0000ed"><i>Actually, the new C99 standard seems to outlaw such &quot;spontaneous&quot;</i></font><br>
+<font color="#0000ed"><i>value changes; however, this behavior is not necessarily</i></font><br>
+<font color="#0000ed"><i>universally implemented.</i></font><br>
+<br>
+<font color="#0000ed"><i>This is a real headache, and if one is not just a bit careful,</i></font><br>
+<font color="#0000ed"><i>the quad_float code will break.&nbsp;&nbsp;This breaking is not at all subtle,</i></font><br>
+<font color="#0000ed"><i>and the program QuadTest will catch the problem if it exists.</i></font><br>
+<br>
+<font color="#0000ed"><i>You should not need to worry about any of this, because NTL automatically</i></font><br>
+<font color="#0000ed"><i>detects and works around these problems as best it can, as described below.</i></font><br>
+<font color="#0000ed"><i>It shouldn't make a mistake, but if it does, you will</i></font><br>
+<font color="#0000ed"><i>catch it in the QuadTest program.</i></font><br>
+<font color="#0000ed"><i>If things don't work quite right, you might try</i></font><br>
+<font color="#0000ed"><i>setting NTL_FIX_X86 or NTL_NO_FIX_X86 flags in ntl_config.h,</i></font><br>
+<font color="#0000ed"><i>but this should not be necessary.</i></font><br>
+<br>
+<font color="#0000ed"><i>Here are the details about how NTL fixes the problem.</i></font><br>
+<br>
+<font color="#0000ed"><i>The first and best way is to have the default setting of the control word</i></font><br>
+<font color="#0000ed"><i>be 53 bits.&nbsp;&nbsp;However, you are at the mercy of your platform</i></font><br>
+<font color="#0000ed"><i>(compiler, OS, run-time libraries).&nbsp;&nbsp;Windows does this,</i></font><br>
+<font color="#0000ed"><i>and so the problem simply does not arise here, and NTL neither</i></font><br>
+<font color="#0000ed"><i>detects nor fixes the problem.&nbsp;&nbsp;Linux, however, does not do this,</i></font><br>
+<font color="#0000ed"><i>which really sucks.&nbsp;&nbsp;Can we talk these Linux people into changing this?</i></font><br>
+<br>
+<font color="#0000ed"><i>The second way to fix the problem is by having NTL </i></font><br>
+<font color="#0000ed"><i>fiddle with control word itself.&nbsp;&nbsp;If you compile NTL using a GNU compiler</i></font><br>
+<font color="#0000ed"><i>on an x86, this should happen automatically.</i></font><br>
+<font color="#0000ed"><i>On the one hand, this is not a general, portable solution,</i></font><br>
+<font color="#0000ed"><i>since it will only work if you use a GNU compiler, or at least one that</i></font><br>
+<font color="#0000ed"><i>supports GNU 'asm' syntax.&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>On the other hand, almost everybody who compiles C++ on x86/Linux</i></font><br>
+<font color="#0000ed"><i>platforms uses GNU compilers (although there are some commercial</i></font><br>
+<font color="#0000ed"><i>compilers out there that I don't know too much about).</i></font><br>
+<br>
+<font color="#0000ed"><i>The third way to fix the problem is to 'force' all intermediate</i></font><br>
+<font color="#0000ed"><i>floating point results into memory.&nbsp;&nbsp;This is not an 'ideal' fix,</i></font><br>
+<font color="#0000ed"><i>since it is not fully equivalent to 53-bit precision (because of </i></font><br>
+<font color="#0000ed"><i>double rounding), but it works (although to be honest, I've never seen</i></font><br>
+<font color="#0000ed"><i>a full proof of correctness in this case).</i></font><br>
+<font color="#0000ed"><i>NTL's quad_float code does this by storing intermediate results</i></font><br>
+<font color="#0000ed"><i>in local variables declared to be 'volatile'.</i></font><br>
+<font color="#0000ed"><i>This is the solution to the problem that NTL uses if it detects</i></font><br>
+<font color="#0000ed"><i>the problem and can't fix it using the GNU 'asm' hack mentioned above.</i></font><br>
+<font color="#0000ed"><i>This solution should work on any platform that faithfully</i></font><br>
+<font color="#0000ed"><i>implements 'volatile' according to the ANSI C standard.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>BACKGROUND INFO</i></font><br>
+<br>
+<font color="#0000ed"><i>The code NTL uses algorithms designed by Knuth, Kahan, Dekker, and</i></font><br>
+<font color="#0000ed"><i>Linnainmaa.&nbsp;&nbsp;The original transcription to C++ was done by Douglas</i></font><br>
+<font color="#0000ed"><i>Priest.&nbsp;&nbsp;Enhancements and bug fixes were done by Keith Briggs</i></font><br>
+<font color="#0000ed"><i>(<a href="http://epidem13.plantsci.cam.ac.uk/~kbriggs).&nbsp;&nbsp;The">http://epidem13.plantsci.cam.ac.uk/~kbriggs).&nbsp;&nbsp;The</a> NTL version is a</i></font><br>
+<font color="#0000ed"><i>stripped down version of Briggs' code, with a couple of bug fixes and</i></font><br>
+<font color="#0000ed"><i>portability improvements.&nbsp;&nbsp;Briggs has continued to develop his</i></font><br>
+<font color="#0000ed"><i>library;&nbsp;&nbsp;see his web page above for the latest version and more information.</i></font><br>
+<br>
+<font color="#0000ed"><i>Here is a brief annotated bibliography (compiled by Priest) of papers </i></font><br>
+<font color="#0000ed"><i>dealing with DP and similar techniques, arranged chronologically.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>Kahan, W., Further Remarks on Reducing Truncation Errors,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;{\it Comm.\ ACM\/} {\bf 8} (1965), 40.</i></font><br>
+<br>
+<font color="#0000ed"><i>M{\o}ller, O., Quasi Double Precision in Floating-Point Addition,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;{\it BIT\/} {\bf 5} (1965), 37--50.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;The two papers that first presented the idea of recovering the</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;roundoff of a sum.</i></font><br>
+<br>
+<font color="#0000ed"><i>Dekker, T., A Floating-Point Technique for Extending the Available</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Precision, {\it Numer.\ Math.} {\bf 18} (1971), 224--242.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;The classic reference for DP algorithms for sum, product, quotient,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;and square root.</i></font><br>
+<br>
+<font color="#0000ed"><i>Pichat, M., Correction d'une Somme en Arithmetique \`a Virgule</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Flottante, {\it Numer.\ Math.} {\bf 19} (1972), 400--406.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;An iterative algorithm for computing a protracted sum to working</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;precision by repeatedly applying the sum-and-roundoff method.</i></font><br>
+<br>
+<font color="#0000ed"><i>Linnainmaa, S., Analysis of Some Known Methods of Improving the Accuracy</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;of Floating-Point Sums, {\it BIT\/} {\bf 14} (1974), 167--202.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Comparison of Kahan and M{\o}ller algorithms with variations given</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;by Knuth.</i></font><br>
+<br>
+<font color="#0000ed"><i>Bohlender, G., Floating-Point Computation of Functions with Maximum</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Accuracy, {\it IEEE Trans.\ Comput.} {\bf C-26} (1977), 621--632.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Extended the analysis of Pichat's algorithm to compute a multi-word</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;representation of the exact sum of n working precision numbers.</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;This is the algorithm Kahan has called &quot;distillation&quot;.</i></font><br>
+<br>
+<font color="#0000ed"><i>Linnainmaa, S., Software for Doubled-Precision Floating-Point Computations,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;{\it ACM Trans.\ Math.\ Soft.} {\bf 7} (1981), 272--283.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Generalized the hypotheses of Dekker and showed how to take advantage</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;of extended precision where available.</i></font><br>
+<br>
+<font color="#0000ed"><i>Leuprecht, H., and W.~Oberaigner, Parallel Algorithms for the Rounding-Exact</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Summation of Floating-Point Numbers, {\it Computing} {\bf 28} (1982), 89--104.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Variations of distillation appropriate for parallel and vector</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;architectures.</i></font><br>
+<br>
+<font color="#0000ed"><i>Kahan, W., Paradoxes in Concepts of Accuracy, lecture notes from Joint</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Seminar on Issues and Directions in Scientific Computation, Berkeley, 1989.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Gives the more accurate DP sum I've shown above, discusses some</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;examples.</i></font><br>
+<br>
+<font color="#0000ed"><i>Priest, D., Algorithms for Arbitrary Precision Floating Point Arithmetic,</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;in P.~Kornerup and D.~Matula, Eds., {\it Proc.\ 10th Symposium on Com-</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;puter Arithmetic}, IEEE Computer Society Press, Los Alamitos, Calif., 1991.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Extends from DP to arbitrary precision; gives portable algorithms and</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;general proofs.</i></font><br>
+<br>
+<font color="#0000ed"><i>Sorensen, D., and P.~Tang, On the Orthogonality of Eigenvectors Computed</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;by Divide-and-Conquer Techniques, {\it SIAM J.\ Num.\ Anal.} {\bf 28}</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;(1991), 1752--1775.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;Uses some DP arithmetic to retain orthogonality of eigenvectors</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;computed by a parallel divide-and-conquer scheme.</i></font><br>
+<br>
+<font color="#0000ed"><i>Priest, D., On Properties of Floating Point Arithmetics: Numerical Stability</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;and the Cost of Accurate Computations, Ph.D. dissertation, University</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;of California at Berkeley, 1992.</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;More examples, organizes proofs in terms of common properties of fp</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;addition/subtraction, gives other summation algorithms.</i></font><br>
+<br>
+<font color="#0000ed"><i>Another relevant paper: </i></font><br>
+<br>
+<font color="#0000ed"><i>X. S. Li, et al.</i></font><br>
+<font color="#0000ed"><i>Design, implementation, and testing of extended and mixed </i></font><br>
+<font color="#0000ed"><i>precision BLAS.&nbsp;&nbsp;ACM Trans. Math. Soft., 28:152-205, 2002.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>\**********************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+</font></body>
+</html>

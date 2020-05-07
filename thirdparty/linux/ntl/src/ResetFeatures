@@ -1,0 +1,5 @@
+
+echo "" > "$1/include/NTL/HAVE_LL_TYPE.h"
+echo "" > "$1/include/NTL/HAVE_BUILTIN_CLZL.h"
+echo "" > "$1/include/NTL/HAVE_AVX.h"
+echo "" > "$1/include/NTL/HAVE_FMA.h"

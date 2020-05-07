@@ -1,0 +1,112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/vec_GF2E.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: vec_GF2E</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>Provides vectors over GF2E, along with some related operations.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/GF2E.h&gt;</font><br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/vector.h&gt;</font><br>
+<br>
+<br>
+<font color="#008b00"><b>typedef</b></font>&nbsp;Vec&lt;GF2E&gt; vec_GF2E; <font color="#0000ed"><i>// backward compatibility</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, GF2 b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_GF2E&amp; x, GF2 a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; b);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(vec_GF2E&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; b);<br>
+<font color="#0000ed"><i>// x = a * b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;add(vec_GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; b);<br>
+<font color="#0000ed"><i>// x = a + b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;sub(vec_GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; b);<br>
+<font color="#0000ed"><i>// x = a - b = x + a</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;negate(vec_GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a);<br>
+<font color="#0000ed"><i>// x = - a = a</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;clear(vec_GF2E&amp; x);<br>
+<font color="#0000ed"><i>// x = 0 (length unchanged)</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsZero(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a);<br>
+<font color="#0000ed"><i>// test if a is the zero vector</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;InnerProduct(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; b);<br>
+<font color="#0000ed"><i>// x = sum_{i=0}^{n-1} a[i]*b[i], where n = min(a.length(), b.length())</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;InnerProduct(GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; b,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;offset);<br>
+<font color="#0000ed"><i>// x = sum_{i=offset}^{n-1} a[i]*b[i-offset], where n = min(a.length(),</i></font><br>
+<font color="#0000ed"><i>// b.length()+offset)</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;VectorCopy(vec_GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+vec_GF2E VectorCopy(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// x = a copy of a of length exactly n.</i></font><br>
+<font color="#0000ed"><i>// The input is truncated or padded with zeroes, as necessary.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+vec_GF2E <br>
+<font color="#b02f60"><b>operator</b></font>+(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; b);<br>
+<br>
+vec_GF2E <br>
+<font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; b);<br>
+<br>
+vec_GF2E <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// vector/scalar multiplication:</i></font><br>
+<br>
+vec_GF2E <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; b);<br>
+vec_GF2E <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, GF2 b);<br>
+vec_GF2E <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+vec_GF2E <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; b);<br>
+vec_GF2E <font color="#b02f60"><b>operator</b></font>*(GF2 a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; b);<br>
+vec_GF2E <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; b);<br>
+<br>
+<font color="#0000ed"><i>// inner product:</i></font><br>
+<br>
+GF2E <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; b);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// assignment operator notation:</i></font><br>
+<br>
+vec_GF2E&amp; <font color="#b02f60"><b>operator</b></font>+=(vec_GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a);<br>
+vec_GF2E&amp; <font color="#b02f60"><b>operator</b></font>-=(vec_GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;vec_GF2E&amp; a);<br>
+<br>
+vec_GF2E&amp; <font color="#b02f60"><b>operator</b></font>*=(vec_GF2E&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;GF2E&amp; a);<br>
+vec_GF2E&amp; <font color="#b02f60"><b>operator</b></font>*=(vec_GF2E&amp; x, GF2 a);<br>
+vec_GF2E&amp; <font color="#b02f60"><b>operator</b></font>*=(vec_GF2E&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// Implementation note: the BlockConstruct routine has been customized</i></font><br>
+<font color="#0000ed"><i>// for GF2E so that when a vec_GF2E is grown, space for the needed</i></font><br>
+<font color="#0000ed"><i>// elements is allocated in one contiguous chunk.&nbsp;&nbsp;This saves on calls to</i></font><br>
+<font color="#0000ed"><i>// malloc and free, and should also yield better locality of reference.</i></font><br>
+<font color="#0000ed"><i>// One consequence of this is that swapping an element of a vec_GF2E</i></font><br>
+<font color="#0000ed"><i>// with another GF2E can not be implemented by pointer swap, and will in</i></font><br>
+<font color="#0000ed"><i>// this case be done by copy.</i></font><br>
+</font></body>
+</html>

@@ -1,0 +1,8 @@
+*** CheckFeature log ***
+g++ -I../include -I. -std=c++11 -pthread -march=native -g -O2 -o TestGetTime TestGetTime.c GetTime1.c -lm
+running
+g++ -I../include -I. -std=c++11 -pthread -march=native -g -O2 -o TestGetPID TestGetPID.c GetPID1.c -lm
+g++ -I../include -I. -std=c++11 -pthread -march=native -g -O2 -o CheckFeature CheckCLZL.c CheckCLZLAux.c -lm
+g++ -I../include -I. -std=c++11 -pthread -march=native -g -O2 -o CheckFeature CheckLL.c CheckLLAux.c -lm
+g++ -I../include -I. -std=c++11 -pthread -march=native -g -O2 -o CheckFeature CheckAVX.c -lm
+g++ -I../include -I. -std=c++11 -pthread -march=native -g -O2 -o CheckFeature CheckFMA.c -lm

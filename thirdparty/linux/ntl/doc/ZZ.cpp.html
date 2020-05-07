@@ -1,0 +1,1125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>/Volumes/unix-files/u/ntl-new/ntl-9.11.0dev/doc/ZZ.cpp.html</title>
+<meta name="Generator" content="Vim/7.1">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace">
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>MODULE: ZZ</i></font><br>
+<br>
+<font color="#0000ed"><i>SUMMARY:</i></font><br>
+<br>
+<font color="#0000ed"><i>The class ZZ is used to represent signed, arbitrary length integers.</i></font><br>
+<br>
+<font color="#0000ed"><i>Routines are provided for all of the basic arithmetic operations, as</i></font><br>
+<font color="#0000ed"><i>well as for some more advanced operations such as primality testing.</i></font><br>
+<font color="#0000ed"><i>Space is automatically managed by the constructors and destructors.</i></font><br>
+<br>
+<font color="#0000ed"><i>This module also provides routines for generating small primes, and</i></font><br>
+<font color="#0000ed"><i>fast routines for performing modular arithmetic on single-precision</i></font><br>
+<font color="#0000ed"><i>numbers.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#1773cc">#include </font><font color="#4a6f8b">&lt;NTL/tools.h&gt;</font><br>
+<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;ZZ {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+<br>
+<br>
+&nbsp;&nbsp; ZZ(); <font color="#0000ed"><i>// initial value is 0</i></font><br>
+<br>
+&nbsp;&nbsp; ZZ(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// copy constructor</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>explicit</b></font>&nbsp;ZZ(<font color="#008b00"><b>long</b></font>&nbsp;a);&nbsp;&nbsp;<font color="#0000ed"><i>// promotion constructor</i></font><br>
+<br>
+&nbsp;&nbsp; ~ZZ(); <font color="#0000ed"><i>// destructor</i></font><br>
+<br>
+&nbsp;&nbsp; ZZ&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a);&nbsp;&nbsp;<font color="#0000ed"><i>// assignment operator</i></font><br>
+&nbsp;&nbsp; ZZ&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>long</b></font>&nbsp;a);&nbsp;&nbsp;<br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// typedefs to aid in generic programming</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;ZZ_p residue_type;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;ZZX poly_type;<br>
+<br>
+<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// ...</i></font><br>
+<br>
+};<br>
+<br>
+<br>
+<font color="#0000ed"><i>// NOTE: A ZZ is represented as a sequence of &quot;zzigits&quot;,</i></font><br>
+<font color="#0000ed"><i>// where each zzigit is between 0 and 2^{NTL_ZZ_NBITS-1}.</i></font><br>
+<br>
+<font color="#0000ed"><i>// NTL_ZZ_NBITS is&nbsp;&nbsp;macros defined in &lt;NTL/ZZ.h&gt;.</i></font><br>
+<br>
+<font color="#0000ed"><i>// SIZE INVARIANT: the number of bits in a ZZ is always less than</i></font><br>
+<font color="#0000ed"><i>// 2^(NTL_BITS_PER_LONG-4).</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Comparison</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// The usual comparison operators: </i></font><br>
+&nbsp;&nbsp; <br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>==(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>!=(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>&lt;(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>&gt;(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>&lt;=(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>&gt;=(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<br>
+<font color="#0000ed"><i>// other stuff:</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;sign(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <font color="#0000ed"><i>// returns sign of a (-1, 0, +1)</i></font><br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsZero(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <font color="#0000ed"><i>// test for 0</i></font><br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsOne(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <font color="#0000ed"><i>// test for 1</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;compare(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b); <font color="#0000ed"><i>// returns sign of a-b (-1, 0, or 1).</i></font><br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: the comparison operators and the function compare</i></font><br>
+<font color="#0000ed"><i>// support promotion from long to ZZ on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Addition</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+ZZ <font color="#b02f60"><b>operator</b></font>+(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+ZZ <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+ZZ <font color="#b02f60"><b>operator</b></font>-(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <font color="#0000ed"><i>// unary -</i></font><br>
+<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>+=(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>+=(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a); <br>
+<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>-=(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>-=(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a); <br>
+<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>++(ZZ&amp; x);&nbsp;&nbsp;<font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>++(ZZ&amp; x, <font color="#008b00"><b>int</b></font>);&nbsp;&nbsp;<font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>--(ZZ&amp; x);&nbsp;&nbsp;<font color="#0000ed"><i>// prefix</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>--(ZZ&amp; x, <font color="#008b00"><b>int</b></font>);&nbsp;&nbsp;<font color="#0000ed"><i>// postfix</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;add(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b); <font color="#0000ed"><i>// x = a + b</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;sub(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b); <font color="#0000ed"><i>// x = a - b</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;SubPos(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b); <font color="#0000ed"><i>// x = a-b; assumes a &gt;= b &gt;= 0.</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;negate(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <font color="#0000ed"><i>// x = -a</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;abs(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <font color="#0000ed"><i>// x = |a|</i></font><br>
+ZZ abs(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a);<br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: binary +, -, as well as the procedural versions add, sub</i></font><br>
+<font color="#0000ed"><i>// support promotions from long to ZZ on (a, b).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Multiplication</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+ZZ <font color="#b02f60"><b>operator</b></font>*(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>*=(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a);<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>*=(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;mul(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b); <font color="#0000ed"><i>// x = a * b</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;sqr(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <font color="#0000ed"><i>// x = a*a</i></font><br>
+ZZ sqr(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: operator * and procedure mul support promotion</i></font><br>
+<font color="#0000ed"><i>// from long to ZZ on (a, b).</i></font><br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Combined Multiply and Add </i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MulAddTo(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b); <font color="#0000ed"><i>// x += a*b</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;MulAddTo(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// x += a*b</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MulSubFrom(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b); <font color="#0000ed"><i>// x -= a*b</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;MulSubFrom(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// x -= a*b</i></font><br>
+<br>
+<font color="#0000ed"><i>// NOTE: these are provided for both convenience and efficiency.</i></font><br>
+<font color="#0000ed"><i>// The single-precision versions may be significantly</i></font><br>
+<font color="#0000ed"><i>// faster than the code sequence </i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; mul(tmp, a, b); add(x, x, tmp);</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Division</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+ZZ <font color="#b02f60"><b>operator</b></font>/(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+ZZ <font color="#b02f60"><b>operator</b></font>/(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;&nbsp;b);<br>
+<br>
+ZZ <font color="#b02f60"><b>operator</b></font>%(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>%(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>/=(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>/=(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>%=(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;DivRem(ZZ&amp; q, ZZ&amp; r, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<font color="#0000ed"><i>// q = floor(a/b), r = a - b*q.</i></font><br>
+<font color="#0000ed"><i>// This implies that:</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;|r| &lt; |b|, and if r != 0, sign(r) = sign(b)</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;div(ZZ&amp; q, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<font color="#0000ed"><i>// q = floor(a/b)</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;rem(ZZ&amp; r, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<font color="#0000ed"><i>// q = floor(a/b), r = a - b*q</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// single-precision variants:</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;DivRem(ZZ&amp; q, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<font color="#0000ed"><i>// q = floor(a/b), r = a - b*q, return value is r.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;rem(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<font color="#0000ed"><i>// q = floor(a/b), r = a - b*q, return value is r.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// divisibility testing:</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;divide(ZZ&amp; q, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;divide(ZZ&amp; q, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<font color="#0000ed"><i>// if b | a, sets q = a/b and returns 1; otherwise returns 0.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;divide(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;divide(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<font color="#0000ed"><i>// if b | a, returns 1; otherwise returns 0.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;GCD's</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;GCD(ZZ&amp; d, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+ZZ GCD(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b); <br>
+<br>
+<font color="#0000ed"><i>// d = gcd(a, b) (which is always non-negative).&nbsp;&nbsp;Uses a binary GCD</i></font><br>
+<font color="#0000ed"><i>// algorithm.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;XGCD(ZZ&amp; d, ZZ&amp; s, ZZ&amp; t, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;d = gcd(a, b) = a*s + b*t.</i></font><br>
+<br>
+<font color="#0000ed"><i>// The coefficients s and t are defined according to the standard</i></font><br>
+<font color="#0000ed"><i>// Euclidean algorithm applied to |a| and |b|, with the signs then</i></font><br>
+<font color="#0000ed"><i>// adjusted according to the signs of a and b.</i></font><br>
+<br>
+<font color="#0000ed"><i>// The implementation may or may not Euclid's algorithm,</i></font><br>
+<font color="#0000ed"><i>// but the coefficients a and t are always computed as if </i></font><br>
+<font color="#0000ed"><i>// it did.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// special-purpose single-precision variants:</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;GCD(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<font color="#0000ed"><i>// return value is gcd(a, b) (which is always non-negative)</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;XGCD(<font color="#008b00"><b>long</b></font>&amp; d, <font color="#008b00"><b>long</b></font>&amp; s, <font color="#008b00"><b>long</b></font>&amp; t, <font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;d = gcd(a, b) = a*s + b*t.</i></font><br>
+<br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;The coefficients s and t are defined according to the standard</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;Euclidean algorithm applied to |a| and |b|, with the signs then</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;adjusted according to the signs of a and b.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Modular Arithmetic</i></font><br>
+<br>
+<font color="#0000ed"><i>The following routines perform arithmetic mod n, where n &gt; 1.</i></font><br>
+<br>
+<font color="#0000ed"><i>All arguments (other than exponents) are assumed to be in the range</i></font><br>
+<font color="#0000ed"><i>0..n-1.&nbsp;&nbsp;Some routines may check this and raise an error if this</i></font><br>
+<font color="#0000ed"><i>does not hold.&nbsp;&nbsp;Others may not, and the behaviour is unpredictable</i></font><br>
+<font color="#0000ed"><i>in this case.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;AddMod(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n); <font color="#0000ed"><i>// x = (a+b)%n</i></font><br>
+ZZ AddMod(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SubMod(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n); <font color="#0000ed"><i>// x = (a-b)%n</i></font><br>
+ZZ SubMod(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;NegateMod(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n); <font color="#0000ed"><i>// x = -a % n</i></font><br>
+ZZ NegateMod(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;MulMod(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n); <font color="#0000ed"><i>// x = (a*b)%n</i></font><br>
+ZZ MulMod(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SqrMod(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n); <font color="#0000ed"><i>// x = a^2 % n</i></font><br>
+ZZ SqrMod(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+<br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;InvMod(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+ZZ InvMod(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+<font color="#0000ed"><i>// x = a^{-1} mod n (0 &lt;= x &lt; n); error is raised occurs if inverse</i></font><br>
+<font color="#0000ed"><i>// not defined</i></font><br>
+<br>
+<font color="#0000ed"><i>// If exceptions are enabled, an object of the following class </i></font><br>
+<font color="#0000ed"><i>// is throw by the InvMod routine if the inverse of a mod n is</i></font><br>
+<font color="#0000ed"><i>// not defined. The methods get_a() and get_n() give read-only</i></font><br>
+<font color="#0000ed"><i>// access to the offending values of a and n.</i></font><br>
+<font color="#0000ed"><i>// This also happens for any indirect call to InvMod, via PowerMod,</i></font><br>
+<font color="#0000ed"><i>// of via inverse computations in ZZ_p.</i></font><br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;InvModErrorObject : <font color="#b02f60"><b>public</b></font>&nbsp;ArithmeticErrorObject {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+&nbsp;&nbsp; InvModErrorObject(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*s, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; get_a() <font color="#008b00"><b>const</b></font>;<br>
+&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; get_n() <font color="#008b00"><b>const</b></font>;<br>
+};<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;InvModStatus(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+<font color="#0000ed"><i>// if gcd(a,n) = 1, then return-value = 0, x = a^{-1} mod n;</i></font><br>
+<font color="#0000ed"><i>// otherwise, return-value = 1, x = gcd(a, n)</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;PowerMod(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; e, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+ZZ PowerMod(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; e, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;PowerMod(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;e, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+ZZ PowerMod(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;e, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+<br>
+<font color="#0000ed"><i>// x = a^e % n (e may be negative)</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: AddMod, SubMod, and MulMod (both procedural and functional</i></font><br>
+<font color="#0000ed"><i>// forms) support promotions from long to ZZ on (a, b).</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<a name="modarith"></a>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Single-precision modular arithmetic</i></font><br>
+<br>
+<font color="#0000ed"><i>These routines implement single-precision modular arithmetic.&nbsp;&nbsp;If n is</i></font><br>
+<font color="#0000ed"><i>the modulus, all inputs should be in the range 0..n-1.&nbsp;&nbsp;The number n</i></font><br>
+<font color="#0000ed"><i>itself should be in the range 2..NTL_SP_BOUND-1.</i></font><br>
+<br>
+<font color="#0000ed"><i>Most of these routines are, of course, implemented as fast inline</i></font><br>
+<font color="#0000ed"><i>functions.&nbsp;&nbsp;No checking is done that inputs are in range.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;AddMod(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n); <font color="#0000ed"><i>// return (a+b)%n</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;SubMod(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n); <font color="#0000ed"><i>// return (a-b)%n</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;NegateMod(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;n); <font color="#0000ed"><i>// return (-a)%n</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;MulMod(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n); <font color="#0000ed"><i>// return (a*b)%n</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;MulMod(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n, mulmod_t ninv); <br>
+<font color="#0000ed"><i>// return (a*b)%n.&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>//</i></font><br>
+<font color="#0000ed"><i>// Usually faster than plain MulMod when n is fixed for many</i></font><br>
+<font color="#0000ed"><i>// invocations. The value ninv should be precomputed as </i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; mulmod_t ninv = PrepMulMod(n);</i></font><br>
+<br>
+mulmod_t PrepMulMod(<font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// Prepare auxilliary data for MulMod.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;MulModPrecon(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n, mulmod_precon_t bninv);<br>
+<font color="#0000ed"><i>// return (a*b)%n.&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>//</i></font><br>
+<font color="#0000ed"><i>// Usually much faster than MulMod when both b and n are fixed for </i></font><br>
+<font color="#0000ed"><i>// many invocations.&nbsp;&nbsp;The value bninv should be precomputed as</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; mulmod_precon_t bninv = PrepMulModPrecon(b, n);</i></font><br>
+<font color="#0000ed"><i>// or as</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; mulmod_precon_t bninv = PrepMulModPrecon(b, n, ninv);</i></font><br>
+<font color="#0000ed"><i>// where ninv = PrepMulMod(n).</i></font><br>
+<br>
+mulmod_precon_t PrepMulModPrecon(<font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+mulmod_precon_t PrepMulModPrecon(<font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n, mulmod_t ninv);<br>
+<font color="#0000ed"><i>// Prepare auxilliary data for MulModPrecon.</i></font><br>
+<font color="#0000ed"><i>// In the second version, ninv = PrepMulMod(n).</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;InvMod(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// computes a^{-1} mod n.&nbsp;&nbsp;Error is raised if undefined.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;InvModStatus(<font color="#008b00"><b>long</b></font>&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// if gcd(a,n) = 1, then return-value = 0, x = a^{-1} mod n;</i></font><br>
+<font color="#0000ed"><i>// otherwise, return-value = 1, x = gcd(a, n)</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;PowerMod(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;e, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// computes a^e mod n (e may be negative)</i></font><br>
+<br>
+<font color="#0000ed"><i>// The following are vector versions of the MulMod routines</i></font><br>
+<font color="#0000ed"><i>// They each compute x[i] = (a[i] * b)% n&nbsp;&nbsp; i = 0..k-1 </i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;VectorMulMod(<font color="#008b00"><b>long</b></font>&nbsp;k, <font color="#008b00"><b>long</b></font>&nbsp;*x, <font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;*a, <font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;VectorMulMod(<font color="#008b00"><b>long</b></font>&nbsp;k, <font color="#008b00"><b>long</b></font>&nbsp;*x, <font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;*a, <font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mulmod_t ninv);<br>
+<font color="#0000ed"><i>// ninv = PrepMulMod(n)</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;VectorMulModPrecon(<font color="#008b00"><b>long</b></font>&nbsp;k, <font color="#008b00"><b>long</b></font>&nbsp;*x, <font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;*a, <font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mulmod_precon_t bninv);<br>
+<font color="#0000ed"><i>// bninv = MulModPrecon(b, n)</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// The following is provided for lagacy support, but is not generally </i></font><br>
+<font color="#0000ed"><i>// recommended:</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;MulDivRem(<font color="#008b00"><b>long</b></font>&amp; q, <font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n, muldivrem_t bninv);<br>
+<font color="#0000ed"><i>// return (a*b)%n, set q = (a*b)/n.&nbsp;&nbsp;</i></font><br>
+<font color="#0000ed"><i>// The value bninv should be precomputed as </i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; muldivrem_t bninv = PrepMulDivRem(b, n);</i></font><br>
+<font color="#0000ed"><i>// or as</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; muldivrem_t bninv = PrepMulDivRem(b, n, ninv);</i></font><br>
+<font color="#0000ed"><i>// where ninv = PrepMod(n).</i></font><br>
+<br>
+&nbsp;muldivrem_t PrepMulDivRem(<font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+&nbsp;muldivrem_t PrepMulDivRem(<font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n, mulmod_t ninv);<br>
+<font color="#0000ed"><i>// Prepare auxilliary data for MulDivRem.</i></font><br>
+<font color="#0000ed"><i>// In the second version, ninv = PrepMulMod(n).</i></font><br>
+<br>
+<font color="#0000ed"><i>// NOTE: despite the similarity in the interface to MulModPrecon,</i></font><br>
+<font color="#0000ed"><i>// this routine is typically implemented in a very different way,</i></font><br>
+<font color="#0000ed"><i>// and usually much less efficient.</i></font><br>
+<font color="#0000ed"><i>// It was initially designed for specialized, internal use</i></font><br>
+<font color="#0000ed"><i>// within NTL, but has been a part of the documented NTL</i></font><br>
+<font color="#0000ed"><i>// interface for some time, and remains so even after the</i></font><br>
+<font color="#0000ed"><i>// v9.0 upgrade.</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>//</i></font><br>
+<font color="#0000ed"><i>// Compatibility notes:</i></font><br>
+<font color="#0000ed"><i>//</i></font><br>
+<font color="#0000ed"><i>// The types mulmod_t and muldivrem_t were introduced in NTL v9.0, as were the</i></font><br>
+<font color="#0000ed"><i>// functions PrepMulMod and PrepMulDivRem.&nbsp;&nbsp;Prior to this, the built-in type</i></font><br>
+<font color="#0000ed"><i>// &quot;double&quot; played the role of these types, and the user was expected to</i></font><br>
+<font color="#0000ed"><i>// compute PrepMulMod(n) as 1/double(n) and PrepMulDivRem(b, n) as</i></font><br>
+<font color="#0000ed"><i>// double(b)/double(n).</i></font><br>
+<font color="#0000ed"><i>// </i></font><br>
+<font color="#0000ed"><i>// By abstracting these types, NTL is able to exploit a wider variety of</i></font><br>
+<font color="#0000ed"><i>// implementation strategies.&nbsp;&nbsp;Some old client code may break, but the compiler</i></font><br>
+<font color="#0000ed"><i>// will easily find the code that needs to be updated, and the updates are</i></font><br>
+<font color="#0000ed"><i>// quite mechanical (unless the old code implicitly made use of the assumption</i></font><br>
+<font color="#0000ed"><i>// that NTL_SP_NBITS &lt;= NTL_DOUBLE_PRECISION-3).</i></font><br>
+<font color="#0000ed"><i>//</i></font><br>
+<font color="#0000ed"><i>// It is highly recommended that old client codes be updated.&nbsp;&nbsp;However, one may</i></font><br>
+<font color="#0000ed"><i>// build NTL with the configuration option NTL_LEGACY_SP_MULMOD=on, which will</i></font><br>
+<font color="#0000ed"><i>// cause the interfaces and implementations to revert to their pre-v9.0</i></font><br>
+<font color="#0000ed"><i>// definitions.&nbsp;&nbsp;This option will also make the following (obslete) function</i></font><br>
+<font color="#0000ed"><i>// visible:</i></font><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;MulMod2(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n, <font color="#008b00"><b>double</b></font>&nbsp;bninv);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// return (a*b)%n.&nbsp;&nbsp;bninv = ((double) b)/((double) n).&nbsp;&nbsp;This is faster</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// if both n and b are fixed for many multiplications.</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// Note: This is OBSOLETE -- use MulModPrecon.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// As of v9.2 of NTL, this new interface allows for 60-bit moduli on most</i></font><br>
+<font color="#0000ed"><i>// 64-bit machines.&nbsp;&nbsp;The requirement is that a working 128-bit integer type is</i></font><br>
+<font color="#0000ed"><i>// available.&nbsp;&nbsp;For current versions of gcc, clang, and icc, this is available</i></font><br>
+<font color="#0000ed"><i>// vie the types __int128_t and __uint128_t.&nbsp;&nbsp;If this requirement is met (which</i></font><br>
+<font color="#0000ed"><i>// is verified during NTL installation), then a &quot;long long&quot; implementation for</i></font><br>
+<font color="#0000ed"><i>// MulMod is used.&nbsp;&nbsp;In versions 9.0 and 9.1 of NTL, a &quot;long double&quot;</i></font><br>
+<font color="#0000ed"><i>// implementation was introduced, which utilized the 80-bit extended double</i></font><br>
+<font color="#0000ed"><i>// precision hardware on x86 machines.&nbsp;&nbsp;This also allows for 60-bit moduli on</i></font><br>
+<font color="#0000ed"><i>// 64-bit machines.</i></font><br>
+<br>
+<font color="#0000ed"><i>// If 128-bit integer types are not avalable, or if you build NTL with the</i></font><br>
+<font color="#0000ed"><i>// NTL_DISABLE_LONGLONG=on flag, NTL will attempt to use the extended double</i></font><br>
+<font color="#0000ed"><i>// precision hardware to still allow 60-bit moduli.&nbsp;&nbsp;If that is not possible,</i></font><br>
+<font color="#0000ed"><i>// or if you build NTL with the NTL_DISABLE_LONGDOUBLE=on flag, then NTL will</i></font><br>
+<font color="#0000ed"><i>// fall back to its &quot;classical&quot; implementation (pre-9.0) that relies on</i></font><br>
+<font color="#0000ed"><i>// double-precision arithmetic and imposes a 50-bit limit on moduli.&nbsp;&nbsp;</i></font><br>
+<br>
+<font color="#0000ed"><i>// Note that in on 64-bit machines, either the &quot;long long&quot; or &quot;long double&quot;</i></font><br>
+<font color="#0000ed"><i>// implementations could support 62-bit moduli, rather than 60-bit moduli.</i></font><br>
+<font color="#0000ed"><i>// However, the restriction to 60-bits speeds up a few things, and so seems</i></font><br>
+<font color="#0000ed"><i>// like a good trade off.&nbsp;&nbsp;This is subject to change in the future.</i></font><br>
+<br>
+<font color="#0000ed"><i>// Also note that all of these enhancements introduced since v9.0 are only</i></font><br>
+<font color="#0000ed"><i>// available to builds of NTL that use GMP.&nbsp;&nbsp;Builds that don't use GMP will</i></font><br>
+<font color="#0000ed"><i>// still be restricted to 50-bit moduli on 64-bit machines. </i></font><br>
+<br>
+<font color="#0000ed"><i>// On machines with 32-bit longs, moduli will be resricted to 30 bits,</i></font><br>
+<font color="#0000ed"><i>// regardless on the implementation, which will be based on &quot;long long&quot;</i></font><br>
+<font color="#0000ed"><i>// arithmetic (if a 64-bit integer type is available), or on double-precision</i></font><br>
+<font color="#0000ed"><i>// floating point (otherwise).</i></font><br>
+<br>
+<font color="#0000ed"><i>// One can detect the new (v9) interface by testing if the macro</i></font><br>
+<font color="#0000ed"><i>// NTL_HAVE_MULMOD_T is defined.&nbsp;&nbsp;The following code can be used to make</i></font><br>
+<font color="#0000ed"><i>// new-style NTL clients work with either older (pre-9.0) versions of NTL or</i></font><br>
+<font color="#0000ed"><i>// newer versions (post-9.0):</i></font><br>
+<br>
+<br>
+<font color="#1773cc">&nbsp;&nbsp; #ifndef NTL_HAVE_MULMOD_T</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008b00"><b>namespace</b></font>&nbsp;NTL {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;<font color="#008b00"><b>double</b></font>&nbsp;mulmod_t;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>typedef</b></font>&nbsp;<font color="#008b00"><b>double</b></font>&nbsp;muldivrem_t;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>inline</b></font>&nbsp;<font color="#008b00"><b>double</b></font>&nbsp;PrepMulMod(<font color="#008b00"><b>long</b></font>&nbsp;n) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { <font color="#b02f60"><b>return</b></font>&nbsp;<font color="#008b00"><b>double</b></font>(<font color="#ff8b00">1L</font>)/<font color="#008b00"><b>double</b></font>(n); }<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>inline</b></font>&nbsp;<font color="#008b00"><b>double</b></font>&nbsp;PrepMulDivRem(<font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n, <font color="#008b00"><b>double</b></font>&nbsp;ninv) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { <font color="#b02f60"><b>return</b></font>&nbsp;<font color="#008b00"><b>double</b></font>(b)*ninv; }<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>inline</b></font>&nbsp;<font color="#008b00"><b>double</b></font>&nbsp;PrepMulDivRem(<font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { <font color="#b02f60"><b>return</b></font>&nbsp;<font color="#008b00"><b>double</b></font>(b)/<font color="#008b00"><b>double</b></font>(n); }<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>inline</b></font>&nbsp;<font color="#008b00"><b>double</b></font>&nbsp;PrepMulModPrecon(<font color="#008b00"><b>long</b></font>&nbsp;b, <font color="#008b00"><b>long</b></font>&nbsp;n) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; { <font color="#b02f60"><b>return</b></font>&nbsp;PrepMulModPrecon(b, n, PrepMulMod(n)); }<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<font color="#1773cc">&nbsp;&nbsp; #endif</font><br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Shift Operations</i></font><br>
+<br>
+<font color="#0000ed"><i>LeftShift by n means multiplication by 2^n</i></font><br>
+<font color="#0000ed"><i>RightShift by n means division by 2^n, with truncation toward zero</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;(so the sign is preserved).</i></font><br>
+<br>
+<font color="#0000ed"><i>A negative shift amount reverses the direction of the shift.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#0000ed"><i>// operator notation:</i></font><br>
+<br>
+ZZ <font color="#b02f60"><b>operator</b></font>&lt;&lt;(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+ZZ <font color="#b02f60"><b>operator</b></font>&gt;&gt;(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>&lt;&lt;=(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>&gt;&gt;=(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<br>
+<font color="#0000ed"><i>// procedural versions:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;LeftShift(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n); <br>
+ZZ LeftShift(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;RightShift(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n); <br>
+ZZ RightShift(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n); <br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Bits and Bytes</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;MakeOdd(ZZ&amp; x);<br>
+<font color="#0000ed"><i>// removes factors of 2 from x, returns the number of 2's removed</i></font><br>
+<font color="#0000ed"><i>// returns 0 if x == 0</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;NumTwos(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; x);<br>
+<font color="#0000ed"><i>// returns max e such that 2^e divides x if x != 0, and returns 0 if x == 0.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;IsOdd(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <font color="#0000ed"><i>// test if a is odd</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;NumBits(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;NumBits(<font color="#008b00"><b>long</b></font>&nbsp;a);&nbsp;&nbsp;<br>
+<font color="#0000ed"><i>// returns the number of bits in binary represenation of |a|; </i></font><br>
+<font color="#0000ed"><i>// NumBits(0) = 0</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;bit(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;k);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;bit(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;k); <br>
+<font color="#0000ed"><i>// returns bit k of |a|, position 0 being the low-order bit.</i></font><br>
+<font color="#0000ed"><i>// If&nbsp;&nbsp;k &lt; 0 or k &gt;= NumBits(a), returns 0.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;trunc(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;k);<br>
+<font color="#0000ed"><i>// x = low order k bits of |a|. </i></font><br>
+<font color="#0000ed"><i>// If k &lt;= 0, x = 0.</i></font><br>
+<br>
+<font color="#0000ed"><i>// two functional variants:</i></font><br>
+ZZ trunc_ZZ(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;k);&nbsp;&nbsp;<br>
+<font color="#008b00"><b>long</b></font>&nbsp;trunc_long(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;k);<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;SetBit(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;p);<br>
+<font color="#0000ed"><i>// returns original value of p-th bit of |a|, and replaces p-th bit of</i></font><br>
+<font color="#0000ed"><i>// a by 1 if it was zero; low order bit is bit 0; error if p &lt; 0;</i></font><br>
+<font color="#0000ed"><i>// the sign of x is maintained</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;SwitchBit(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;p);<br>
+<font color="#0000ed"><i>// returns original value of p-th bit of |a|, and switches the value</i></font><br>
+<font color="#0000ed"><i>// of p-th bit of a; low order bit is bit 0; error if p &lt; 0</i></font><br>
+<font color="#0000ed"><i>// the sign of x is maintained</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;weight(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <font color="#0000ed"><i>// returns Hamming weight of |a|</i></font><br>
+<font color="#008b00"><b>long</b></font>&nbsp;weight(<font color="#008b00"><b>long</b></font>&nbsp;a); <br>
+<br>
+<font color="#0000ed"><i>// bit-wise Boolean operations, procedural form:</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;bit_and(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b); <font color="#0000ed"><i>// x = |a| AND |b|</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;bit_or(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b); <font color="#0000ed"><i>// x = |a| OR |b|</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;bit_xor(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b); <font color="#0000ed"><i>// x = |a| XOR |b|</i></font><br>
+<br>
+<font color="#0000ed"><i>// bit-wise Boolean operations, operator notation:</i></font><br>
+<br>
+ZZ <font color="#b02f60"><b>operator</b></font>&amp;(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+ZZ <font color="#b02f60"><b>operator</b></font>|(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+ZZ <font color="#b02f60"><b>operator</b></font>^(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+<br>
+<font color="#0000ed"><i>// PROMOTIONS: the above bit-wise operations (both procedural </i></font><br>
+<font color="#0000ed"><i>// and operator forms) provide promotions from long to ZZ on (a, b).</i></font><br>
+<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>&amp;=(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>&amp;=(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>|=(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>|=(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>^=(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b);<br>
+ZZ&amp; <font color="#b02f60"><b>operator</b></font>^=(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>// conversions between byte sequences and ZZ's</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;ZZFromBytes(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*p, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+ZZ ZZFromBytes(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*p, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// x = sum(p[i]*256^i, i=0..n-1). </i></font><br>
+<font color="#0000ed"><i>// NOTE: in the unusual event that a char is more than 8 bits, </i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; only the low order 8 bits of p[i] are used</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;BytesFromZZ(<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*p, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// Computes p[0..n-1] such that abs(a) == sum(p[i]*256^i, i=0..n-1) mod 256^n.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;NumBytes(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;NumBytes(<font color="#008b00"><b>long</b></font>&nbsp;a);<br>
+<font color="#0000ed"><i>// returns # of base 256 digits needed to represent abs(a).</i></font><br>
+<font color="#0000ed"><i>// NumBytes(0) == 0.</i></font><br>
+<br>
+<br>
+<a name="prg"></a>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pseudo-Random Numbers</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// Routines for generating pseudo-random numbers.</i></font><br>
+<br>
+<font color="#0000ed"><i>// These routines generate high qualtity, cryptographically strong</i></font><br>
+<font color="#0000ed"><i>// pseudo-random numbers.&nbsp;&nbsp;They are implemented so that their behaviour</i></font><br>
+<font color="#0000ed"><i>// is completely independent of the underlying hardware and long </i></font><br>
+<font color="#0000ed"><i>// integer implementation.&nbsp;&nbsp;Note, however, that other routines </i></font><br>
+<font color="#0000ed"><i>// throughout NTL use pseudo-random numbers, and because of this,</i></font><br>
+<font color="#0000ed"><i>// the word size of the machine can impact the sequence of numbers</i></font><br>
+<font color="#0000ed"><i>// seen by a client program.</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SetSeed(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; s);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SetSeed(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*data, <font color="#008b00"><b>long</b></font>&nbsp;dlen);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SetSeed(<font color="#008b00"><b>const</b></font>&nbsp;RandomStream&amp; s);<br>
+<font color="#0000ed"><i>// Initializes generator with a &quot;seed&quot;.</i></font><br>
+<br>
+<font color="#0000ed"><i>// The first version hashes the binary representation of s to obtain a key for</i></font><br>
+<font color="#0000ed"><i>// a low-level RandomStream object (see below).</i></font><br>
+<br>
+<font color="#0000ed"><i>// The second version does the same, hashing the first dlen bytes pointed to by</i></font><br>
+<font color="#0000ed"><i>// data to obtain a key for the RandomStream object.</i></font><br>
+<br>
+<font color="#0000ed"><i>// The third version initializes the PRG state directly with the given</i></font><br>
+<font color="#0000ed"><i>// RandomStream object.</i></font><br>
+<br>
+<font color="#0000ed"><i>// EXCEPTIONS: strong ES</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;RandomBnd(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+ZZ RandomBnd(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;RandomBnd(<font color="#008b00"><b>long</b></font>&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;RandomBnd(<font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// x = pseudo-random number in the range 0..n-1, or 0 if n &lt;= 0</i></font><br>
+<font color="#0000ed"><i>// EXCEPTIONS: strong ES</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;VectorRandomBnd(<font color="#008b00"><b>long</b></font>&nbsp;k, <font color="#008b00"><b>long</b></font>&nbsp;*x, <font color="#008b00"><b>long</b></font>&nbsp;n);<br>
+<font color="#0000ed"><i>// equivalent to x[i] = RandomBnd(n) for i in [0..k), but faster</i></font><br>
+<font color="#0000ed"><i>// EXCEPTIONS: strong ES</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;RandomBits(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;l);<br>
+ZZ RandomBits_ZZ(<font color="#008b00"><b>long</b></font>&nbsp;l);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;RandomBits(<font color="#008b00"><b>long</b></font>&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;l);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;RandomBits_long(<font color="#008b00"><b>long</b></font>&nbsp;l);<br>
+<font color="#0000ed"><i>// x = pseudo-random number in the range 0..2^l-1.</i></font><br>
+<font color="#0000ed"><i>// EXCEPTIONS: strong ES</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;RandomLen(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;l);<br>
+ZZ RandomLen_ZZ(<font color="#008b00"><b>long</b></font>&nbsp;l);<br>
+<font color="#008b00"><b>void</b></font>&nbsp;RandomLen(<font color="#008b00"><b>long</b></font>&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;l);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;RandomLen_long(<font color="#008b00"><b>long</b></font>&nbsp;l);<br>
+<font color="#0000ed"><i>// x = psuedo-random number with precisely l bits,</i></font><br>
+<font color="#0000ed"><i>// or 0 of l &lt;= 0.</i></font><br>
+<font color="#0000ed"><i>// EXCEPTIONS: strong ES</i></font><br>
+<br>
+<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;RandomBits_ulong(<font color="#008b00"><b>long</b></font>&nbsp;l);<br>
+<font color="#0000ed"><i>// returns a pseudo-random number in the range 0..2^l-1</i></font><br>
+<font color="#0000ed"><i>// EXCEPTIONS: strong ES</i></font><br>
+<br>
+<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>long</b></font>&nbsp;RandomWord();<br>
+<font color="#0000ed"><i>// returns a word filled with pseudo-random bits.</i></font><br>
+<font color="#0000ed"><i>// Equivalent to RandomBits_ulong(NTL_BITS_PER_LONG).</i></font><br>
+<font color="#0000ed"><i>// EXCEPTIONS: strong ES</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;RandomStream { <br>
+<font color="#0000ed"><i>// The low-level pseudo-random generator (PRG).</i></font><br>
+<font color="#0000ed"><i>// After initializing it with a key, one can effectively read an unbounded</i></font><br>
+<font color="#0000ed"><i>// stream of pseudorandom bytes</i></font><br>
+<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>explicit</b></font>&nbsp;RandomStream(<font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*key);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// key should point to an array of NTL_PRG_KEYLEN bytes</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: nothrow</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;get(<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*res, <font color="#008b00"><b>long</b></font>&nbsp;n); <br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// read the next n bytes from the stream and store to location pointed to by</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// res</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: throws a LogicError exception if n is negative</i></font><br>
+<br>
+&nbsp;&nbsp; RandomStream(<font color="#008b00"><b>const</b></font>&nbsp;RandomStream&amp;); <font color="#0000ed"><i>// default</i></font><br>
+&nbsp;&nbsp; RandomStream&amp; <font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;RandomStream&amp;); <font color="#0000ed"><i>// default</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: nothrow</i></font><br>
+};<br>
+<br>
+<br>
+RandomStream&amp; GetCurrentRandomStream();<br>
+<font color="#0000ed"><i>// get reference to the current PRG state. If SetSeed has not been called, it</i></font><br>
+<font color="#0000ed"><i>// is called with a default value (which should be unique to each</i></font><br>
+<font color="#0000ed"><i>// process/thread).&nbsp;&nbsp;NOTE: this is a reference to a thread-local object, so</i></font><br>
+<font color="#0000ed"><i>// different threads will use different PRG's, and by default, each will be</i></font><br>
+<font color="#0000ed"><i>// initialized with a unique seed.</i></font><br>
+<font color="#0000ed"><i>// NOTE: using this reference, you can copy the current PRG state or assign a</i></font><br>
+<font color="#0000ed"><i>// different value to it; however, see the helper class RandomStreamPush below,</i></font><br>
+<font color="#0000ed"><i>// which may be more convenient.</i></font><br>
+<font color="#0000ed"><i>// EXCEPTIONS: strong ES</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;RandomStreamPush {<br>
+<font color="#0000ed"><i>// RAII for saving/restoring current PRG state</i></font><br>
+<font color="#b02f60"><b>public</b></font>:<br>
+&nbsp;&nbsp; RandomStreamPush();&nbsp;&nbsp; <font color="#0000ed"><i>// save a copy of the current PRG state</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#0000ed"><i>// EXCEPTIONS: strong ES</i></font><br>
+<br>
+&nbsp;&nbsp; ~RandomStreamPush();&nbsp;&nbsp;<font color="#0000ed"><i>// restore the saveed copy of the PRG state</i></font><br>
+<br>
+<font color="#b02f60"><b>private</b></font>: <br>
+&nbsp;&nbsp; RandomStreamPush(<font color="#008b00"><b>const</b></font>&nbsp;RandomStreamPush&amp;); <font color="#0000ed"><i>// disable</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;RandomStreamPush&amp;); <font color="#0000ed"><i>// disable</i></font><br>
+};<br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;DeriveKey(<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*key, <font color="#008b00"><b>long</b></font>&nbsp;klen,&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;<font color="#008b00"><b>unsigned</b></font>&nbsp;<font color="#008b00"><b>char</b></font>&nbsp;*data, <font color="#008b00"><b>long</b></font>&nbsp;dlen);<br>
+<font color="#0000ed"><i>// utility routine to derive from the byte string (data, dlen) a byte string</i></font><br>
+<font color="#0000ed"><i>// (key, klen).&nbsp;&nbsp;Heuristically, if (data, dlen) has high entropy, then (key,</i></font><br>
+<font color="#0000ed"><i>// klen) should be pseudorandom.&nbsp;&nbsp;This routine is also used internally to</i></font><br>
+<font color="#0000ed"><i>// derive PRG keys.</i></font><br>
+<font color="#0000ed"><i>// EXCEPTIONS: throws LogicError exception if klen &lt; 0 or hlen &lt; 0</i></font><br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Incremental Chinese Remaindering</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;CRT(ZZ&amp; a, ZZ&amp; p, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; A, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; P);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;CRT(ZZ&amp; a, ZZ&amp; p, <font color="#008b00"><b>long</b></font>&nbsp;A, <font color="#008b00"><b>long</b></font>&nbsp;P);<br>
+<br>
+<font color="#0000ed"><i>// 0 &lt;= A &lt; P, (p, P) = 1; computes a' such that a' = a mod p, </i></font><br>
+<font color="#0000ed"><i>// a' = A mod P, and -p*P/2 &lt; a' &lt;= p*P/2; sets a := a', p := p*P, and</i></font><br>
+<font color="#0000ed"><i>// returns 1 if a's value has changed, otherwise 0</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rational Reconstruction</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;ReconstructRational(ZZ&amp; a, ZZ&amp; b, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; m, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a_bound, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; b_bound);<br>
+<br>
+<font color="#0000ed"><i>// 0 &lt;= x &lt; m, m &gt; 2 * a_bound * b_bound,</i></font><br>
+<font color="#0000ed"><i>// a_bound &gt;= 0, b_bound &gt; 0</i></font><br>
+<br>
+<font color="#0000ed"><i>// This routine either returns 0, leaving a and b unchanged, </i></font><br>
+<font color="#0000ed"><i>// or returns 1 and sets a and b so that</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; (1) a = b x (mod m),</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; (2) |a| &lt;= a_bound, 0 &lt; b &lt;= b_bound, and</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; (3) gcd(m, b) = gcd(a, b).</i></font><br>
+<br>
+<font color="#0000ed"><i>// If there exist a, b satisfying (1), (2), and </i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; (3') gcd(m, b) = 1,</i></font><br>
+<font color="#0000ed"><i>// then a, b are uniquely determined if we impose the additional</i></font><br>
+<font color="#0000ed"><i>// condition that gcd(a, b) = 1;&nbsp;&nbsp;moreover, if such a, b exist,</i></font><br>
+<font color="#0000ed"><i>// then these values are returned by the routine.</i></font><br>
+<br>
+<font color="#0000ed"><i>// Unless the calling routine can *a priori* guarantee the existence</i></font><br>
+<font color="#0000ed"><i>// of a, b satisfying (1), (2), and (3'),</i></font><br>
+<font color="#0000ed"><i>// then to ensure correctness, the calling routine should check</i></font><br>
+<font color="#0000ed"><i>// that gcd(m, b) = 1, or equivalently, gcd(a, b) = 1.</i></font><br>
+<br>
+<font color="#0000ed"><i>// This is implemented using a variant of Lehmer's extended</i></font><br>
+<font color="#0000ed"><i>// Euclidean algorithm.</i></font><br>
+<br>
+<font color="#0000ed"><i>// Literature:&nbsp;&nbsp;see G. Collins and M. Encarnacion, J. Symb. Comp. 20:287-297, </i></font><br>
+<font color="#0000ed"><i>// 1995; P. Wang, M. Guy, and J. Davenport, SIGSAM Bulletin 16:2-3, 1982. </i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Primality Testing </i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; and Prime Number Generation</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;GenPrime(ZZ&amp; n, <font color="#008b00"><b>long</b></font>&nbsp;l, <font color="#008b00"><b>long</b></font>&nbsp;err = <font color="#ff8b00">80</font>);<br>
+ZZ GenPrime_ZZ(<font color="#008b00"><b>long</b></font>&nbsp;l, <font color="#008b00"><b>long</b></font>&nbsp;err = <font color="#ff8b00">80</font>);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;GenPrime_long(<font color="#008b00"><b>long</b></font>&nbsp;l, <font color="#008b00"><b>long</b></font>&nbsp;err = <font color="#ff8b00">80</font>);<br>
+<br>
+<font color="#0000ed"><i>// GenPrime generates a random prime n of length l so that the</i></font><br>
+<font color="#0000ed"><i>// probability that the resulting n is composite is bounded by 2^(-err).</i></font><br>
+<font color="#0000ed"><i>// This calls the routine RandomPrime below, and uses results of </i></font><br>
+<font color="#0000ed"><i>// Damgard, Landrock, Pomerance to &quot;optimize&quot; </i></font><br>
+<font color="#0000ed"><i>// the number of Miller-Rabin trials at the end.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;GenGermainPrime(ZZ&amp; n, <font color="#008b00"><b>long</b></font>&nbsp;l, <font color="#008b00"><b>long</b></font>&nbsp;err = <font color="#ff8b00">80</font>);<br>
+ZZ GenGermainPrime_ZZ(<font color="#008b00"><b>long</b></font>&nbsp;l, <font color="#008b00"><b>long</b></font>&nbsp;err = <font color="#ff8b00">80</font>);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;GenGermainPrime_long(<font color="#008b00"><b>long</b></font>&nbsp;l, <font color="#008b00"><b>long</b></font>&nbsp;err = <font color="#ff8b00">80</font>);<br>
+<br>
+<font color="#0000ed"><i>// A (Sophie) Germain prime is a prime p such that p' = 2*p+1 is also a prime.</i></font><br>
+<font color="#0000ed"><i>// Such primes are useful for cryptographic applications...cryptographers</i></font><br>
+<font color="#0000ed"><i>// sometimes call p' a &quot;strong&quot; or &quot;safe&quot; prime.</i></font><br>
+<font color="#0000ed"><i>// GenGermainPrime generates a random Germain prime n of length l</i></font><br>
+<font color="#0000ed"><i>// so that the probability that either n or 2*n+1 is not a prime</i></font><br>
+<font color="#0000ed"><i>// is bounded by 2^(-err).</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;ProbPrime(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n, <font color="#008b00"><b>long</b></font>&nbsp;NumTrials = <font color="#ff8b00">10</font>);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;ProbPrime(<font color="#008b00"><b>long</b></font>&nbsp;n, <font color="#008b00"><b>long</b></font>&nbsp;NumTrials = <font color="#ff8b00">10</font>);<br>
+<font color="#0000ed"><i>// performs up to NumTrials Miller-witness tests (after some trial division).</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;RandomPrime(ZZ&amp; n, <font color="#008b00"><b>long</b></font>&nbsp;l, <font color="#008b00"><b>long</b></font>&nbsp;NumTrials=<font color="#ff8b00">10</font>);<br>
+ZZ RandomPrime_ZZ(<font color="#008b00"><b>long</b></font>&nbsp;l, <font color="#008b00"><b>long</b></font>&nbsp;NumTrials=<font color="#ff8b00">10</font>);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;RandomPrime_long(<font color="#008b00"><b>long</b></font>&nbsp;l, <font color="#008b00"><b>long</b></font>&nbsp;NumTrials=<font color="#ff8b00">10</font>);<br>
+<font color="#0000ed"><i>// n = random l-bit prime.&nbsp;&nbsp;Uses ProbPrime with NumTrials.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;NextPrime(ZZ&amp; n, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; m, <font color="#008b00"><b>long</b></font>&nbsp;NumTrials=<font color="#ff8b00">10</font>);<br>
+ZZ NextPrime(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; m, <font color="#008b00"><b>long</b></font>&nbsp;NumTrials=<font color="#ff8b00">10</font>);<br>
+<font color="#0000ed"><i>// n = smallest prime &gt;= m.&nbsp;&nbsp;Uses ProbPrime with NumTrials.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;NextPrime(<font color="#008b00"><b>long</b></font>&nbsp;m, <font color="#008b00"><b>long</b></font>&nbsp;NumTrials=<font color="#ff8b00">10</font>);<br>
+<font color="#0000ed"><i>// Single precision version of the above.</i></font><br>
+<font color="#0000ed"><i>// Result will always be bounded by NTL_ZZ_SP_BOUND, and an</i></font><br>
+<font color="#0000ed"><i>// error is raised if this cannot be satisfied.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;MillerWitness(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; w);<br>
+<font color="#0000ed"><i>// Tests if w is a witness to compositeness a la Miller.&nbsp;&nbsp;Assumption: n is</i></font><br>
+<font color="#0000ed"><i>// odd and positive, 0 &lt;= w &lt; n.</i></font><br>
+<font color="#0000ed"><i>// Return value of 1 implies n is composite.</i></font><br>
+<font color="#0000ed"><i>// Return value of 0 indicates n might be prime.</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Exponentiation</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;e); <font color="#0000ed"><i>// x = a^e (e &gt;= 0)</i></font><br>
+ZZ power(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;e); <br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;e);<br>
+<br>
+<font color="#0000ed"><i>// two functional variants:</i></font><br>
+ZZ power_ZZ(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;e);<br>
+<font color="#008b00"><b>long</b></font>&nbsp;power_long(<font color="#008b00"><b>long</b></font>&nbsp;a, <font color="#008b00"><b>long</b></font>&nbsp;e);<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;power2(ZZ&amp; x, <font color="#008b00"><b>long</b></font>&nbsp;e); <font color="#0000ed"><i>// x = 2^e (e &gt;= 0)</i></font><br>
+ZZ power2_ZZ(<font color="#008b00"><b>long</b></font>&nbsp;e);<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Square Roots</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SqrRoot(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <font color="#0000ed"><i>// x = floor(a^{1/2}) (a &gt;= 0)</i></font><br>
+ZZ SqrRoot(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;SqrRoot(<font color="#008b00"><b>long</b></font>&nbsp;a); <br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jacobi symbol and modular square roots</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;Jacobi(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;compute Jacobi symbol of a and n; assumes 0 &lt;= a &lt; n, n odd</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;SqrRootMod(ZZ&amp; x, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n);<br>
+ZZ SqrRootMod(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; n); <br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;computes square root of a mod n; assumes n is an odd prime, and</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;that a is a square mod n, with 0 &lt;= a &lt; n.</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Input/Output</i></font><br>
+<br>
+<font color="#0000ed"><i>I/O Format:</i></font><br>
+<br>
+<font color="#0000ed"><i>Numbers are written in base 10, with an optional minus sign.</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+istream&amp; <font color="#b02f60"><b>operator</b></font>&gt;&gt;(istream&amp; s, ZZ&amp; x);&nbsp;&nbsp;<br>
+ostream&amp; <font color="#b02f60"><b>operator</b></font>&lt;&lt;(ostream&amp; s, <font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a); <br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Miscellany</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// The following macros are defined:</i></font><br>
+<br>
+<font color="#1773cc">#define NTL_ZZ_NBITS (...)&nbsp;&nbsp;</font><font color="#0000ed"><i>// number of bits in a zzigit;</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// a ZZ is represented as a sequence of zzigits.</i></font><br>
+<br>
+<font color="#1773cc">#define NTL_SP_NBITS (...)&nbsp;&nbsp;</font><font color="#0000ed"><i>// max number of bits in a &quot;single-precision&quot; number</i></font><br>
+<br>
+<font color="#1773cc">#define NTL_WSP_NBITS (...)&nbsp;&nbsp;</font><font color="#0000ed"><i>// max number of bits in a &quot;wide single-precision&quot;</i></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#0000ed"><i>// number</i></font><br>
+<br>
+<font color="#0000ed"><i>// The following relations hold:</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;30 &lt;= NTL_SP_NBITS &lt;= NTL_WSP_NBITS </i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;= min(NTL_ZZ_NBITS, NTL_BITS_PER_LONG-2)</i></font><br>
+<br>
+<font color="#0000ed"><i>// Note that NTL_ZZ_NBITS may be less than, equal to, or greater than</i></font><br>
+<font color="#0000ed"><i>// NTL_BITS_PER_LONG&nbsp;&nbsp;-- no particular relationship should be assumed to hold.</i></font><br>
+<font color="#0000ed"><i>// In particular, expressions like (1L &lt;&lt; NTL_ZZ_BITS) might overflow.</i></font><br>
+<font color="#0000ed"><i>//</i></font><br>
+<font color="#0000ed"><i>// &quot;single-precision&quot; numbers are meant to be used in conjunction with the</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;single-precision modular arithmetic routines.</i></font><br>
+<font color="#0000ed"><i>//</i></font><br>
+<font color="#0000ed"><i>// &quot;wide single-precision&quot; numbers are meant to be used in conjunction</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;with the ZZ arithmetic routines for optimal efficiency.</i></font><br>
+<br>
+<font color="#0000ed"><i>// The following auxilliary macros are also defined</i></font><br>
+<br>
+<font color="#1773cc">#define NTL_FRADIX (...) </font><font color="#0000ed"><i>// double-precision value of 2^NTL_ZZ_NBITS</i></font><br>
+<br>
+<font color="#1773cc">#define NTL_SP_BOUND (</font><font color="#ff8b00">1L</font><font color="#1773cc">&nbsp;&lt;&lt; NTL_SP_NBITS)</font><br>
+<font color="#1773cc">#define NTL_WSP_BOUND (</font><font color="#ff8b00">1L</font><font color="#1773cc">&nbsp;&lt;&lt; NTL_WSP_NBITS)</font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// Backward compatability notes:</i></font><br>
+<font color="#0000ed"><i>//</i></font><br>
+<font color="#0000ed"><i>// Prior to version 5.0, the macro NTL_NBITS was defined,</i></font><br>
+<font color="#0000ed"><i>// along with the macro NTL_RADIX defined to be (1L &lt;&lt; NTL_NBITS).</i></font><br>
+<font color="#0000ed"><i>// While these macros are still available when using NTL's traditional </i></font><br>
+<font color="#0000ed"><i>// long integer package (i.e., when NTL_GMP_LIP is not set), </i></font><br>
+<font color="#0000ed"><i>// they are not available when using the GMP as the primary long integer </i></font><br>
+<font color="#0000ed"><i>// package (i.e., when NTL_GMP_LIP is set).</i></font><br>
+<font color="#0000ed"><i>// Furthermore, when writing portable programs, one should avoid these macros.</i></font><br>
+<font color="#0000ed"><i>// Note that when using traditional long integer arithmetic, we have</i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp;&nbsp;&nbsp;NTL_ZZ_NBITS = NTL_SP_NBITS = NTL_WSP_NBITS = NTL_NBITS.</i></font><br>
+<font color="#0000ed"><i>//</i></font><br>
+<font color="#0000ed"><i>// Prior to version 9.0, one could also assume that </i></font><br>
+<font color="#0000ed"><i>//&nbsp;&nbsp; NTL_SP_NBITS &lt;= NTL_DOUBLE_PRECISION-3;</i></font><br>
+<font color="#0000ed"><i>// however, this is no longer the case (unless NTL is build with he NTL_LEGACY_SP_MULMOD</i></font><br>
+<font color="#0000ed"><i>// flag turned on).</i></font><br>
+<br>
+<br>
+<font color="#0000ed"><i>// Here are some additional functions.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;clear(ZZ&amp; x); <font color="#0000ed"><i>// x = 0</i></font><br>
+<font color="#008b00"><b>void</b></font>&nbsp;set(ZZ&amp; x);&nbsp;&nbsp; <font color="#0000ed"><i>// x = 1</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;swap(ZZ&amp; x, ZZ&amp; y);<br>
+<font color="#0000ed"><i>// swap x and y (done by &quot;pointer swapping&quot;, if possible).</i></font><br>
+<br>
+<font color="#008b00"><b>double</b></font>&nbsp;log(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a);<br>
+<font color="#0000ed"><i>// returns double precision approximation to log(a)</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;NextPowerOfTwo(<font color="#008b00"><b>long</b></font>&nbsp;m);<br>
+<font color="#0000ed"><i>// returns least nonnegative k such that 2^k &gt;= m</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;ZZ::size() <font color="#008b00"><b>const</b></font>;<br>
+<font color="#0000ed"><i>// a.size() returns the number of zzigits of |a|; the</i></font><br>
+<font color="#0000ed"><i>// size of 0 is 0.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;ZZ::SetSize(<font color="#008b00"><b>long</b></font>&nbsp;k)<br>
+<font color="#0000ed"><i>// a.SetSize(k) does not change the value of a, but simply pre-allocates</i></font><br>
+<font color="#0000ed"><i>// space for k zzigits.</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;ZZ::SinglePrecision() <font color="#008b00"><b>const</b></font>;<br>
+<font color="#0000ed"><i>// a.SinglePrecision() is a predicate that tests if abs(a) &lt; NTL_SP_BOUND</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;ZZ::WideSinglePrecision() <font color="#008b00"><b>const</b></font>;<br>
+<font color="#0000ed"><i>// a.WideSinglePrecision() is a predicate that tests if abs(a) &lt; NTL_WSP_BOUND</i></font><br>
+<br>
+<font color="#008b00"><b>long</b></font>&nbsp;digit(<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; a, <font color="#008b00"><b>long</b></font>&nbsp;k);<br>
+<font color="#0000ed"><i>// returns k-th zzigit of |a|, position 0 being the low-order</i></font><br>
+<font color="#0000ed"><i>// zzigit.</i></font><br>
+<font color="#0000ed"><i>// NOTE: this routine is only available when using NTL's traditional</i></font><br>
+<font color="#0000ed"><i>// long integer arithmetic, and should not be used in programs</i></font><br>
+<font color="#0000ed"><i>// that are meant to be portable.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;ZZ::kill();<br>
+<font color="#0000ed"><i>// a.kill() sets a to zero and frees the space held by a.</i></font><br>
+<br>
+<font color="#008b00"><b>void</b></font>&nbsp;ZZ::swap(ZZ&amp; x);<br>
+<font color="#0000ed"><i>// swap method (done by &quot;pointer swapping&quot; if possible)</i></font><br>
+<br>
+ZZ::ZZ(INIT_SIZE_TYPE, <font color="#008b00"><b>long</b></font>&nbsp;k);<br>
+<font color="#0000ed"><i>// ZZ(INIT_SIZE, k) initializes to 0, but space is pre-allocated so</i></font><br>
+<font color="#0000ed"><i>// that numbers x with x.size() &lt;= k can be stored without</i></font><br>
+<font color="#0000ed"><i>// re-allocation.</i></font><br>
+<br>
+<font color="#008b00"><b>static</b></font>&nbsp;<font color="#008b00"><b>const</b></font>&nbsp;ZZ&amp; ZZ::zero();<br>
+<font color="#0000ed"><i>// ZZ::zero() yields a read-only reference to zero, if you need it.</i></font><br>
+<br>
+<br>
+<br>
+<br>
+<font color="#0000ed"><i>/*</i></font><font color="#0000ed"><i>*************************************************************************\</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Small Prime Generation</i></font><br>
+<br>
+<font color="#0000ed"><i>primes are generated in sequence, starting at 2, and up to a maximum</i></font><br>
+<font color="#0000ed"><i>that is no more than min(NTL_SP_BOUND, 2^30).</i></font><br>
+<br>
+<font color="#0000ed"><i>Example: print the primes up to 1000</i></font><br>
+<br>
+<font color="#0000ed"><i>#include &lt;NTL/ZZ.h&gt;</i></font><br>
+<br>
+<font color="#0000ed"><i>main()</i></font><br>
+<font color="#0000ed"><i>{</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; PrimeSeq s;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; long p;</i></font><br>
+<br>
+<font color="#0000ed"><i>&nbsp;&nbsp; p = s.next();</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; while (p &lt;= 1000) {</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cout &lt;&lt; p &lt;&lt; &quot;\n&quot;;</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;p = s.next();</i></font><br>
+<font color="#0000ed"><i>&nbsp;&nbsp; }</i></font><br>
+<font color="#0000ed"><i>}</i></font><br>
+<br>
+<font color="#0000ed"><i>\*************************************************************************</i></font><font color="#0000ed"><i>*/</i></font><br>
+<br>
+<br>
+<br>
+<font color="#008b00"><b>class</b></font>&nbsp;PrimeSeq {<br>
+<font color="#b02f60"><b>public</b></font>:<br>
+&nbsp;&nbsp; PrimeSeq();<br>
+&nbsp;&nbsp; ~PrimeSeq();<br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>long</b></font>&nbsp;next();<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// returns next prime in the sequence.&nbsp;&nbsp;returns 0 if list of small</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// primes is exhausted.</i></font><br>
+<br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;reset(<font color="#008b00"><b>long</b></font>&nbsp;b);<br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// resets generator so that the next prime in the sequence is the</i></font><br>
+&nbsp;&nbsp; <font color="#0000ed"><i>// smallest prime &gt;= b.</i></font><br>
+<br>
+<font color="#b02f60"><b>private</b></font>:<br>
+&nbsp;&nbsp; PrimeSeq(<font color="#008b00"><b>const</b></font>&nbsp;PrimeSeq&amp;);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ed"><i>// disabled</i></font><br>
+&nbsp;&nbsp; <font color="#008b00"><b>void</b></font>&nbsp;<font color="#b02f60"><b>operator</b></font>=(<font color="#008b00"><b>const</b></font>&nbsp;PrimeSeq&amp;);&nbsp;&nbsp;<font color="#0000ed"><i>// disabled</i></font><br>
+<br>
+};<br>
+<br>
+<br>
+</font></body>
+</html>
