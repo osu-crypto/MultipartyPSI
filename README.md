@@ -64,5 +64,16 @@ Compute PSI of 5 parties, 2 dishonestly colluding, each with set size 2^12 in au
     & ./bin/frontend.exe -n 5 -a 3  -m 12 -p 3
     & ./bin/frontend.exe -n 5 -a 3  -m 12 -p 4
 	
+## Summary
+
+      1. git clone https://github.com/osu-crypto/MultipartyPSI.git  
+      2. cd thirdparty/
+      3. bash all_linux.get 
+      4. cd ..
+      5. cmake .
+      6.  make -j
+      7. ./bin/frontend.exe -n 5 -t 2 -m 12 -p 0 & ./bin/frontend.exe -n 5 -t 2 -m 12 -p 1  & ./bin/frontend.exe -n 5 -t 2 -m 12 -p 2 & ./bin/frontend.exe -n 5 -t 2 -m 12 -p 3 & ./bin/frontend.exe -n 5 -t 2 -m 12 -p 4
+ 	
+	
 ## Help
 For any questions on building or running the library, please contact [`Ni Trieu`](http://people.oregonstate.edu/~trieun/) at trieun at oregonstate dot edu
