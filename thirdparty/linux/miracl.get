@@ -2,5 +2,5 @@ cat "downloading Miracl"
 echo "building Mircal"
 cd miracl/miracl/source/
 bash linux64
-cd miracl/miracl_ostm/source/
+cd miracl/miracl_osmt/source/
 bash linux64
