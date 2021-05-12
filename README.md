@@ -56,7 +56,7 @@ Compute PSI of 5 parties, 2 dishonestly colluding, each with set size 2^12 in se
 	& ./bin/frontend.exe -n 5 -t 2 -m 12 -p 3
 	& ./bin/frontend.exe -n 5 -t 2 -m 12 -p 4
 	
-Compute PSI of 5 parties, 2 dishonestly colluding, each with set size 2^12 in augmented semihonest setting with Bloom filter based OPPRF
+Compute PSI of 5 parties, each with set size 2^12 in augmented semihonest setting with Bloom filter based OPPRF. Note that, the augmented SH protocol protects from a collusion of n-1 parties
 
 	./bin/frontend.exe -n 5 -a 3 -m 12 -p 0 
 	& ./bin/frontend.exe -n 5 -a 3  -m 12 -p 1
