@@ -1,5 +1,5 @@
 # Programmable Oblivious PRF & multi-party PSI
-This is the implementation of our [CCS 2017](http://dl.acm.org/xxx)  paper: **Practical Multi-party Private Set Intersection from Symmetric-Key Techniques**[[ePrint](https://eprint.iacr.org/2017/xxx)]. 
+This is the implementation of our [CCS 2017](https://acmccs.github.io/papers/p1257-kolesnikovA.pdf)  paper: **Practical Multi-party Private Set Intersection from Symmetric-Key Techniques**[[ePrint](https://eprint.iacr.org/2017/799.pdf)]. 
 
 Evaluating on a single Intel Xeon server (`2 36-cores Intel Xeon CPU E5-2699 v3 @ 2.30GHz and 256GB of RAM`), ours protocol requires only `71` seconds to securely compute the intersection of `5` parties, each has `2^20`-size sets, regardless of the bit length of the items.
 
